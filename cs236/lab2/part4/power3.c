@@ -4,7 +4,6 @@
 int power(int base, int exp) {
     int result = 1;
     for (int i = 0; i < exp; i++) result *= base;
-
     return result;
 }
 
@@ -17,11 +16,8 @@ int main() {
         printf("Please enter a positive integer!\n");
         return 1;
     }
-
     int result = power(3, n);
     printf("3^%d = %d\n", n, result);
-
     printf("Exiting from power3.c\n");
-
     return 0;
 }

@@ -21,32 +21,32 @@ int main(int argc, char* argv[]) {
     char ch;
 
     // TODO: open (copy from p2c.c)
-    ;
+    input_fd=open(argv[1],0);
 
     check_fd(input_fd);
 
     // TODO: replace stdin with input_fd
-    ;
+    dup2(input_fd,0);
 
     // TODO: open (copy from p2c.c)
-    ;
+    output_fd=open(argv[2],1);
 
     check_fd(output_fd);
 
     // TODO: replace stdout with output_fd
-    ;
+    dup2(output_fd,1);
 
     // TODO: read, write (copy from p2a.c)
-    while (read() > 0) {
-        if (write() < 0) {
+    while (read(0,&ch,1) > 0) {
+        if (write(1,&ch,1) < 0) {
             perror("Error writing to stdout\n");
             return 1;
         }
     }
 
     // TODO: close (copy from p2c.c)
-    ;
-    ;
+    close(input_fd);
+    close(output_fd);
 
     return 0;
 }

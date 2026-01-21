@@ -3,16 +3,17 @@
 
 int main() {
     // TODO: create new process using fork and complete if else blocks
-    ;
-    if () {
+    int f=fork();
+    if (f<0) {
         printf("fork failed\n");
         return 1;
-    } else if () {  // Child
+    } else if (f==0) {  // Child
         // TODO: print pid and ppid
-        ;
+        printf("In child: pid, ppid are %d, %d\n", getpid(), getppid());
     } else {  // Parent
         // TODO: print pid and child pid
-        ;
+        printf("In parent: pid, child %d, %d\n", getpid(), getppid());
+        printf("%d\n",f);
     }
 
     return 0;

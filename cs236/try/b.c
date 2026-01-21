@@ -17,9 +17,6 @@ int main(int argc, char *argv[]) {
         int fd = open(argv[1], O_RDONLY);
         char *args[] = {"cat", NULL};
         execvp("cat", args);
-
-        perror("execvp");
-        exit(1);
     } else {
         int status = 0;
         waitpid(pid, &status, 0);

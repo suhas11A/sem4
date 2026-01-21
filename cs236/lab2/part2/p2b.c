@@ -20,22 +20,22 @@ int main(int argc, char* argv[]) {
     char ch;
 
     // TODO: open the argv[1] file into input_fd for reading
-    ;
+    input_fd=open(argv[1],0);
 
     check_fd(input_fd);
 
     // TODO: complete the following syscalls
     // read from input_fd
     // write to STDOUT_FILENO
-    while (read() > 0) {
-        if (write() < 0) {
+    while (read(input_fd,&ch,1) > 0) {
+        if (write(1,&ch,1) < 0) {
             perror("Error writing to stdout\n");
             return 1;
         }
     }
 
     // TODO: close the input file descriptor
-    ;
+    close(input_fd);
 
     return 0;
 }
