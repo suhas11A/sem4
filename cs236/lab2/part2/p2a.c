@@ -9,7 +9,7 @@ int main() {
     // write to STDOUT_FILENO
     
     while (read(0,&ch,1) > 0){
-        printf("\nreading\n");
+        printf("reading\n");
         if (write(1,&ch,1) < 0) {
             perror("Error writing to stdout\n");
             return 1;

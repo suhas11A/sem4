@@ -10,6 +10,7 @@ void handler(int sig) {
 int main(int argc, char *argv[]) {
   /* TODO: implement logic here */
   int f = fork();
+  setpgid(0, 0);
   signal(SIGINT, handler);
   while(1) ;
   return 0;

@@ -13,9 +13,12 @@ int main() {
         if (f==0) {
             char* argv[] = {n, NULL};
             execvp(argv[0], argv);
+            perror("error");
         }
-        wait(0);
-        printf("Finished one thing\n");
+        else {
+            wait(0);
+            printf("Finished one thing\n");
+        }
     }
     return 0;
 }

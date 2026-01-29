@@ -16,16 +16,16 @@ int main(int argc, char *argv[]) {
   
 
   // 2. Open input file for reading
-
+  fd_in = open(argv[1], O_RDONLY);
   // 3. Open output file for writing (create/truncate as needed)
-
+  fd_out = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0644);
   // 4. Redirect STDIN to input file using dup2()
-
+  dup2(fd_in, STDIN_FILENO);
   // 5. Redirect STDOUT to output file using dup2()
-
+  dup2(fd_out, STDOUT_FILENO);
   // 6. Close unused file descriptors
-
+  close(fd_in); close(fd_out);
   // 7. Execute the inbuilt cat command using exec()
-
+  execlp("cat", "cat", (char *)NULL);
   return 0;
 }
