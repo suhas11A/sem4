@@ -59,13 +59,16 @@ class rot_anisotropic(func):
         super().__init__()
 
     def eval(self, x: np.ndarray) -> np.ndarray: # type: ignore
-        
+        Q = self.U @ self.S @ self.V.T
+        return x.T @ Q @ x - self.b.T @ x
 
     def grad(self, x: np.ndarray) -> np.ndarray: # type: ignore
-        pass
+        Q = self.U @ self.S @ self.V.T
+        return (Q + Q.T) @ x - self.b
 
     def hessian(self, x: np.ndarray) -> np.ndarray: # type: ignore
-        pass
+        Q = self.U @ self.S @ self.V.T
+        return Q + Q.T
 
 if __name__ == "__main__":
     pass

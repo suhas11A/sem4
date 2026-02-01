@@ -28,8 +28,28 @@ def compute_dataset_properties(X: np.ndarray) -> Dict[str, Any]: # type: ignore
     """
     m, n = X.shape
     np.random.seed(42)  # For reproducibility
-    # TODO: Compute spectral properties - can be skipped if not using 
-    raise NotImplementedError("Spectral property computation not yet implemented")
+    # Compute spectral properties
+    n, d = X.shape
+    XTX = X.T @ X / n
+    eigenvalues = np.linalg.eigvalsh(XTX)
+    eigenvalues = eigenvalues[eigenvalues > 1e-10]
+    
+    L = float(np.max(eigenvalues)) if len(eigenvalues) > 0 else 0.0
+    mu = float(np.min(eigenvalues)) if len(eigenvalues) > 0 else 0.0
+    kappa = float(L / mu) if mu > 1e-10 else float('inf')
+    
+    singular_values = np.linalg.svd(X, compute_uv=False)
+    stable_rank = float(np.sum(singular_values**2) / (singular_values[0]**2)) if len(singular_values) > 0 and singular_values[0] > 0 else 0.0
+    
+    return {
+        "n_samples": n,
+        "n_features": d,
+        "L": L,
+        "mu": mu,
+        "kappa": kappa,
+        "stable_rank": stable_rank,
+        "singular_values": singular_values.tolist()
+    }
 
 
 def generate_gd_victory_dataset() -> Tuple[np.ndarray, np.ndarray, Dict]: #type: ignore
@@ -40,7 +60,24 @@ def generate_gd_victory_dataset() -> Tuple[np.ndarray, np.ndarray, Dict]: #type:
         y: Target vector
         properties: Dataset spectral properties
     """
-    raise NotImplementedError("Dataset generation not yet implemented")
+    # SCENARIO 1: GD Victory
+    # Small dimension, well-conditioned (kappa close to 1) favor full GD.
+    # Dimensions: n=1000, d=20
+    n = 1000
+    d = 20
+    np.random.seed(42)
+    
+    # Generate random features
+    X = np.random.randn(n, d)
+    
+    # Generate random weights
+    w_true = np.random.randn(d)
+    
+    # Generate y = Xw + noise
+    y = X @ w_true + 0.1 * np.random.randn(n)
+    
+    properties = compute_dataset_properties(X)
+    return X, y, properties
 
 
 def generate_sgd_victory_dataset() -> Tuple[np.ndarray, np.ndarray, Dict]:
@@ -58,7 +95,18 @@ def generate_sgd_victory_dataset() -> Tuple[np.ndarray, np.ndarray, Dict]:
     
     np.random.seed(123)  # For reproducibility
     
-    raise NotImplementedError("Dataset generation not yet implemented")
+    # SCENARIO 2: SGD VICTORY
+    # Large N, potentially redundant information.
+    n = 10000
+    d = 100
+    np.random.seed(123)
+    
+    X = np.random.randn(n, d)
+    w_true = np.random.randn(d)
+    y = X @ w_true + 0.1 * np.random.randn(n)
+    
+    properties = compute_dataset_properties(X)
+    return X, y, properties
 
 # =============================================================================
 # DATASET SAVING AND VALIDATION

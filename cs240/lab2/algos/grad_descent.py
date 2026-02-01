@@ -26,8 +26,8 @@ class GradientDescent(Optimiser):
         Returns:
             Updated parameters x_{t+1}
         """
-        ## TODO Implement the gradient descent step
-        pass
+        grad = self.f.grad(params)
+        return params - self.lr * grad
 
 if __name__ == "__main__":
     # Simple test

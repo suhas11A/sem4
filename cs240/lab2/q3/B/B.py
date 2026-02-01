@@ -16,6 +16,12 @@ from algos.optim import LSLROptimiser
 AVAILABLE_ALGOS: Dict[str, Type[LSLROptimiser]] = {}
 
 try:
+    from algos import LSLRAlgo0
+    AVAILABLE_ALGOS["<algo1_name> (Algo0)"] = LSLRAlgo0
+except Exception as e:
+    print(f"Warning: LSLRAlgo1 not available: {e}")
+    
+try:
     from algos import LSLRAlgo1
     AVAILABLE_ALGOS["<algo1_name> (Algo1)"] = LSLRAlgo1
 except Exception as e:
@@ -32,6 +38,31 @@ try:
     AVAILABLE_ALGOS["<algo3_name> (Algo3)"] = LSLRAlgo3
 except Exception as e:
     print(f"Warning: LSLRAlgo3 not available: {e}")
+
+try:
+    from algos import LSLRAlgo4
+    AVAILABLE_ALGOS["<algo4_name> (Algo4)"] = LSLRAlgo4
+except Exception as e:
+    print(f"Warning: LSLRAlgo4 not available: {e}")
+
+try:
+    from algos import LSLRAlgo5
+    AVAILABLE_ALGOS["<algo5_name> (Algo5)"] = LSLRAlgo5
+except Exception as e:
+    print(f"Warning: LSLRAlgo5 not available: {e}")
+
+
+try:
+    from algos import LSLRAlgo6
+    AVAILABLE_ALGOS["<algo6_name> (Algo6)"] = LSLRAlgo6
+except Exception as e:
+    print(f"Warning: LSLRAlgo6 not available: {e}")
+
+try:
+    from algos import LSLRAlgo7
+    AVAILABLE_ALGOS["<algo7_name> (Algo7)"] = LSLRAlgo7
+except Exception as e:
+    print(f"Warning: LSLRAlgo7 not available: {e}")
 
 
 def read_dataset(folder_path: str) -> Tuple[np.ndarray, np.ndarray]:

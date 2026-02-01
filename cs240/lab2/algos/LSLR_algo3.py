@@ -16,34 +16,38 @@ class LSLRAlgo3(LSLROptimiser):
         super().__init__(X, y)
         
         ## TODO Use this for any pre-computations you need
-
-
-
-        ##
-
-
+        n, d = X.shape
+        self.L_coords = np.sum(X**2, axis=0) / n
+        self.L_coords = np.maximum(self.L_coords, 1e-10)
 
     def lr(self) -> float:
-        ## TODO learning rate schedule
-
-        return 1
+        return 1.0
+        
     def step(self, params: np.ndarray) -> np.ndarray:
         ## TODO Implement the step method
+        d = self.n_features
+        gamma = np.random.randint(0, d)
+        w = params.copy()
+        grad_sparse = self.stoch_grad(w, gamma)
+        grad_gamma = grad_sparse[gamma]
+        step_size = 1.0 / self.L_coords[gamma]
+        w[gamma] -= step_size * grad_gamma
+        return w
 
-        raise NotImplementedError("Implement step method for LSLRAlgo1")
     def eval_lslr(self, w: np.ndarray) -> float:
-        ## TODO Evaluate LSLR objective: (1/n)||Xw - y||^2
+        residuals = self.X @ w - self.y
+        return 0.5 * np.mean(residuals ** 2)
 
-        raise NotImplementedError("Implement eval_lslr method for LSLRAlgo1")
-    def full_grad(self, w: np.ndarray) -> np.ndarray:
-        ## TODO 
-        raise NotImplementedError("Implement full_grad method for LSLRAlgo1")
     def stoch_grad(self, w: np.ndarray, gamma: int) -> np.ndarray:
         """
         Compute stochastic gradient G(w, γ) = e_γ * (∇f(w))_γ
         Returns a sparse vector with only the γ-th component non-zero.
         """
         ## TODO Implement stochastic gradient computation
-
-        raise NotImplementedError("Implement stoch_grad method for LSLRAlgo1")
-
+        # (∇f(w))_γ = (1/n) X_{:,gamma}^T (Xw - y)
+        residuals = self.X @ w - self.y
+        grad_val = (self.X[:, gamma].T @ residuals) / self.n_samples
+        
+        g = np.zeros_like(w)
+        g[gamma] = grad_val
+        return g

@@ -30,8 +30,7 @@ def solve_func(X: np.ndarray, y: np.ndarray) -> np.ndarray:
     """
 
     ## TODO 
-
-    raise NotImplementedError("Function 'solve_func' is not implemented yet.")
+    return np.linalg.pinv(X) @ y
 
 def exact_solve_function(X: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, float]:
     """
@@ -42,8 +41,10 @@ def exact_solve_function(X: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, floa
         elapsed_time: Time taken in seconds
     """
     ## TODO 
-
-    raise NotImplementedError("Function 'exact_solve_function' is not implemented yet.")
+    start_time = timer()
+    w = solve_func(X, y)
+    end_time = timer()
+    return w, end_time - start_time
 
 class Trainer:
     """

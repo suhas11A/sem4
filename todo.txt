@@ -1,15 +1,9 @@
-si527 read and listen to lecture
 aiml listen to lecture
 outlab2 aiml
-os lecture read
 iicpc do maybe????
-stevens form fill
 read paper for krishna maam
 
 Every Thursday - si527 tut - 7-8pm(LT002)
-31st Jan - si527 quiz - 9:30-10:20am
-28th Jan - OS Theory Quiz 1 - 8:30-9:30am
-29th Jan - OS Lab quiz - 2-5pm
 06th Feb - AIML theory quiz - 
 28th Mar - DE extra class - 2-5pm
 18th Apr - DE extra class - 2-5pm
