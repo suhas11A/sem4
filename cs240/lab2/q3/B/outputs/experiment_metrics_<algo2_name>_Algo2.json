@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-02-01T23:33:31.309366",
+  "timestamp": "2026-02-02T21:36:45.882530",
   "dataset": "D",
   "algorithm": "<algo2_name> (Algo2)",
   "learning_rate": 0.12753210729967396,
@@ -9,8 +9,8 @@
     "epochs_required": 39,
     "converged": true,
     "tolerance": 1e-08,
-    "total_time": 0.22971177101135254,
-    "time_per_epoch": 0.005890045410547501
+    "total_time": 0.13650035858154297,
+    "time_per_epoch": 0.0035000091943985377
   },
   "initial_point_norm": 0.0,
   "final_point_norm": 7.401840847810509

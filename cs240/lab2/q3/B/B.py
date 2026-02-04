@@ -21,11 +21,11 @@ try:
 except Exception as e:
     print(f"Warning: LSLRAlgo1 not available: {e}")
     
-try:
-    from algos import LSLRAlgo1
-    AVAILABLE_ALGOS["<algo1_name> (Algo1)"] = LSLRAlgo1
-except Exception as e:
-    print(f"Warning: LSLRAlgo1 not available: {e}")
+# try:
+#     from algos import LSLRAlgo1
+#     AVAILABLE_ALGOS["<algo1_name> (Algo1)"] = LSLRAlgo1
+# except Exception as e:
+#     print(f"Warning: LSLRAlgo1 not available: {e}")
 
 try:
     from algos import LSLRAlgo2
@@ -52,11 +52,11 @@ except Exception as e:
     print(f"Warning: LSLRAlgo5 not available: {e}")
 
 
-try:
-    from algos import LSLRAlgo6
-    AVAILABLE_ALGOS["<algo6_name> (Algo6)"] = LSLRAlgo6
-except Exception as e:
-    print(f"Warning: LSLRAlgo6 not available: {e}")
+# try:
+#     from algos import LSLRAlgo6
+#     AVAILABLE_ALGOS["<algo6_name> (Algo6)"] = LSLRAlgo6
+# except Exception as e:
+#     print(f"Warning: LSLRAlgo6 not available: {e}")
 
 try:
     from algos import LSLRAlgo7
