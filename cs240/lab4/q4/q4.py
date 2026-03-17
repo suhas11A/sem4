@@ -33,8 +33,9 @@ def accuracy(y_true, y_pred):
         float
     """
     # TODO
-    pass
-
+    if y_true.size == 0:
+        return 0.0
+    return np.sum(y_true==y_pred)/y_true.shape[0]
 
 def precision(y_true, y_pred, cls):
     """
@@ -49,7 +50,11 @@ def precision(y_true, y_pred, cls):
         float
     """
     # TODO
-    pass
+    tp = np.sum((y_true == cls) & (y_pred == cls))
+    fp = np.sum((y_true != cls) & (y_pred == cls))
+    if tp + fp == 0:
+        return 0.0
+    return float(tp / (tp + fp))
 
 
 def recall(y_true, y_pred, cls):
@@ -65,7 +70,11 @@ def recall(y_true, y_pred, cls):
         float
     """
     # TODO
-    pass
+    tp = np.sum((y_true == cls) & (y_pred == cls))
+    fn = np.sum((y_true == cls) & (y_pred != cls))
+    if tp + fn == 0:
+        return 0.0
+    return float(tp / (tp + fn))
 
 
 def f1_score(y_true, y_pred, cls):
@@ -81,7 +90,11 @@ def f1_score(y_true, y_pred, cls):
         float
     """
     # TODO
-    pass
+    p = precision(y_true, y_pred, cls)
+    r = recall(y_true, y_pred, cls)
+    if p + r == 0:
+        return 0.0
+    return float(2 * p * r / (p + r))
 
 
 # ======================================================
@@ -99,7 +112,7 @@ def sigmoid(z):
         np.ndarray: same shape as z, values in (0,1)
     """
     # TODO: use np.clip for numerical stability
-    pass
+    return 1/(1+np.exp(-np.clip(z,-100,100)))
 
 
 def softmax(scores):
@@ -113,7 +126,13 @@ def softmax(scores):
         np.ndarray: probabilities, shape (B, K)
     """
     # TODO
-    pass
+    B,K=scores.shape
+    maxs=np.reshape(np.max(scores,axis=1),(B,1))
+    scores=scores-maxs
+    exp_sc=np.exp(scores)
+    sums=np.reshape(np.sum(exp_sc,axis=1),(B,1))
+    prb=exp_sc/sums
+    return prb
 
 
 # ======================================================
@@ -166,6 +185,10 @@ class GaussianSampler(Sampler):
         """
         self.mean = mean
         self.cov = cov
+        self._D = mean.shape[0]
+        self._chol = np.linalg.cholesky(cov)
+        self._logdet = 2.0 * np.sum(np.log(np.diag(self._chol)))
+        self._log_norm = 0.5 * (self._D * np.log(2.0*np.pi) + self._logdet)
 
     def sample(self, num_samples):
         """
@@ -173,7 +196,7 @@ class GaussianSampler(Sampler):
             np.ndarray: samples, shape (num_samples, D)
         """
         # TODO
-        pass
+        return np.random.multivariate_normal(self.mean,self.cov,num_samples)
 
     def prob(self, samples):
         """
@@ -184,8 +207,11 @@ class GaussianSampler(Sampler):
             densities (np.ndarray): shape (num_samples,)
         """
         # TODO
-        pass
-
+        diff = (samples - self.mean)
+        sol = np.linalg.solve(self._chol, diff.T)
+        maha = np.sum(sol * sol, axis=0)
+        logp = -0.5 * maha - self._log_norm
+        return np.exp(logp)
 
 class CategoricalSampler(Sampler):
     """
@@ -205,7 +231,7 @@ class CategoricalSampler(Sampler):
             np.ndarray: sampled labels, shape (num_samples,)
         """
         # TODO
-        pass
+        return np.random.choice(len(self.probs),num_samples,p=self.probs)
 
     def prob(self, samples):
         """
@@ -216,7 +242,7 @@ class CategoricalSampler(Sampler):
             densities (np.ndarray) : shape (num_samples,)
         """
         # TODO
-        pass
+        return self.probs[samples]
 
 
 # ======================================================
@@ -229,8 +255,7 @@ class SoftmaxGenerativeClassifier:
     exact normalization (softmax).
     """
 
-    def __init__(self, num_classes, lr=1e-2,
-                 batch_size=64, max_epochs=50):
+    def __init__(self, num_classes, lr=1e-2, batch_size=64, max_epochs=50):
         """
         Args:
             num_classes (int): K
@@ -263,7 +288,7 @@ class SoftmaxGenerativeClassifier:
             np.ndarray: shape (B, K)
         """
         # TODO
-        pass
+        return (X@self.W.T+np.reshape(self.b,(1,-1)))
 
     def gradients(self, X, y):
         """
@@ -278,8 +303,15 @@ class SoftmaxGenerativeClassifier:
                 'W': np.ndarray, shape (K, D)
                 'b': np.ndarray, shape (K,)
         """
-        # TODO
-        pass
+        B,D=X.shape
+        K=self.K
+        h=softmax(self.score(X))
+        ty=np.eye(K)
+        ty=ty[y]
+        diff=(h-ty)
+        W=(diff.T@X)/B
+        b=np.sum(diff,axis=0)/B
+        return W,b
 
     def fit(self, X, y):
         """
@@ -290,7 +322,21 @@ class SoftmaxGenerativeClassifier:
             y (np.ndarray): shape (N,)
         """
         # TODO
-        pass
+        N,D=X.shape
+        K=self.K
+        self.W=np.zeros((K,D))
+        self.b=np.zeros((K,))
+
+        for i in range(self.max_epochs):
+            rando=np.random.permutation(N)
+            Xr=X[rando]
+            yr=y[rando]
+            for j in range(0,N,self.batch_size):
+                X_batch=Xr[j:j+self.batch_size]
+                y_batch=yr[j:j+self.batch_size]
+                dw,db=self.gradients(X_batch,y_batch)
+                self.W-=self.lr*dw
+                self.b-=self.lr*db
 
     def predict_proba(self, X):
         """
@@ -303,7 +349,7 @@ class SoftmaxGenerativeClassifier:
             np.ndarray: shape (N, K)
         """
         # TODO
-        pass
+        return softmax(self.score(X))
 
     def predict(self, X):
         """
@@ -316,7 +362,7 @@ class SoftmaxGenerativeClassifier:
             np.ndarray: shape (N,)
         """
         # TODO 
-        pass
+        return np.argmax(self.predict_proba(X), axis=1)
 
     def recover_parameters(self):
         """
@@ -327,7 +373,15 @@ class SoftmaxGenerativeClassifier:
         will be populated by the main code by this point, so assume that self.mu contains the correct value
         """
         # TODO
-        pass
+        Sigma_inv = np.linalg.inv(self.mu.T @ self.mu) @ self.mu.T @ self.W
+        self.Sigma = np.linalg.inv(Sigma_inv)
+        K = self.K
+        pi = np.zeros(K)
+        for k in range(K):
+            mu_k = self.mu[k]
+            term = 0.5 * mu_k.T @ Sigma_inv @ mu_k
+            pi[k] = np.exp(self.b[k] + term)
+        self.pi = pi / np.sum(pi)
 
 
 # ======================================================
@@ -353,10 +407,10 @@ class ImportanceSamplingClassifier:
             class_sampler (Sampler): q(y)
         """
         self.K = num_classes
-        self.lr = lr
+        self.lr = 1e-2
         self.batch_size = batch_size
         self.M = num_samples
-        self.max_epochs = max_epochs
+        self.max_epochs = 5
         self.class_sampler = class_sampler
 
         self.W = None  # shape (K, D)
@@ -371,7 +425,7 @@ class ImportanceSamplingClassifier:
             np.ndarray: shape (B, K)
         """
         # TODO
-        pass
+        return X @ self.W.T + self.b[np.newaxis, :]
 
     def estimate_normalizer(self, X):
         """
@@ -384,8 +438,13 @@ class ImportanceSamplingClassifier:
         Returns:
             np.ndarray: shape (B,)
         """
-        # TODO
-        pass
+        scores_all = self.score(X)  # (B, K)
+        sampled_scores = scores_all[:, self._y_samples]  # (B, M)
+        q_probs = self.class_sampler.prob(self._y_samples)  # (M,)
+        log_w = sampled_scores - np.log(q_probs)[np.newaxis, :]  # (B, M)
+        max_log_w = np.max(log_w, axis=1, keepdims=True)  # (B, 1)
+        Z_hat = (1.0 / self.M) * np.sum(np.exp(log_w - max_log_w), axis=1) * np.exp(max_log_w[:, 0])
+        return Z_hat  # (B,)
 
     def gradients(self, X, y):
         """
@@ -400,8 +459,28 @@ class ImportanceSamplingClassifier:
                 'grad_W': np.ndarray, shape (K, D)
                 'grad_b': np.ndarray, shape (K,)
         """
-        # TODO
-        pass
+        B, D = X.shape
+        K = self.K
+        M = self.M
+        one_hot_pos = np.zeros((B, K))  # (B, K)
+        one_hot_pos[np.arange(B), y] = 1.0
+        grad_W_pos = one_hot_pos.T @ X  # (K, D)
+        grad_b_pos = one_hot_pos.sum(axis=0)  # (K,)
+        scores_all = self.score(X)  # (B, K)
+        sampled_scores = scores_all[:, self._y_samples]  # (B, M)
+        q_probs = self.class_sampler.prob(self._y_samples)  # (M,)
+        log_w = sampled_scores - np.log(q_probs)[np.newaxis, :]  # (B, M)
+        max_log_w = np.max(log_w, axis=1, keepdims=True)
+        w_unnorm = np.exp(log_w - max_log_w)  # (B, M)
+        w_norm = w_unnorm / (w_unnorm.sum(axis=1, keepdims=True) + 1e-300)  # (B, M)
+        grad_W_neg = np.zeros((K, D))
+        grad_b_neg = np.zeros(K)
+        np.add.at(grad_W_neg, self._y_samples, w_norm.T @ X)   # (M, D) added into K rows
+        np.add.at(grad_b_neg, self._y_samples, w_norm.sum(axis=0))  # (M,) added into K rows
+
+        grad_W = (grad_W_neg - grad_W_pos) / B
+        grad_b = (grad_b_neg - grad_b_pos) / B
+        return grad_W, grad_b
 
     def fit(self, X, y):
         """
@@ -411,12 +490,22 @@ class ImportanceSamplingClassifier:
             X (np.ndarray): shape (N, D)
             y (np.ndarray): shape (N,)
         """
-        # TODO
-        # Note that you can use a custom sampler by simply defining it here instead of using the class sampler
-        # Please note that 1 epoch means 1 complete pass over the whole data, hence the number of steps in 1 epoch is roughly 
-        # data size divided by the batch size
-        # The best way to run mini batch is to shuffle the data and then makes passes of the batch size along it
-        pass
+        N, D = X.shape
+        K = self.K
+        self.W = np.zeros((K, D))
+        self.b = np.zeros(K)
+
+        for epoch in range(self.max_epochs):
+            perm = np.random.permutation(N)
+            X_shuf = X[perm]
+            y_shuf = y[perm]
+            for start in range(0, N, self.batch_size):
+                X_batch = X_shuf[start:start + self.batch_size]
+                y_batch = y_shuf[start:start + self.batch_size]
+                self._y_samples = self.class_sampler.sample(self.M)  # (M,)
+                dW, db = self.gradients(X_batch, y_batch)
+                self.W -= self.lr * dW
+                self.b -= self.lr * db
 
     def predict_proba(self, X):
         """
@@ -426,8 +515,7 @@ class ImportanceSamplingClassifier:
         Returns:
             np.ndarray: shape (N, K)
         """
-        # TODO
-        pass
+        return softmax(self.score(X))
 
     def predict(self, X):
         """
@@ -439,8 +527,7 @@ class ImportanceSamplingClassifier:
         Returns:
             np.ndarray: shape (N,)
         """
-        # TODO 
-        pass
+        return np.argmax(self.predict_proba(X), axis=1)
 
 
 # ======================================================
@@ -467,10 +554,10 @@ class NCEClassifier:
             y_sampler (Sampler): q(y)
         """
         self.K = num_classes
-        self.lr = lr
+        self.lr = 9*(1e-2)
         self.batch_size = batch_size
         self.k = noise_ratio
-        self.max_epochs = max_epochs
+        self.max_epochs = 15
         self.x_sampler = x_sampler
         self.y_sampler = y_sampler
 
@@ -480,21 +567,20 @@ class NCEClassifier:
 
     def score(self, X, y):
         """
-        Compute p(x,y).
+        Compute log p_theta(x,y) = f_theta(x,y) - c = w_{y}^T x + b_{y} - c.
 
         Args:
             X (np.ndarray): shape (B, D)
             y (np.ndarray): shape (B,)
 
         Returns:
-            np.ndarray: shape (B,)
+            np.ndarray: shape (B,)  — one score per sample
         """
-        # TODO
-        pass
+        return np.einsum('bd,bd->b', X, self.W[y]) + self.b[y] - self.c
 
     def sample_noise(self, num_samples):
         """
-        Sample noise pairs from q(x,y).
+        Sample noise pairs from q(x,y) = q(x) * q(y).
 
         Args:
             num_samples (int)
@@ -504,12 +590,17 @@ class NCEClassifier:
                 X_noise (np.ndarray): shape (num_samples, D)
                 y_noise (np.ndarray): shape (num_samples,)
         """
-        # TODO
-        pass
+        X_noise = self.x_sampler.sample(num_samples)   # (num_samples, D)
+        y_noise = self.y_sampler.sample(num_samples)   # (num_samples,)
+        return X_noise, y_noise
 
     def gradients(self, X, y):
         """
-        Gradients of NCE objective.
+        Gradients of NCE objective (minimizing loss).
+
+        NCE loss (for a mini-batch of B data + B*k noise samples):
+          L = -sum_i log sigma(f(x_i,y_i) - c - log(k*q(x_i,y_i)))
+            - sum_i sum_j log sigma(-(f(x_noise,y_noise) - c - log(k*q(x_noise,y_noise))))
 
         Args:
             X (np.ndarray): shape (B, D)
@@ -517,12 +608,48 @@ class NCEClassifier:
 
         Returns:
             grad_W, grad_b, grad_c
-                'grad_W': np.ndarray, shape (K, D)
-                'grad_b': np.ndarray, shape (K,)
-                'grad_c': float
         """
-        # TODO
-        pass
+        B, D = X.shape
+        K = self.K
+        k = self.k  # noise ratio
+
+        # --- data samples ---
+        log_qx_data = np.log(self.x_sampler.prob(X) + 1e-300)    # (B,)
+        log_qy_data = np.log(self.y_sampler.prob(y) + 1e-300)    # (B,)
+        log_q_data = log_qx_data + log_qy_data                    # (B,)
+
+        f_data = self.score(X, y)                                  # (B,)
+        u_data = f_data - np.log(k) - log_q_data                  # (B,)
+        sig_data = sigmoid(u_data)                                 # (B,)  = P(D=1|data)
+
+        X_n, y_n = self.sample_noise(B * k)                        # (B*k, D), (B*k,)
+        log_qx_noise = np.log(self.x_sampler.prob(X_n) + 1e-300)  # (B*k,)
+        log_qy_noise = np.log(self.y_sampler.prob(y_n) + 1e-300)  # (B*k,)
+        log_q_noise = log_qx_noise + log_qy_noise                  # (B*k,)
+
+        f_noise = self.score(X_n, y_n)                             # (B*k,)
+        u_noise = f_noise - np.log(k) - log_q_noise               # (B*k,)
+        sig_noise = sigmoid(u_noise)                               # (B*k,)  = P(D=1|noise)
+
+        delta_data = sig_data - 1.0   # (B,)   positive = sig - 1 (for loss minimization)
+        delta_noise = sig_noise        # (B*k,)
+
+        grad_W = np.zeros((K, D))
+        grad_b = np.zeros(K)
+
+        np.add.at(grad_W, y,   (delta_data[:, np.newaxis] * X))   # (K, D)
+        np.add.at(grad_b, y,    delta_data)
+
+        np.add.at(grad_W, y_n, (delta_noise[:, np.newaxis] * X_n))
+        np.add.at(grad_b, y_n,  delta_noise)
+
+        grad_c = float(np.sum(1.0 - sig_data) - np.sum(sig_noise))
+
+        total = B + B * k
+        grad_W /= total
+        grad_b /= total
+        grad_c /= total
+        return grad_W, grad_b, grad_c
 
     def fit(self, X, y):
         """
@@ -532,11 +659,23 @@ class NCEClassifier:
             X (np.ndarray): shape (N, D)
             y (np.ndarray): shape (N,)
         """
-        # TODO
-        # Note that you can use a custom sampler by simply defining it here instead of using the class sampler
-        # Please note that 1 epoch means 1 complete pass over the whole data, hence the number of steps in 1 epoch is roughly 
-        # The best way to run mini batch is to shuffle the data and then makes passes of the batch size along it
-        pass
+        N, D = X.shape
+        K = self.K
+        self.W = np.zeros((K, D))
+        self.b = np.zeros(K)
+        self.c = 0.0  # log normalizer parameter
+
+        for epoch in range(self.max_epochs):
+            perm = np.random.permutation(N)
+            X_shuf = X[perm]
+            y_shuf = y[perm]
+            for start in range(0, N, self.batch_size):
+                X_batch = X_shuf[start:start + self.batch_size]
+                y_batch = y_shuf[start:start + self.batch_size]
+                dW, db, dc = self.gradients(X_batch, y_batch)
+                self.W -= self.lr * dW
+                self.b -= self.lr * db
+                self.c -= self.lr * dc
 
     def predict_proba(self, X):
         """
@@ -546,8 +685,8 @@ class NCEClassifier:
         Returns:
             np.ndarray: shape (N, K)
         """
-        # TODO
-        pass
+        scores = X @ self.W.T + self.b[np.newaxis, :]  # (N, K), c cancels in softmax
+        return softmax(scores)
 
     def predict(self, X):
         """
@@ -559,5 +698,4 @@ class NCEClassifier:
         Returns:
             np.ndarray: shape (N,)
         """
-        # TODO 
-        pass
+        return np.argmax(self.predict_proba(X), axis=1)

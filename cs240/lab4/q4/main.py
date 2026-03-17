@@ -118,7 +118,7 @@ def main():
     )
 
     # Store empirical means inside the model
-    softmax_model.empirical_mu = empirical_mu
+    softmax_model.mu = empirical_mu
 
     softmax_model.fit(X_train1, y_train1)
 
@@ -150,12 +150,14 @@ def main():
 
     print("\n[Training Importance Sampling Model]")
 
+    num_classes2 = len(np.unique(y_train2))
+
     q_y = CategoricalSampler(
-        probs=np.ones(num_classes) / num_classes
+        probs=np.ones(num_classes2) / num_classes2
     )
 
     is_model = ImportanceSamplingClassifier(
-        num_classes=num_classes,
+        num_classes=num_classes2,
         lr=1e-2,
         batch_size=64,
         num_samples=50,
@@ -179,11 +181,11 @@ def main():
     )
 
     q_y = CategoricalSampler(
-        probs=np.ones(num_classes) / num_classes
+        probs=np.ones(num_classes2) / num_classes2
     )
 
     nce_model = NCEClassifier(
-        num_classes=num_classes,
+        num_classes=num_classes2,
         lr=1e-2,
         batch_size=64,
         noise_ratio=5,
