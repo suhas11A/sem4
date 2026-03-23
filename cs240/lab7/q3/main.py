@@ -10,8 +10,8 @@ data = np.loadtxt("./testcases/data.csv", delimiter=",")
 
 X = data[:, :-1]
 y = data[:, -1:]
-print(X)
-print(y)
+# print(X)
+# print(y)
 
 # Split
 split = 1600
