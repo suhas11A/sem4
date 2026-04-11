@@ -16,18 +16,15 @@ void* addArrays(void* arg){
     // implement this function to perform addition of two arrays A and B, 
     // via multiple threads for their assigned indices and 
     // store the result in array C.
-
-
-
-
-
-
+    for (int i=start_index;i<start_index+indices_per_thread;i++) {
+        C[i] = A[i]+B[i];
+    }
 
     // =============================================================
 
     // execution time added to simulate other work for threads
     // the main thread need not wait so long to know that work is done here
-    usleep(random()%1000000);  
+    // usleep(random()%1000000);  
    
     pthread_exit(NULL);
 }
@@ -74,20 +71,30 @@ int main(int argc, char* argv[]){
     // their totals
     // Print the total sum obtained and the execution time
     
+    pthread_t threads[num_threads];
+    int* args = malloc(num_threads*sizeof(int));
+    indices_per_thread = array_size/num_threads;
+    for (int i=0;i<num_threads;i++) {
+        args[i] = i*indices_per_thread;
+        pthread_create(&threads[i], NULL, addArrays, &args[i]);
+    }
 
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL);
+    }
 
-
-    
-
-
+    int total = 0;
+    for (int i=0;i<array_size;i++) {
+        total+=C[i];
+    }
     // =============================================================
     gettimeofday(&end_time,NULL);
-
+    printf("Total = %d\n", total);
     // elapsed time in micro-seconds
     double elapsed_time = (end_time.tv_sec - start_time.tv_sec) * 1000000.0 +
                           (end_time.tv_usec - start_time.tv_usec);
    
-
+    printf("Total time: %f\n", elapsed_time);
     // check if all threads have exited
     // clean up the synchronization primitives
     return 0;

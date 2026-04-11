@@ -1,0 +1,66 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:time_since_rest": 133303,
+      "minecraft:walk_one_cm": 40579,
+      "minecraft:leave_game": 3,
+      "minecraft:walk_under_water_one_cm": 2851,
+      "minecraft:mob_kills": 1,
+      "minecraft:play_time": 133303,
+      "minecraft:damage_dealt": 1741,
+      "minecraft:jump": 95,
+      "minecraft:time_since_death": 133303,
+      "minecraft:drop": 9,
+      "minecraft:sprint_one_cm": 2945,
+      "minecraft:total_world_time": 141622,
+      "minecraft:fly_one_cm": 1007890,
+      "minecraft:walk_on_water_one_cm": 7031,
+      "minecraft:crouch_one_cm": 55,
+      "minecraft:sneak_time": 2917
+    },
+    "minecraft:used": {
+      "minecraft:grass_block": 446,
+      "minecraft:lava_bucket": 5,
+      "minecraft:water_bucket": 31,
+      "minecraft:golden_axe": 46,
+      "minecraft:wildflowers": 5,
+      "minecraft:glass": 318,
+      "minecraft:cornflower": 4,
+      "minecraft:spruce_fence_gate": 102,
+      "minecraft:short_grass": 1,
+      "minecraft:blue_wool": 79,
+      "minecraft:sunflower": 4
+    },
+    "minecraft:killed": {
+      "minecraft:iron_golem": 1
+    },
+    "minecraft:picked_up": {
+      "minecraft:egg": 1,
+      "minecraft:golden_axe": 1,
+      "minecraft:light_weighted_pressure_plate": 1,
+      "minecraft:poppy": 1,
+      "minecraft:flint": 1,
+      "minecraft:leather_chestplate": 1,
+      "minecraft:golden_helmet": 1,
+      "minecraft:sugar_cane": 2,
+      "minecraft:red_mushroom": 1,
+      "minecraft:torch": 2,
+      "minecraft:iron_ingot": 4,
+      "minecraft:bundle": 2,
+      "minecraft:bread": 6,
+      "minecraft:golden_hoe": 1,
+      "minecraft:lead": 11,
+      "minecraft:acacia_sapling": 4,
+      "minecraft:golden_sword": 2,
+      "minecraft:obsidian": 1,
+      "minecraft:wheat_seeds": 6,
+      "minecraft:emerald": 2,
+      "minecraft:leather_leggings": 2,
+      "minecraft:brown_banner": 2
+    },
+    "minecraft:dropped": {
+      "minecraft:lead": 9
+    }
+  },
+  "DataVersion": 4788
+}

@@ -10,11 +10,23 @@
 
 // Define all the required synchronization variables
 // TODO
+pthread_mutex_t q_lock = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t q_not_empty = PTHREAD_COND_INITIALIZER;
 
 struct element{
     int64_t execution_time;
     struct timespec arrival_time;
 };
+
+int64_t min(int64_t a, int64_t b) {
+    if (a>b) return b;
+    return a;
+}
+
+int64_t max(int64_t a, int64_t b) {
+    if (a<b) return b;
+    return a;
+}
 
 int64_t max_ready_queue_size;     // maximum size of the ready queue
 int64_t push_queue_counter = 0;   // critical_variable
@@ -24,16 +36,17 @@ int64_t num_cpus;                 // Number of CPU threads
 struct element *ready_queue;      // Ready queue
 char input_file[100];             // Input file name for the producer
 int64_t is_cpu_running = 1;       // Flag that tells the CPU threads to keep on running, change it to exit the CPU threads
-
+int producerdone = 0;
 // metrics to track
 int64_t *num_lock_reqs;           // to keep track of the number of times each thread requesting for the lock
 int64_t *total_tasks;             // to count the total number of tasks/work done by each thread
 int64_t reqs_dropped = 0;         // to count the number of request drops by producer when ready queue is full
-int64_t *avg_lock_wait_time;      // calculating the average time for which each thread has to wait to get the lock
+int64_t *total_lock_wait_time;      // calculating the average time for which each thread has to wait to get the lock
 int64_t *max_task_wait_time;      // maximum waiting time of task to get scheduled(among all tasks)
 int64_t *min_task_wait_time;      // minimum waiting time of task to get scheduled(among all tasks)
-int64_t *avg_task_wait_time;      // average waiting time of each thread to dequeue the task from ready queue
-int64_t avg_ready_queue_size = 0; // Average size of the ready queue
+int64_t *total_task_wait_time;      // average waiting time of each thread to dequeue the task from ready queue
+int64_t total_ready_queue_size = 0; // Average size of the ready queue
+int64_t chize = 0;
 
 
 // Add all synchronization variables that are required in the producer code, and variables to track the metrics
@@ -54,8 +67,10 @@ void* producer(void* args) {
         
         for(int64_t i=0;i<num_of_work;i++) {
             // Drop the request if the queue is full
+            pthread_mutex_lock(&q_lock);
             if(ready_queue[push_queue_counter].execution_time != -1){
                 reqs_dropped++;
+                pthread_mutex_unlock(&q_lock);
                 continue;
             }
             
@@ -65,16 +80,16 @@ void* producer(void* args) {
 
             clock_gettime(CLOCK_MONOTONIC, &ready_queue[push_queue_counter].arrival_time); 
             push_queue_counter = (push_queue_counter + 1) % max_ready_queue_size;
-
-
-
-
-
-
-
+            total_ready_queue_size+=queue_size;
+            pthread_cond_signal(&q_not_empty); 
+            pthread_mutex_unlock(&q_lock);
         }
+
         usleep(next_arrival_time);
+        chize+=num_of_work;
     }
+    producerdone = 1;
+    pthread_cond_broadcast(&q_not_empty);   // wake all CPUs so they can exit
     pthread_exit(NULL);
 }
 
@@ -82,35 +97,44 @@ void* producer(void* args) {
 // Write the CPU code along with all the synchronization variables
 // TODO
 void* cpu(void* args) {
-    int64_t cpu_id = *((int*)args);       // pass this argument from the main thread
+    int64_t cpu_id = *((int64_t*)args);       // pass this argument from the main thread
 
     struct timespec start, end;
-
-    while(is_cpu_running == 1) {
     
-
-
-
-
-
-
-
+    while(is_cpu_running == 1) {
+        clock_gettime(CLOCK_MONOTONIC,&start);
+        pthread_mutex_lock(&q_lock);
+        clock_gettime(CLOCK_MONOTONIC,&end);
+        double accum1=(end.tv_sec-start.tv_sec)*1000000+(end.tv_nsec-start.tv_nsec)/1000;
+        num_lock_reqs[cpu_id]++;
+        while (queue_size == 0 && !producerdone) {
+            pthread_cond_wait(&q_not_empty, &q_lock);
+        }
+        if (queue_size == 0 && producerdone) {
+            pthread_mutex_unlock(&q_lock);
+            break;
+        }
+        queue_size--;
+        int64_t hehe = ready_queue[pop_queue_counter].execution_time;
+        start = ready_queue[pop_queue_counter].arrival_time;
+        ready_queue[pop_queue_counter].execution_time = -1;
+        pop_queue_counter = (pop_queue_counter+1)%max_ready_queue_size;
+        pthread_mutex_unlock(&q_lock);
+        clock_gettime(CLOCK_MONOTONIC,&end);
+        usleep(hehe);
+        double accum2=(end.tv_sec-start.tv_sec)*1000000+(end.tv_nsec-start.tv_nsec)/1000;
+        total_tasks[cpu_id]++;
+        total_lock_wait_time[cpu_id]+=accum1;
+        total_task_wait_time[cpu_id]+=accum2;
+        max_task_wait_time[cpu_id] = max(max_task_wait_time[cpu_id], accum2);
+        min_task_wait_time[cpu_id] = min(min_task_wait_time[cpu_id], accum2);
     }
 }
 
 // Write the code for tracking the ready queue after periodic intervals from this function (run as separate thread)
 // TODO
 void* ready_queue_size_tracker(void* args) {
-    
-
-
-
-
-
-
-
-
-
+    return NULL;
 }
 
 // Write the logic for starting all the threads in a proper order, and gracefully exiting all the threads to print the metrics at the end
@@ -128,66 +152,61 @@ int main(int64_t argc, char* argv[]) {
     for(int64_t i=0; i<max_ready_queue_size; i++) ready_queue[i].execution_time = -1;
 
     num_lock_reqs = malloc(num_cpus * sizeof(int64_t));
-    total_tasks=malloc(num_cpus * sizeof(int64_t));;
-    avg_lock_wait_time = malloc(num_cpus * sizeof(int64_t));
+    total_tasks=malloc(num_cpus * sizeof(int64_t));
+    total_lock_wait_time = malloc(num_cpus * sizeof(int64_t));
     max_task_wait_time = malloc(num_cpus * sizeof(int64_t));
     min_task_wait_time = malloc(num_cpus * sizeof(int64_t));
-    avg_task_wait_time = malloc(num_cpus * sizeof(int64_t));
+    total_task_wait_time = malloc(num_cpus * sizeof(int64_t));
+    reqs_dropped=0;
 
     for(int64_t i=0; i<num_cpus; i++) {
         num_lock_reqs[i] = 0;
         total_tasks[i]=0;
-        reqs_dropped=0;
-        avg_lock_wait_time[i] = 0;
+        total_lock_wait_time[i] = 0;
         max_task_wait_time[i] = 0;
         min_task_wait_time[i] = 100000;
-        avg_task_wait_time[i] = 0;
+        total_task_wait_time[i] = 0;
     }
 
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
     
+    pthread_t threads[num_cpus];
+    int64_t* args = malloc(num_cpus*sizeof(int64_t));
+    for (int i=0;i<num_cpus;i++) {
+        args[i] = i;
+        pthread_create(&threads[i], NULL, cpu, &args[i]);
+    }
+    pthread_t producer_thread;
+    pthread_create(&producer_thread, NULL, producer, NULL);
 
+    for (int i = 0; i<num_cpus; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    pthread_join(producer_thread, NULL);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    pthread_mutex_destroy(&q_lock);
+    pthread_cond_destroy(&q_not_empty);
 
 
     clock_gettime(CLOCK_MONOTONIC, &end);
-    int64_t total_execution_time = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec)/1000;
+    int64_t total_execution_time = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec)/1000;
 
     double average_waiting_time_of_all_threads=0;
     for(int64_t i=0; i<num_cpus; i++) {
-        average_waiting_time_of_all_threads+=avg_lock_wait_time[i];
+        average_waiting_time_of_all_threads+=total_lock_wait_time[i]/num_lock_reqs[i];
         printf("CPU ID : %ld\n", i);
         printf("Number of lock requests : %ld \n", num_lock_reqs[i]);
         printf("Number of Tasks done: %ld \n", total_tasks[i]);
-        printf("Average waiting time for lock : %ld us\n", avg_lock_wait_time[i]);
+        printf("Average waiting time for lock : %ld us\n", total_lock_wait_time[i]/num_lock_reqs[i]);
         printf("Max waiting time of a task : %ld us\n", max_task_wait_time[i]);
         printf("Min waiting time of a task : %ld us\n", min_task_wait_time[i]);
-        printf("Average waiting time of a task : %ld us\n", avg_task_wait_time[i]);
+        printf("Average waiting time of a task : %ld us\n", total_task_wait_time[i]/total_tasks[i]);
         printf("\n");
     }
     average_waiting_time_of_all_threads/=num_cpus;
     printf("Number of drops done: %ld\n", reqs_dropped);
-    printf("Average size of ready queue : %ld\n", avg_ready_queue_size);
+    printf("Average size of ready queue : %ld\n", total_ready_queue_size/chize);
     printf("Total execution time for all the requests : %ld us\n", total_execution_time);
     printf("Average waiting time for all threads %f\n",average_waiting_time_of_all_threads);
 
