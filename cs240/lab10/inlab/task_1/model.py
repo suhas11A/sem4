@@ -17,7 +17,7 @@ class RNNCell(nn.Module):
         hidden_prev: (B, hidden_dim)
         out: (B, hidden_dim)
         """
-        hidden = self.activation(self.U_b(hidden_prev)+self.W(x))
+        hidden = self.activation(self.W(hidden_prev) + self.U_b(x)) # bug 1: weights were unused in rnn calculation
         out = self.V_c(hidden)
         return hidden, out
 
@@ -51,11 +51,10 @@ class RNNModel(nn.Module):
         x = self.embedding(x)
 
         # 2. Initialize hidden state with zeros
-        h_t = torch.zeros(B, self.d_model, requires_grad=True).to(x.device)
-
         # 3. Manual Recurrence Loop (Sequential processing)
         for layer in self.layers:
             out = []
+            h_t = torch.zeros(B, self.d_model).to(x.device)
 
             for t in range(T):
                 x_t = x[:, t, :] # Current input token: (B, d_model)
@@ -63,8 +62,9 @@ class RNNModel(nn.Module):
                 out.append(o_t)
 
             out = torch.stack(out, dim=1)
+            x = x + out # bug 5: this line was deleted which means rnn was never being used (so no gradients).
 
-        # 5. Project to output vocab: (B, T, 451)
-        out = self.fc(out)
+        # 4. Project to output vocab: (B, T, 225)
+        out = self.fc(x) # bug 6: using .detach() broke the computation graph. So loss was never getting backpropogated through the model.
         
         return out

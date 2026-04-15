@@ -47,16 +47,59 @@ def convolve2d(image, kernel, stride=1, padding=0):
     """
     # TODO: Implement this function
     # Hint: Start with grayscale (2D). Then extend to 3 channels.
-    pass
+    for dimension in image.shape:
+        if dimension == 3:
+            raise NotImplementedError("3-channel convolution not implemented yet.")
+    
+    if padding > 0:
+        image = np.pad(image, padding, mode='constant', constant_values=0)
+    
+    H, W = image.shape
+    KH, KW = kernel.shape
+    
+    out_H = (H - KH) // stride + 1
+    out_W = (W - KW) // stride + 1
+    
+    output = np.zeros((out_H, out_W))
+    
+    for i in range(out_H):
+        for j in range(out_W):
+            h_start = i * stride
+            w_start = j * stride
+            patch = image[h_start:h_start+KH, w_start:w_start+KW]
+            output[i, j] = np.sum(patch * kernel)
+    
+    return output
 
 
 def max_pool2d(image, pool_size=2, stride=2):
     """Implement 2D max pooling"""
     # TODO: Implement this
-    pass
+    
+    H, W = image.shape
+    out_H = (H - pool_size) // stride + 1
+    out_W = (W - pool_size) // stride + 1
+    output = np.zeros((out_H, out_W))
+    for i in range(out_H):
+        for j in range(out_W):
+            h_start = i * stride
+            w_start = j * stride
+            patch = image[h_start:h_start+pool_size, w_start:w_start+pool_size]
+            output[i, j] = np.max(patch)
+    return output
 
 
 def avg_pool2d(image, pool_size=2, stride=2):
     """Implement 2D average pooling"""
     # TODO: Implement this
-    pass
+    H, W = image.shape
+    out_H = (H - pool_size) // stride + 1
+    out_W = (W - pool_size) // stride + 1
+    output = np.zeros((out_H, out_W))
+    for i in range(out_H):
+        for j in range(out_W):
+            h_start = i * stride
+            w_start = j * stride
+            patch = image[h_start:h_start+pool_size, w_start:w_start+pool_size]
+            output[i, j] = np.mean(patch)
+    return output

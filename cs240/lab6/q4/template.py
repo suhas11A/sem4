@@ -6,13 +6,19 @@ import numpy as np
 
 def normalize_dataset(X_train, X_val, X_test=None):
     """
-    Task: Standardize features using training statistics only.
-    Use (X - mean) / (std + 1e-8).
+    Standardize features using training statistics only.
     """
-    # TODO: Calculate mean and std of X_train
-    # TODO: Standardize X_train and X_val
-    # TODO: If X_test is provided, standardize it using X_train statistics
-    pass
+    mean = np.mean(X_train, axis=0)
+    std  = np.std(X_train, axis=0) + 1e-8
+
+    X_train_norm = (X_train - mean) / std
+    X_val_norm   = (X_val - mean) / std
+
+    if X_test is not None:
+        X_test_norm = (X_test - mean) / std
+        return X_train_norm, X_val_norm, X_test_norm
+
+    return X_train_norm, X_val_norm
 
 
 # =====================================================
@@ -21,9 +27,12 @@ def normalize_dataset(X_train, X_val, X_test=None):
 
 def weighted_rbf_kernel(X1, X2, w):
     """
-    Task 1: Implement weighted RBF kernel.
+    Compute weighted RBF kernel: K(x,z) = exp( - sum_k w_k (x_k - z_k)^2 )
     """
-    pass
+    # TODO 1: Implement weighted RBF kernel.
+    diff = X1[:, None, :] - X2[None, :, :]
+    dist = np.sum(w * (diff**2), axis=2)
+    return np.exp(-dist)
 
 
 # =====================================================
@@ -32,9 +41,12 @@ def weighted_rbf_kernel(X1, X2, w):
 
 def solve_alpha(K_train, y_train, lam):
     """
-    Task 3: Solve (K + λI) alpha = y. 
+    Solve (K + λI) alpha = y WITHOUT using matrix inverse.
     """
-    pass
+    # TODO 2: Use np.linalg.solve (NO inverse allowed)
+    n = K_train.shape[0]
+    A = K_train + lam * np.eye(n)
+    return np.linalg.solve(A, y_train)
 
 
 # =====================================================
@@ -43,10 +55,16 @@ def solve_alpha(K_train, y_train, lam):
 
 def compute_dK_dw(X1, X2, w):
     """
-    Task: Compute ∂K/∂w_k for each dimension k. 
+    Compute ∂K/∂w_k for each dimension k.
     """
-    # TODO: Implement the derivative of the kernel matrix wrt each weight w_k
-    pass
+    # TODO 3: Implement derivative: ∂K_ij / ∂w_k = - (x_ik - x_jk)^2 * K_ij
+    K = weighted_rbf_kernel(X1, X2, w)
+    diff_sq = (X1[:, None, :] - X2[None, :, :])**2
+    
+    dK_dw = []
+    for k in range(len(w)):
+        dK_dw.append(-diff_sq[:, :, k] * K)
+    return dK_dw
 
 
 # =====================================================
@@ -55,45 +73,66 @@ def compute_dK_dw(X1, X2, w):
 
 def compute_gradient(X_train, y_train, X_val, y_val, w, lam, gamma):
     """
-    Task 4: Implement the gradient of validation loss wrt w. 
+    Compute gradient of validation loss wrt w.
     """
-    # TODO: Construct K_train, K_val, and A = K_train + lam*I
-    # TODO: Compute dalpha/dw and dK_val/dw for each dimension
-    # TODO: Combine using the formula above to find grad_w
-    # TODO: Add L2 regularization contribution (gamma * w)
-    pass
+    K_train = weighted_rbf_kernel(X_train, X_train, w)
+    K_val   = weighted_rbf_kernel(X_val, X_train, w)
+    alpha   = solve_alpha(K_train, y_train, lam)
+
+    e = K_val @ alpha - y_val
+    A = K_train + lam * np.eye(len(X_train))
+
+    dK_train_dw = compute_dK_dw(X_train, X_train, w)
+    dK_val_dw   = compute_dK_dw(X_val, X_train, w)
+
+    d = len(w)
+    grad = np.zeros(d)
+
+    # TODO 4: Implement gradient formula
+    for k in range(d):
+        term1 = dK_val_dw[k] @ alpha
+        # term2 is the influence of w through alpha: K_val * (d alpha / dw)
+        term2 = K_val @ np.linalg.solve(A, dK_train_dw[k] @ alpha)
+        grad[k] = np.dot(e, term1 - term2)
+
+    # TODO 4b: Add L2 regularization contribution
+    grad += gamma * w
+    return grad
 
 
 # =====================================================
 # Gradient Descent Training
 # =====================================================
 
-def train_weighted_krr(X_train, y_train, X_val, y_val, lam=1e-1, gamma=1e-2, lr=0.1, max_iter=500):
+def train_weighted_krr(X_train, y_train, X_val, y_val, lam=1e-1, gamma=1e-3, lr=0.5, max_iter=800, eps=1e-6):
     """
-    Task 6: Perform gradient descent on w. 
-    """    
-    # TODO: Initialize weights w (e.g., np.ones(d))
-    
-    # TODO: Implement the Gradient Descent loop:
-    # 1. Compute grad_w using compute_gradient
-    # 2. Update weights
-    # 3. Enforce positivity for w after the update 
-    
-    # TODO: Return the learned weights w
-    pass
-
-
-# =====================================================
-# R² Utility
-# =====================================================
-
-def r2_score(y_true, y_pred):
+    Train weighted RBF kernel parameters w using gradient descent.
     """
-    Helper function for local testing.
-    """
-    ss_res = np.sum((y_true - y_pred)**2)
-    ss_tot = np.sum((y_true - np.mean(y_true))**2)
-    return 1 - ss_res / ss_tot
+    # TODO 0: Normalize datasets before training.
+    X_tr, X_v = normalize_dataset(X_train, X_val)
+
+    n, d = X_tr.shape
+    # Initialize weights to 1.0 for better stability
+    w = np.ones(d)
+
+    for it in range(max_iter):
+        grad = compute_gradient(X_tr, y_train, X_v, y_val, w, lam, gamma)
+        
+        # Stability fix: simple learning rate decay
+        curr_lr = lr / (1 + 0.05 * it)
+        
+        w = w - curr_lr * grad
+
+        # TODO 5: Enforce positivity constraint
+        w = np.maximum(1e-5, w)
+
+        if np.linalg.norm(grad) < 1e-4:
+            break
+
+        if it % 50 == 0:
+            print(f"Iteration {it}, grad norm = {np.linalg.norm(grad):.6f}")
+
+    return w
 
 # =====================================================
 # Example Usage

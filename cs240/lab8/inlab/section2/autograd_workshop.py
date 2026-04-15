@@ -77,10 +77,10 @@ def df_torch_scalar(x_val: float) -> float:
              accumulates dL/dx in x.grad.
     Step 4 – read x.grad.
     """
-    x = torch.tensor(x_val, dtype=torch.float64, requires_grad=True)
+    x = torch.tensor(x_val, dtype=torch.float64, requires_grad=True)  # ← key flag
     y = f_torch(x)
-    y.backward()
-    return x.grad.item()
+    y.backward()                    # ← PyTorch does the calculus
+    return x.grad.item()            # ← dL/dx at x_val
 
 
 def _df_torch_vectorised(xs: np.ndarray) -> np.ndarray:
@@ -96,14 +96,15 @@ def plot_2_1():
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 3.5))
 
+    # Left panel: f(x) itself
     axes[0].plot(xs, f_numpy(xs), lw=2, color="steelblue")
     axes[0].set_title(r"$f(x)=\sin(x^2)\,e^{-x}\,/\,(1+x^2)$")
     axes[0].set_xlabel("x")
 
-    axes[1].plot(xs, df_numpy(xs),             lw=3,
-                 label="NumPy hand-coded f′(x)", color="tomato")
-    axes[1].plot(xs, _df_torch_vectorised(xs), lw=2, linestyle="--",
-                 label="PyTorch autograd f′(x)", color="navy")
+    # Right panel: two derivative curves that should overlap
+    axes[1].plot(xs, df_numpy(xs),          lw=3,   label="NumPy hand-coded f′(x)", color="tomato")
+    axes[1].plot(xs, _df_torch_vectorised(xs), lw=2,
+                 linestyle="--", label="PyTorch autograd f′(x)", color="navy")
     axes[1].set_title("Derivative comparison — do the curves overlap?")
     axes[1].set_xlabel("x")
     axes[1].legend(fontsize=8)
@@ -144,7 +145,7 @@ def loss_numpy(w: np.ndarray, X: np.ndarray, y: np.ndarray) -> float:
     X : shape (N, D)
     y : shape (N,)   binary labels in {0, 1}
     """
-    y_hat = _sigmoid_np(X @ w)
+    y_hat = _sigmoid_np(X @ w)              # (N,)
     return float(np.mean((y_hat - y)**2))
 
 
@@ -160,9 +161,9 @@ def grad_loss_numpy(w: np.ndarray, X: np.ndarray, y: np.ndarray) -> np.ndarray:
 
         ∂L/∂w = (2/N) Xᵀ [ (s − y) ⊙ s ⊙ (1 − s) ]
     """
-    s     = _sigmoid_np(X @ w)
-    delta = (s - y) * s * (1.0 - s)
-    return (2.0 / len(y)) * (X.T @ delta)
+    s     = _sigmoid_np(X @ w)                      # (N,)
+    delta = (s - y) * s * (1.0 - s)                 # (N,)
+    return (2.0 / len(y)) * (X.T @ delta)           # (D,)
 
 
 # ── PyTorch skeleton (fill in the two TODOs) ──────────────────────────────────
@@ -177,9 +178,9 @@ def loss_and_grad_torch(
 
     Parameters
     ----------
-    w : shape (D,), dtype=float32, requires_grad=True  ← the caller sets this up
-    X : shape (N, D), dtype=float32
-    y : shape (N,),   dtype=float32
+    w : shape (D,), requires_grad=True  ← the caller sets this up
+    X : shape (N, D)
+    y : shape (N,)
 
     Returns
     -------
@@ -190,12 +191,12 @@ def loss_and_grad_torch(
     # ── TODO 1 ───────────────────────────────────────────────────────────────
     # Compute the loss L(w) in PyTorch.
     # Translate loss_numpy line-by-line: use torch.sigmoid and torch.mean.
-    # Store the result in `loss` (it should be a scalar tensor).
+    # Store the result in  `loss`  (it should be a scalar tensor).
     #
     # Hint: the forward code is ~2 lines, identical in structure to loss_numpy.
     # ─────────────────────────────────────────────────────────────────────────
-    loss = None  # replace this
-    raise NotImplementedError("TODO 1: compute the loss L(w) — see the docstring above")
+    y_hat = torch.sigmoid(X @ w)
+    loss = torch.mean((y_hat - y) ** 2)
     # ─────────────────────────────────────────────────────────────────────────
 
     # ── TODO 2 ───────────────────────────────────────────────────────────────
@@ -205,8 +206,10 @@ def loss_and_grad_torch(
     # (b) Call  loss.backward()
     # (c) Copy the gradient out:  grad = w.grad.clone()
     # ─────────────────────────────────────────────────────────────────────────
-    grad = None  # replace this
-    raise NotImplementedError("TODO 2: use autograd to get ∂L/∂w — see the docstring above")
+    if w.grad is not None:
+        w.grad.zero_()
+    loss.backward()
+    grad = w.grad.clone()
     # ─────────────────────────────────────────────────────────────────────────
 
     return loss, grad
@@ -223,7 +226,6 @@ def _make_synthetic(seed: int = 7, N: int = 60, D: int = 5):
     w   = (rng.standard_normal(D) * 0.1).astype(np.float32)
     return X, y, w
 
-
 def test_2_1_derivative_match():
     """
     Hand-coded NumPy derivative == PyTorch autograd derivative on a grid.
@@ -235,6 +237,7 @@ def test_2_1_derivative_match():
     assert np.allclose(df_np, df_pt, atol=1e-6), (
         "2.1 FAIL – NumPy gradient ≠ torch autograd gradient\n"
         f"  max |diff| = {np.abs(df_np - df_pt).max():.2e}"
+    
     )
     print("  ✓  test_2_1_derivative_match passed")
 
@@ -272,6 +275,7 @@ def test_2_2_gradient_match():
     ), (
         "2.2 FAIL – gradient mismatch\n"
         f"  max |diff| = {(grad_t - torch.tensor(grad_ref, dtype=torch.float32)).abs().max():.2e}"
+
     )
     print("  ✓  test_2_2_gradient_match passed")
 

@@ -13,7 +13,7 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
     """
     d_k = Q.size(-1)
     scores = torch.matmul(Q, K.transpose(-2,-1)) / math.sqrt(d_k)
-    scores = scores+scores.transpose(-1,-2)
+    scores = (scores+scores.transpose(-1,-2))/2
     attn = torch.softmax(scores, dim=-1)
     output = torch.matmul(attn, V)
     return output, attn

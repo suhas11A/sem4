@@ -1,103 +1,65 @@
 import numpy as np
 from cvxopt import matrix, solvers
 
-# optional: silence solver output
+# suppress solver progress output
 solvers.options['show_progress'] = False
 
 
 class QPSVM:
     """
-    Support Vector Machine trained by solving the dual problem
-    using a quadratic programming solver.
-
-    Complete the TODO sections.
+    SVM trained via dual quadratic programming.
     """
 
     def __init__(self, C=1.0, gamma=0.5):
         self.C = C
         self.gamma = gamma
 
-        # learned parameters
         self.alpha = None
-
-        # training data
         self.X = None
         self.y = None
-
-        # support vector mask
         self.support_mask = None
 
-    # =========================================================
-    # RBF Kernel
-    # =========================================================
+    # --------------------------------------------------------
+    # RBF kernel
+    # --------------------------------------------------------
     def kernel(self, X, Z):
-        """
-        TODO:
-        Compute the RBF kernel matrix between X and Z.
+        X2 = np.sum(X**2, axis=1)[:, None]
+        Z2 = np.sum(Z**2, axis=1)[None, :]
+        dist = X2 + Z2 - 2 * X @ Z.T
+        return np.exp(-self.gamma * dist)
 
-        K(x, z) = exp(-gamma ||x - z||^2)
-        """
-        pass
-
-    # =========================================================
-    # Train using quadratic programming
-    # =========================================================
+    # --------------------------------------------------------
+    # Train using QP
+    # --------------------------------------------------------
     def fit(self, X, y):
-        """
-        TODO:
-        Solve the SVM dual problem using a QP solver.
-
-        Steps:
-        1. Store training data.
-        2. Compute the kernel (Gram) matrix.
-        3. Construct the QP matrices.
-        4. Call the solver.
-        5. Store alpha values.
-        6. Identify support vectors.
-        """
         self.X = X
         self.y = y.astype(float)
 
         n = X.shape[0]
+        K = self.kernel(X, X)
 
-        # ---- TODO: compute Gram matrix ----
-        K = None
+        # QP matrices
+        P = matrix(np.outer(self.y, self.y) * K)
+        q = matrix(-np.ones(n))
 
-        # ---- TODO: construct QP matrices ----
-        # P, q, G, h, A, b
+        G = matrix(np.vstack((-np.eye(n), np.eye(n))))
+        h = matrix(np.hstack((np.zeros(n), np.ones(n) * self.C)))
 
-        P = None
-        q = None
-        G = None
-        h = None
-        A = None
-        b = None
+        A = matrix(self.y.reshape(1, -1))
+        b = matrix(0.0)
 
-        # ---- TODO: solve quadratic program ----
-        solution = None
+        solution = solvers.qp(P, q, G, h, A, b)
+        self.alpha = np.array(solution['x']).flatten()
 
-        # ---- TODO: extract alpha values ----
-        self.alpha = None
-
-        # ---- TODO: identify support vectors ----
-        self.support_mask = None
-
+        self.support_mask = self.alpha > 1e-5
         return self
 
-    # =========================================================
+    # --------------------------------------------------------
     # Decision function
-    # =========================================================
+    # --------------------------------------------------------
     def project(self, X):
-        """
-        TODO:
-        Compute decision values for input points.
-
-        f(x) = sum_i alpha_i y_i K(x_i, x)
-        """
-        pass
+        K = self.kernel(self.X, X)
+        return (self.alpha * self.y) @ K
 
     def predict(self, X):
-        """
-        Return class predictions in {-1, +1}.
-        """
         return np.sign(self.project(X))

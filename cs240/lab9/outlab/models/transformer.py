@@ -11,18 +11,32 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
     4. Apply softmax
     5. Multiply with V
     """
-    raise NotImplementedError('Function is not implemented')
+    d_k = Q.size(-1)
+    scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(d_k)
+
+    # comment these 2 lines to see how the performance and attention maps changes when masking is not applied
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, -1e9)
+
+    attn = torch.softmax(scores, dim=-1)
+    output = torch.matmul(attn, V)
+    return output, attn
 
 class SinusoidalPE(nn.Module):
     def __init__(self, d_model, max_len=5000):
         super().__init__()
-        # TODO: Create positional embeddings that you can then use in `forward()`
-        raise NotImplementedError('Function is not implemented')
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
 
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+
+        self.pe = pe.unsqueeze(0)  # (1, max_len, d_model)
 
     def forward(self, x):
         # TODO: Return positional encoding matching sequence length
-        raise NotImplementedError('Function is not implemented')
+        return self.pe[:, :x.size(1)].to(x.device)
 
 
 class MultiHeadAttention(nn.Module):
@@ -34,10 +48,12 @@ class MultiHeadAttention(nn.Module):
         self.d_k = d_model // num_heads
 
         # TODO: Define linear layers for Q, K, V
+        self.q_linear = nn.Linear(d_model, d_model)
+        self.k_linear = nn.Linear(d_model, d_model)
+        self.v_linear = nn.Linear(d_model, d_model)
 
         # TODO: Output projection
-
-        raise NotImplementedError('Function is not implemented')
+        self.out = nn.Linear(d_model, d_model)
 
     def forward(self, x):
         """
@@ -48,20 +64,38 @@ class MultiHeadAttention(nn.Module):
         4. Concatenate heads
         5. Final linear layer
         """
-        raise NotImplementedError('Function is not implemented')
+        B, T, D = x.shape
+
+        Q = self.q_linear(x).view(B, T, self.num_heads, self.d_k).transpose(1, 2)
+        K = self.k_linear(x).view(B, T, self.num_heads, self.d_k).transpose(1, 2)
+        V = self.v_linear(x).view(B, T, self.num_heads, self.d_k).transpose(1, 2)
+
+        mask = torch.tril(torch.ones(T, T)).to(x.device)
+        mask = mask.unsqueeze(0).unsqueeze(0)  # (1,1,T,T)
+
+        out, attn = scaled_dot_product_attention(Q, K, V, mask)
+
+        out = out.transpose(1, 2).contiguous().view(B, T, D)
+        return self.out(out), attn
 
 
 class TransformerEncoderBlock(nn.Module):
     def __init__(self, d_model, num_heads, d_ff):
         super().__init__()
 
-        # TODO: Define Multi-head attention module
+        # TODO: Multi-head attention
+        self.attn = MultiHeadAttention(d_model, num_heads)
 
-        # TODO: Define LayerNorms
+        # TODO: LayerNorms
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
 
-        # TODO: Define Feedforward network
-
-        raise NotImplementedError('Function is not implemented')
+        # TODO: Feedforward network
+        self.ff = nn.Sequential(
+            nn.Linear(d_model, d_ff),
+            nn.ReLU(),
+            nn.Linear(d_ff, d_model)
+        )
 
     def forward(self, x):
         """
@@ -69,23 +103,30 @@ class TransformerEncoderBlock(nn.Module):
         1. Attention + residual + norm
         2. FFN + residual + norm
         """
-        raise NotImplementedError('Function is not implemented')
+        attn_out, attn = self.attn(self.norm1(x))
+        x = x + attn_out
+        x = x + self.ff(self.norm2(x))
+        return x, attn
 
 
 class TransformerModel(nn.Module):
     def __init__(self, d_model=64, num_heads=2, num_layers=3, max_len=256, pe_type='sin'):
         super().__init__()
 
-        # TODO: Create Token embedding
-        # assuming max tokens will be 10 (i.e. digits 0 to 9)
+        # TODO: Token embedding
+        self.embedding = nn.Embedding(10, d_model)
 
         # TODO: Positional encoding selection
+        self.pe = SinusoidalPE(d_model, max_len) if pe_type == 'sin' else lambda x: 0
 
         # TODO: Stack encoder blocks
+        self.layers = nn.ModuleList([
+            TransformerEncoderBlock(d_model, num_heads, d_model)
+            for _ in range(num_layers)
+        ])
 
-        # TODO: Output projection (Map to Prefix-Sum vocab)
-        # Assuming output vocab size is 451 (max possible sum + padding)
-
+        # TODO: Output layer
+        self.fc = nn.Linear(d_model, 451)  # vocab size of output (digits + padding)
 
     def forward(self, x, return_attn=False):
         """
@@ -94,8 +135,19 @@ class TransformerModel(nn.Module):
         2. Add positional encoding
         3. Pass through encoder layers
         4. Project to vocab
-
-        NOTE: If `return_attn` is true, you must return the `output` and the `attention scores`, if not return only the `output`.
         """
-        raise NotImplementedError('Function is not implemented')
+        x = self.embedding(x)
+        x = x + self.pe(x)
+        if return_attn:
+            attn_maps = []
+
+        for layer in self.layers:
+            x, attn = layer(x)
+            if return_attn:
+                attn_maps.append(attn)
+
+        if return_attn:
+            return self.fc(x), attn_maps
+        else:
+            return self.fc(x)
         

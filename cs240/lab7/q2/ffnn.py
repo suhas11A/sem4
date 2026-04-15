@@ -1,4 +1,4 @@
-import numpy as np # type: ignore
+import numpy as np
 
 class FeedForwardNN:
     """
@@ -40,7 +40,14 @@ class FeedForwardNN:
         """
         np.random.seed(42)
         # --- YOUR CODE HERE ---
-        pass
+        for l in range(self.L):
+            fan_in = self.layer_sizes[l]
+            fan_out = self.layer_sizes[l + 1]
+            # He initialization (good for ReLU); works fine for sigmoid too
+            W = np.random.randn(fan_in, fan_out) * np.sqrt(2.0 / fan_in)
+            b = np.zeros((1, fan_out))
+            self.weights.append(W)
+            self.biases.append(b)
         # ----------------------
 
     def relu(self, z):
@@ -54,7 +61,7 @@ class FeedForwardNN:
             numpy.ndarray: Activated values.
         """
         # --- YOUR CODE HERE ---
-        pass
+        return np.maximum(0, z)
         # ----------------------
 
     def relu_derivative(self, z):
@@ -68,7 +75,7 @@ class FeedForwardNN:
             numpy.ndarray: Element-wise derivative values.
         """
         # --- YOUR CODE HERE ---
-        pass
+        return (z > 0).astype(float)
         # ----------------------
 
     def sigmoid(self, z):
@@ -82,7 +89,9 @@ class FeedForwardNN:
             numpy.ndarray: Activated values.
         """
         # --- YOUR CODE HERE ---
-        pass
+        # Clip to avoid overflow in exp
+        z_clipped = np.clip(z, -500, 500)
+        return 1.0 / (1.0 + np.exp(-z_clipped))
         # ----------------------
 
     def sigmoid_derivative(self, z):
@@ -96,7 +105,8 @@ class FeedForwardNN:
             numpy.ndarray: Element-wise derivative values.
         """
         # --- YOUR CODE HERE ---
-        pass
+        s = self.sigmoid(z)
+        return s * (1.0 - s)
         # ----------------------
 
     def activate(self, z, activation_type):
@@ -129,7 +139,15 @@ class FeedForwardNN:
         self.pre_activations = []
 
         # --- YOUR CODE HERE ---
-        pass
+        for l in range(self.L):
+            z = self.activations[l] @ self.weights[l] + self.biases[l]
+            self.pre_activations.append(z)
+            # Use hidden activation for all layers except the last
+            act_type = self.output_act if l == self.L - 1 else self.hidden_act
+            a = self.activate(z, act_type)
+            self.activations.append(a)
+
+        return self.activations[-1]
         # ----------------------
 
     def compute_loss(self, output, y):
@@ -144,7 +162,14 @@ class FeedForwardNN:
             float: Scalar loss value.
         """
         # --- YOUR CODE HERE ---
-        pass
+        m = y.shape[0]
+        if self.loss_type == 'mse':
+            return np.sum((output - y) ** 2) / (2 * m)
+        elif self.loss_type == 'bce':
+            output_clipped = np.clip(output, 1e-12, 1 - 1e-12)
+            return -np.sum(y * np.log(output_clipped) + (1 - y) * np.log(1 - output_clipped)) / m
+        else:
+            raise ValueError("Unsupported loss type")
         # ----------------------
 
     def backward_propagation(self, y):
@@ -162,7 +187,28 @@ class FeedForwardNN:
         grad_biases  = [np.zeros_like(b) for b in self.biases]
 
         # --- YOUR CODE HERE ---
-        pass
+        m = y.shape[0]
+        y_hat = self.activations[-1]
+
+        # Output delta: works for MSE+linear and BCE+sigmoid
+        delta = (y_hat - y )/m # shape (m, output_size)
+
+        for l in reversed(range(self.L)):
+            grad_weights[l] = (self.activations[l].T @ delta)
+            grad_biases[l]  = np.sum(delta, axis=0, keepdims=True)
+
+            if l > 0:
+                # Backpropagate delta to previous layer
+                delta = (delta @ self.weights[l].T)
+                # Apply derivative of hidden activation at layer l-1
+                act_type = self.hidden_act  # all non-output layers use hidden_act
+                if act_type == 'relu':
+                    delta = delta * self.relu_derivative(self.pre_activations[l - 1])
+                elif act_type == 'sigmoid':
+                    delta = delta * self.sigmoid_derivative(self.pre_activations[l - 1])
+                # 'linear' derivative is 1, no change needed
+
+        return grad_weights, grad_biases
         # ----------------------
 
     def update_parameters(self, grad_weights, grad_biases):
@@ -174,7 +220,9 @@ class FeedForwardNN:
             grad_biases  (list of numpy.ndarray): Bias gradients per layer.
         """
         # --- YOUR CODE HERE ---
-        pass
+        for l in range(self.L):
+            self.weights[l] -= self.learning_rate * grad_weights[l]
+            self.biases[l]  -= self.learning_rate * grad_biases[l]
         # ----------------------
 
 
@@ -189,7 +237,17 @@ class FeedForwardNN:
             print_freq (int): Frequency of printing loss.
         """
         # --- YOUR CODE HERE ---
-        pass
+        costs = []
+        for epoch in range(1, epochs + 1):
+            output = self.forward_propagation(X)
+            loss = self.compute_loss(output, y)
+            grad_weights, grad_biases = self.backward_propagation(y)
+            self.update_parameters(grad_weights, grad_biases)
+
+            if epoch % print_freq == 0:
+                print(f"Epoch {epoch}/{epochs} — Loss: {loss:.6f}")
+                costs.append(loss)
+        return costs
         # ----------------------
 
     def predict(self, X, threshold=0.5):
@@ -204,5 +262,9 @@ class FeedForwardNN:
             numpy.ndarray: Predicted labels or regression outputs.
         """
         # --- YOUR CODE HERE ---
-        pass
+        output = self.forward_propagation(X)
+        if self.output_act == 'sigmoid':
+            return (output >= threshold).astype(int)
+        else:
+            return output
         # ----------------------

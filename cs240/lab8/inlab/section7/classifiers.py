@@ -3,6 +3,9 @@ Section 7 – Everything In One Frame
 =====================================
 classifiers.py
 
+  7.1  ExoplanetClassifier(nn.Module)     [TODO — graded]
+  7.2  standardize(X_train, X_val)        [TODO — graded]
+  7.3  compute_accuracy(logits, labels)   [TODO — graded]
   7.4  train_classifier(...)              [TODO — graded]
 
 Run:
@@ -143,7 +146,7 @@ def make_batches(X: torch.Tensor, y: torch.Tensor, batch_size: int):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 7.1 — ExoplanetClassifier                               [GIVEN]
+# 7.1 — ExoplanetClassifier                               [TODO — graded]
 # ════════════════════════════════════════════════════════════════════════════
 
 class ExoplanetClassifier(nn.Module):
@@ -193,7 +196,7 @@ class ExoplanetClassifier(nn.Module):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 7.2 — standardize                                       [GIVEN]
+# 7.2 — standardize                                       [TODO — graded]
 # ════════════════════════════════════════════════════════════════════════════
 
 def standardize(
@@ -231,7 +234,7 @@ def standardize(
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# 7.3 — compute_accuracy                                  [GIVEN]
+# 7.3 — compute_accuracy                                  [TODO — graded]
 # ════════════════════════════════════════════════════════════════════════════
 
 def compute_accuracy(
@@ -268,7 +271,6 @@ def compute_accuracy(
     return accuracy
 
 
-
 # ════════════════════════════════════════════════════════════════════════════
 # 7.4 — train_classifier                                  [TODO — graded]
 # ════════════════════════════════════════════════════════════════════════════
@@ -289,7 +291,7 @@ def train_classifier(
     Steps to implement
     ──────────────────
     1. Call standardize(X_train, X_val) to get normalised arrays.
-    2. Convert all four arrays to float32 torch tensors. instantiate new tensors using torch.tensor(..., dtype=torch.float32), do not modify the existing ones.
+    2. Convert all four arrays to float32 torch tensors.
     3. Create the loss function: nn.BCEWithLogitsLoss()
        Create the optimiser: optim.Adam(model.parameters(), lr=lr)
        Ignore the LR scheduler, we spoke about in the previous section — it's not required here.
@@ -319,37 +321,41 @@ def train_classifier(
     train_losses   : list of length num_epochs, mean batch loss per epoch
     val_accuracies : list of length num_epochs, validation accuracy per epoch
     """
-    # ── TODO 7.4 ─────────────────────────────────────────────────────────────
     X_tr, X_v = standardize(X_train, X_val)
-    X_tr = torch.tensor(X_tr, dtype = torch.float32)
-    y_tr = torch.tensor(y_train, dtype = torch.float32)
-    X_v = torch.tensor(X_v, dtype = torch.float32)
-    y_v = torch.tensor(y_val, dtype = torch.float32)
-    loss_function = nn.BCEWithLogitsLoss()
+
+    X_tr = torch.tensor(X_tr, dtype=torch.float32)
+    y_tr = torch.tensor(y_train, dtype=torch.float32)
+    X_v = torch.tensor(X_v, dtype=torch.float32)
+    y_v = torch.tensor(y_val, dtype=torch.float32)
+
+    loss_fn = nn.BCEWithLogitsLoss()
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+
     train_losses = []
     val_accuracies = []
-    loss = torch.tensor(0.0)
-    optimizer = optim.Adam(model.parameters(), lr=lr)
-    for epoch in range(num_epochs):
-        tot_loss = 0
-        i = 0
+
+    for _ in range(num_epochs):
+        batch_losses = []
+
         for X_batch, y_batch in make_batches(X_tr, y_tr, batch_size):
-            i+=1
-            prediction = model.forward(X_batch)
-            loss = loss_function(prediction, y_batch)
-            tot_loss+=loss
+            logits = model(X_batch)
+            loss = loss_fn(logits, y_batch)
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        
-        train_losses.append(tot_loss.item()/i)
-        
+
+            batch_losses.append(loss.item())
+
+        train_losses.append(float(np.mean(batch_losses)))
+
         with torch.no_grad():
-            prediction = model.forward(X_v)
-            olaa = compute_accuracy(prediction, y_v)
-            val_accuracies.append(olaa)
+            val_logits = model(X_v)
+            val_acc = compute_accuracy(val_logits, y_v)
+            val_accuracies.append(val_acc)
 
     return model, train_losses, val_accuracies
+
 
 # ════════════════════════════════════════════════════════════════════════════
 # PROVIDED SCAFFOLDING — do not modify

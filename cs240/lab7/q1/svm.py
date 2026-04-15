@@ -155,16 +155,44 @@ def normalized_rbf_kernel(X_train, X_test, gamma=0.5):
 # PART C — LEARNABLE KERNEL FUNCTIONS (ONLY DO THIS IF YOU FINISH PARTS A AND B, AS THIS MIGHT TAKE QUITE SOME TIME)
 # ============================================================
 
-def get_feature(X):
-    n,p = X.shape
-    a = np.ones((n,p+p**2))
-    a[:,0:p] = X
-    counter = 0
+def poly_features(X, degree=2):
+    n, p = X.shape
+    feats = [X]
     for i in range(p):
-        for j in range(p):
-            a[:,p+counter] = X[:,i]*X[:,j]
-            counter+=1
-    return (a-np.mean(a, axis=0))/np.std(a, axis=0)
+        for j in range(i, p):
+            prod = (X[:, i] * X[:, j]).reshape(n, 1)
+            feats.append(prod)
+    return np.hstack(feats)
+
+
+def contrastive_grad(w, Phi, y, margin, reg, max_pairs=3000):
+    n = len(y)
+
+    Phi_w = Phi * w
+
+    ii, jj = np.triu_indices(n, k=1)
+
+    if len(ii) > max_pairs:
+        idx = np.random.choice(len(ii), max_pairs, replace=False)
+        ii = ii[idx]
+        jj = jj[idx]
+
+    P = len(ii)
+
+    delta = Phi_w[ii] - Phi_w[jj]
+    d_ij = np.sum(delta**2, axis=1)
+
+    dphi = Phi[ii] - Phi[jj]
+
+    same = (y[ii] == y[jj]).astype(float)
+    hinge = (d_ij < margin).astype(float)
+
+    coeff = (same - (1 - same) * hinge) * (2.0 / P)
+
+    grad = (coeff[:, None] * delta * dphi).sum(axis=0)
+    grad += 2.0 * reg * w
+
+    return grad
 
 
 def learnable_kernel(X_train, X_test, y_train):
@@ -185,57 +213,35 @@ def learnable_kernel(X_train, X_test, y_train):
             - K_test (np.ndarray): Learned kernel matrix for test vs training data, shape (M, N).
             - C (float): The regularization parameter to use for the SVM model (defaults to 1.0).
     """
-    X_test = get_feature(X_test)
-    X_train = get_feature(X_train)
 
-    a,b = linear_kernel(X_train, X_test)
-    
-    C = 100
-    m = X_test[1]*2
+    degree = 2
+    lr = 0.25
+    reg = 0.005
+    iterations = 500
+    margin = 5
 
-    X_train_1 = X_train[y_train==1]
-    X_train_0 = X_train[y_train==-1]
-    qq = np.abs((X_train_1[:,:,None] - np.transpose(X_train_1[:,:,None], (2,1,0))))
-    ww = np.abs((X_train_0[:,:,None] - np.transpose(X_train_0[:,:,None], (2,1,0))))
-    qq = np.sum(qq, axis=2)
-    qq = np.sum(qq, axis=0)
-    ww = np.sum(ww, axis=2)
-    ww = np.sum(ww, axis=0)
-    aa = qq+ww
-    bb = np.abs((X_train_0[:,:,None] - np.transpose(X_train_1[:,:,None], (2,1,0))))
-    bb = np.sum(bb, axis=2)
-    bb = np.sum(bb, axis=0)
+    mean = np.mean(X_train, axis=0)
+    std = np.std(X_train, axis=0) + 1e-8
 
-    aa = aa.reshape(-1,)
-    bb = bb.reshape(-1,)
-    mask = (2*C/(bb-aa) > m/bb)
-    w = 2*C/(bb-aa)
-    w[mask] = (m/bb)[mask]
+    X_train_scaled = (X_train - mean) / std
+    X_test_scaled = (X_test - mean) / std
 
-    w = w.reshape(1,-1)
-    # print(w)
+    Phi_train = poly_features(X_train_scaled, degree)
+    Phi_test = poly_features(X_test_scaled, degree)
 
-    X_train = w*X_train
-    X_test = w*X_test
-    ola1 = X_train@(X_train.T)
-    ola2 = X_test@(X_train.T)
+    w = np.ones(Phi_train.shape[1])
 
-    return a, b, 1.3
+    for _ in range(iterations):
+        grad = contrastive_grad(w, Phi_train, y_train, margin, reg)
+        w = w - lr * grad
+        w = np.clip(w, 1e-6, None)
 
+    Phi_train_w = Phi_train * w
+    Phi_test_w = Phi_test * w
 
-# ============================================================
-# OPTIONAL
-# ============================================================
+    K_train = Phi_train_w @ Phi_train_w.T
+    K_test = Phi_test_w @ Phi_train_w.T
 
-def plot(X, y):
-    """
-    Plots the dataset or SVM decision boundaries.
+    C = 1.0
 
-    Args:
-        X (np.ndarray): Data array of shape (N, P).
-        y (np.ndarray): Labels array of shape (N,).
-
-    Returns:
-        None
-    """
-    pass
+    return K_train, K_test, C

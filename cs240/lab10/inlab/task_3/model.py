@@ -18,9 +18,7 @@ class RNNCell(nn.Module):
         hidden_prev: (B, d_model)
         Returns: h_t (B, d_model)
         """
-        # TODO: implement this function
-        raise NotImplementedError("This function is incomplete")
-
+        return self.activation(self.W(hidden_prev) + self.U_b(x))
 
 class Encoder(nn.Module):
     def __init__(self, input_vocab, d_model):
@@ -35,9 +33,17 @@ class Encoder(nn.Module):
         x: (B, T)
         Returns: H (B, T, d_model)
         """
-        # TODO: implement this function
-        raise NotImplementedError("This function is incomplete")
+        B, T = x.shape
+        x_emb = self.embedding(x)
+
+        # Forward Pass
+        h_fwd = torch.zeros(B, self.d_model).to(x.device)
+        fwd_states = []
+        for t in range(T):
+            h_fwd = self.fwd_cell(x_emb[:, t, :], h_fwd)
+            fwd_states.append(h_fwd)
         
+        return torch.stack(fwd_states, dim=1)
 
 class Attention(nn.Module):
     def __init__(self, d_model):
@@ -53,8 +59,21 @@ class Attention(nn.Module):
         H: (B, T, d_model) - All encoder states
         Returns: ct (B, d_model), alpha (B, T)
         """
-        # TODO: implement this function
-        raise NotImplementedError("This function is incomplete")
+        B, T, _ = H.shape
+        
+        # Project Query and Keys
+        q = self.Wq(query_ht).unsqueeze(1)
+        k = self.Wk(H)                   
+        
+        # Energy score: e = v * tanh(q + k)
+        energy = torch.tanh(q + k)        
+        e = self.va(energy).squeeze(2)     
+        
+        alpha = F.softmax(e, dim=1)
+        
+        # Context vector: (B, 1, T) @ (B, T, 2*d) -> (B, 2*d)
+        ct = torch.bmm(alpha.unsqueeze(1), H).squeeze(1)
+        return ct, alpha
 
 class Decoder(nn.Module):
     def __init__(self, output_vocab, d_model):
@@ -62,11 +81,13 @@ class Decoder(nn.Module):
         self.d_model = d_model
         self.attention = Attention(d_model)
         
+        # used for s_t = tanh(Ws * s_{t-1} + Wc * c_t + b)
         self.Ws = nn.Linear(d_model, d_model, bias=False)
-        self.Wc_b = nn.Linear(d_model, d_model, bias=True) # Bias b goes here
+        self.Wc_b = nn.Linear(d_model, d_model, bias=True)
         
+        # used for P(y_t) = Softmax(V * s_t + M * c_t + c)
         self.V = nn.Linear(d_model, output_vocab, bias=False)
-        self.M_c = nn.Linear(d_model, output_vocab, bias=True) # Bias c goes here
+        self.M_c = nn.Linear(d_model, output_vocab, bias=True)
 
     def forward(self, H, return_attention=False):
         """
@@ -74,8 +95,37 @@ class Decoder(nn.Module):
         H: (B, T, d_model) - Encoder memory bank
         Returns: logits (B, T, output_vocab), [Optional] attention (B, T, T) [note: do not apply softmax, since that is handled by the loss function internally]
         """
-        # TODO: implement this function
-        raise NotImplementedError("This function is incomplete")
+        B, T, _ = H.shape
+        device = H.device
+        
+        # Initial decoder state s_0
+        s_t = torch.zeros(B, self.d_model).to(device)
+        
+        all_logits = []
+        all_attention = []
+
+        for t in range(T):
+            # Positional Anchor from Encoder
+            h_t_enc = H[:, t, :]
+            
+            # Attention Mechanism
+            ct, alpha = self.attention(h_t_enc, H)
+            
+            # state update s_t = tanh(Ws(s_{t-1}) + Wc(ct) + b)
+            s_t = torch.tanh(self.Ws(s_t) + self.Wc_b(ct))
+            
+            # Output Projection V*s_t + M*c_t + c
+            logits = self.V(s_t) + self.M_c(ct)
+            
+            all_logits.append(logits)
+            if return_attention:
+                all_attention.append(alpha)
+
+        logits_stack = torch.stack(all_logits, dim=1)
+        
+        if return_attention:
+            return logits_stack, torch.stack(all_attention, dim=1)
+        return logits_stack
 
 class RNNAttentionModel(nn.Module):
     def __init__(self, K, d_model=128):
@@ -91,5 +141,9 @@ class RNNAttentionModel(nn.Module):
         Full Forward Pass: Encoder -> Decoder
         x: (B, T)
         """
-        # TODO: implement this function
-        raise NotImplementedError("This function is incomplete")
+
+        # Encode the input sequence into memory H
+        H = self.encoder(x)
+        
+        # Delegate the entire decoding process to the Decoder class
+        return self.decoder(H, return_attention=return_attention)

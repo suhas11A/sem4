@@ -3,9 +3,9 @@ import numpy as np
 
 class SMO_SVM:
     """
-    Support Vector Machine trained using Sequential Minimal Optimization (SMO).
+    Support Vector Machine trained using Sequential Minimal Optimization.
 
-    Complete the TODO sections.
+    Students must complete TODO sections.
     """
 
     def __init__(self, C=1.0, gamma=0.5, tol=1e-3, max_passes=5):
@@ -24,33 +24,26 @@ class SMO_SVM:
         # kernel matrix
         self.K = None
 
-        # error cache
+        # error cache (stored for entire training)
         self.errors = None
 
     # =========================================================
-    # RBF Kernel
+    # RBF Kernel (vectorized)
     # =========================================================
     def kernel(self, X, Z):
         """
-        TODO:
-        Compute the RBF kernel matrix
-
-            K(x,z) = exp(-gamma ||x - z||^2)
-
-        Hint:
-            Use vectorized distance computation.
+        TODO: Compute RBF kernel matrix.
         """
-        pass
+        X2 = np.sum(X**2, axis=1)[:, None]
+        Z2 = np.sum(Z**2, axis=1)[None, :]
+        dist = X2 + Z2 - 2 * X @ Z.T
+        return np.exp(-self.gamma * dist)
 
     # =========================================================
     # Decision function
     # =========================================================
     def decision_function(self, i):
-        """
-        TODO:
-        Compute f(x_i) = sum_j alpha_j y_j K(x_j, x_i)
-        """
-        pass
+        return np.sum(self.alpha * self.y * self.K[:, i])
 
     # =========================================================
     # Select second multiplier (Platt heuristic)
@@ -58,14 +51,22 @@ class SMO_SVM:
     def select_j(self, i, Ei):
         """
         TODO:
-        Choose j ≠ i that maximizes |Ei - Ej|.
-
-        Steps:
-        1. Consider non-bound multipliers (0 < alpha < C).
-        2. Choose index maximizing |Ei - Ej|.
-        3. If none found, choose random j ≠ i.
+        Choose j maximizing |Ei - Ej|
+        Prefer non-bound multipliers.
         """
-        pass
+
+        non_bound = np.where((self.alpha > 0) & (self.alpha < self.C))[0]
+
+        if len(non_bound) > 1:
+            j = non_bound[np.argmax(np.abs(self.errors[non_bound] - Ei))]
+            if j != i:
+                return j
+
+        # fallback random selection
+        j = np.random.randint(len(self.alpha))
+        while j == i:
+            j = np.random.randint(len(self.alpha))
+        return j
 
     # =========================================================
     # Training using SMO
@@ -76,15 +77,11 @@ class SMO_SVM:
 
         n = X.shape[0]
 
-        # TODO: initialize multipliers
-        self.alpha = None
+        self.alpha = np.zeros(n)
+        self.K = self.kernel(X, X)
 
-        # TODO: compute kernel matrix
-        self.K = None
-
-        # TODO: initialize error cache
-        # hint: initial f(x)=0 ⇒ E_i = -y_i
-        self.errors = None
+        # initialize error cache: f(x)=0 ⇒ E_i = -y_i
+        self.errors = -self.y.copy()
 
         passes = 0
 
@@ -92,59 +89,53 @@ class SMO_SVM:
             num_changed = 0
 
             for i in range(n):
+                Ei = self.errors[i]
 
-                # TODO: read error Ei
-                Ei = None
+                # KKT violation check
+                if (self.y[i]*Ei < -self.tol and self.alpha[i] < self.C) or \
+                   (self.y[i]*Ei > self.tol and self.alpha[i] > 0):
 
-                # =================================================
-                # TODO: Check KKT violation
-                # =================================================
-                violates = False
+                    j = self.select_j(i, Ei)
+                    Ej = self.errors[j]
 
-                if not violates:
-                    continue
+                    ai_old, aj_old = self.alpha[i], self.alpha[j]
 
-                # TODO: select j
-                j = None
+                    # compute bounds
+                    if self.y[i] != self.y[j]:
+                        L = max(0, aj_old - ai_old)
+                        H = min(self.C, self.C + aj_old - ai_old)
+                    else:
+                        L = max(0, ai_old + aj_old - self.C)
+                        H = min(self.C, ai_old + aj_old)
 
-                # TODO: compute Ej
-                Ej = None
+                    if L == H:
+                        continue
 
-                ai_old = None
-                aj_old = None
+                    # curvature
+                    eta = 2*self.K[i,j] - self.K[i,i] - self.K[j,j]
+                    if eta >= 0:
+                        continue
 
-                # =============================================
-                # TODO: compute bounds L and H
-                # =============================================
-                L, H = None, None
-                if L == H:
-                    continue
+                    # update alpha_j
+                    self.alpha[j] -= self.y[j]*(Ei - Ej)/eta
+                    self.alpha[j] = np.clip(self.alpha[j], L, H)
 
-                # =============================================
-                # TODO: compute eta (curvature)
-                # =============================================
-                eta = None
-                if eta >= 0:
-                    continue
+                    if abs(self.alpha[j] - aj_old) < 1e-5:
+                        continue
 
-                # =============================================
-                # TODO: update alpha_j and clip to [L,H]
-                # =============================================
+                    # update alpha_i
+                    self.alpha[i] += self.y[i]*self.y[j]*(aj_old - self.alpha[j])
 
-                # TODO: check if change is significant
-                changed = True
-                if not changed:
-                    continue
+                    # vectorized error cache update
+                    delta_i = self.alpha[i] - ai_old
+                    delta_j = self.alpha[j] - aj_old
 
-                # =============================================
-                # TODO: update alpha_i
-                # =============================================
+                    self.errors += (
+                        self.y[i] * delta_i * self.K[i] +
+                        self.y[j] * delta_j * self.K[j]
+                    )
 
-                # =============================================
-                # TODO: update error cache efficiently
-                # =============================================
-
-                num_changed += 1
+                    num_changed += 1
 
             if num_changed == 0:
                 passes += 1
@@ -158,16 +149,10 @@ class SMO_SVM:
     # =========================================================
     def project(self, X):
         """
-        TODO:
-        Compute decision values for new inputs:
-
-            f(x) = sum_i alpha_i y_i K(x_i, x)
+        TODO: compute decision values for new inputs
         """
-        pass
+        K = self.kernel(self.X, X)
+        return (self.alpha * self.y) @ K
 
     def predict(self, X):
-        """
-        TODO:
-        Compute predicted labels for new inputs:
-        """
-        pass
+        return np.sign(self.project(X))
