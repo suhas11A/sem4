@@ -93,6 +93,10 @@ def main():
 
     if len(learners) < 5:
         errors.append(f"FUSION_LEARNERS has {len(learners)} entries; need ≥ 5")
+
+    if len(learners) > 10:
+        errors.append(f"FUSION_LEARNERS has {len(learners)} entries; must be ≤ 10")
+
     else:
         # print(f"  PASS — {len(learners)} learners found")
         pass

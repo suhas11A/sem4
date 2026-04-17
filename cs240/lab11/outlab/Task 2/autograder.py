@@ -78,6 +78,9 @@ def main():
 
     if len(models) < 5:
         raise RuntimeError("At least 5 models required")
+    
+    if len(models) > 10:
+        raise RuntimeError("No more than 10 models allowed")
 
     for i, m in enumerate(models):
         if not hasattr(m, "predict"):
@@ -90,8 +93,8 @@ def main():
 
     diff, rank = prediction_diversity(all_preds)
 
-    # if diff < 1e-3 and rank < 0.02:
-    #     raise ValueError("Models are not sufficiently distinct")
+    if diff < 1e-3 and rank < 0.02:
+        raise ValueError("Models are not sufficiently distinct")
 
     # --------------------------------------------------
     # Fit KNORA-U

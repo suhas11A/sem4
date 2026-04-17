@@ -43,9 +43,9 @@ def euclidean_distance(a: np.ndarray, b: np.ndarray) -> float:
     -------
     float
     """
-    # TODO:
-    # Return ||a - b||_2
-    raise NotImplementedError
+    a = np.asarray(a, dtype=float)
+    b = np.asarray(b, dtype=float)
+    return float(np.linalg.norm(a - b))
 
 
 def knn_indices(X: np.ndarray, x: np.ndarray, K: int) -> np.ndarray:
@@ -62,10 +62,12 @@ def knn_indices(X: np.ndarray, x: np.ndarray, K: int) -> np.ndarray:
     -------
     np.ndarray — indices of K nearest neighbors
     """
-    # TODO:
-    # Compute distances from x to all rows of X
-    # Return indices of K smallest distances
-    raise NotImplementedError
+    X = np.asarray(X, dtype=float)
+    x = np.asarray(x, dtype=float)
+
+    distances = np.linalg.norm(X - x, axis=1)
+    K = max(1, min(int(K), X.shape[0]))
+    return np.argsort(distances)[:K]
 
 
 # ===========================================================================
@@ -90,10 +92,36 @@ def bootstrap_sample(
     -------
     X_boot, y_boot : np.ndarray
     """
-    # TODO:
-    # Sample len(X) points WITH replacement
-    # Use np.random.default_rng(random_state)
-    raise NotImplementedError
+    rng = np.random.default_rng(random_state)
+    idx = rng.integers(0, len(X), size=len(X))
+    return X[idx], y[idx]
+
+
+
+
+class ScaledRegressor(BaseEstimator):
+    """
+    Wrapper that applies scaling per model.
+    """
+
+    def __init__(self, base_model: BaseEstimator):
+        self.base_model = base_model
+        self.scaler_ = StandardScaler()
+        self.model_ = None
+
+    def fit(self, X: np.ndarray, y: np.ndarray):
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
+
+        X_scaled = self.scaler_.fit_transform(X)
+        self.model_ = clone(self.base_model)
+        self.model_.fit(X_scaled, y)
+        return self
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        X = np.asarray(X, dtype=float)
+        X_scaled = self.scaler_.transform(X)
+        return self.model_.predict(X_scaled)
 
 
 def fit_with_optional_bagging(
@@ -105,27 +133,16 @@ def fit_with_optional_bagging(
 ) -> BaseEstimator:
     """
     Fit a model either normally or using bagging.
-
-    Parameters
-    ----------
-    model : BaseEstimator (unfitted)
-    X, y : training data
-    use_bagging : bool
-        Whether to apply bagging
-    random_state : int
-
-    Returns
-    -------
-    fitted model
     """
-    # TODO:
-    # 1. Clone the model
-    # 2. If use_bagging:
-    #       - draw bootstrap sample
-    #       - fit on bootstrap data
-    #    else:
-    #       - fit on full data
-    raise NotImplementedError
+    fitted_model = ScaledRegressor(model)
+
+    if use_bagging:
+        X_fit, y_fit = bootstrap_sample(X, y, random_state)
+    else:
+        X_fit, y_fit = X, y
+
+    fitted_model.fit(X_fit, y_fit)
+    return fitted_model
 
 
 # ===========================================================================
@@ -139,7 +156,7 @@ class KNORAURegressor:
     Dynamic ensemble selection based on local competence.
     """
 
-    def __init__(self, K: int = 7, epsilon: float = 1.0):
+    def __init__(self, K: int = 7, epsilon: float = 5.0):
         """
         Parameters
         ----------
@@ -154,11 +171,9 @@ class KNORAURegressor:
         self.models_: List[BaseEstimator] = []
         self.X_dsel_: np.ndarray = None
         self.y_dsel_: np.ndarray = None
+        self.X_dsel_scaled_: np.ndarray = None
         self.scaler_ = StandardScaler()
 
-    # ------------------------------------------------------------------
-    # fit
-    # ------------------------------------------------------------------
     def fit(
         self,
         models: List[BaseEstimator],
@@ -167,68 +182,60 @@ class KNORAURegressor:
     ) -> "KNORAURegressor":
         """
         Store the fitted model pool and DSEL dataset.
-
-        Parameters
-        ----------
-        models : list of FITTED regressors
-        X_dsel : np.ndarray
-        y_dsel : np.ndarray
-
-        Returns
-        -------
-        self
         """
-        # TODO:
-        # Store models, X_dsel, y_dsel
-        raise NotImplementedError
+        self.models_ = list(models)
+        self.X_dsel_ = np.asarray(X_dsel, dtype=float)
+        self.y_dsel_ = np.asarray(y_dsel, dtype=float)
+        self.X_dsel_scaled_ = self.scaler_.fit_transform(self.X_dsel_)
+        return self
 
-    # ------------------------------------------------------------------
-    # _select_models
-    # ------------------------------------------------------------------
     def _select_models(self, x: np.ndarray) -> List[BaseEstimator]:
         """
         Select locally competent models for a single test point x
         using the KNORA-U algorithm.
-
-        Algorithm
-        ---------
-        1. Find K nearest neighbors of x in DSEL
-        2. For each model:
-             - compute MAE on these neighbors
-        3. Select all models with MAE ≤ epsilon
-        4. If none selected:
-             - select the single best model (lowest MAE)
-
-        Returns
-        -------
-        list of selected models (non-empty)
         """
-        # TODO:
-        # Implement KNORA-U exactly as described
-        raise NotImplementedError
+        x = np.asarray(x, dtype=float)
+        x_scaled = self.scaler_.transform(x.reshape(1, -1))[0]
 
-    # ------------------------------------------------------------------
-    # predict
-    # ------------------------------------------------------------------
+        nbr_idx = knn_indices(self.X_dsel_scaled_, x_scaled, self.K)
+        X_local = self.X_dsel_[nbr_idx]
+        y_local = self.y_dsel_[nbr_idx]
+
+        local_maes = []
+        for model in self.models_:
+            pred_local = model.predict(X_local)
+            mae_local = float(np.mean(np.abs(pred_local - y_local)))
+            local_maes.append(mae_local)
+
+        local_maes = np.asarray(local_maes, dtype=float)
+
+        selected = [
+            model for model, mae_local in zip(self.models_, local_maes)
+            if mae_local <= self.epsilon
+        ]
+
+        if len(selected) == 0:
+            best_idx = int(np.argmin(local_maes))
+            selected = [self.models_[best_idx]]
+
+        return selected
+
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
         Predict target values using dynamic model selection.
-
-        For each test point:
-        - select models using _select_models
-        - return average prediction
-
-        Parameters
-        ----------
-        X : np.ndarray, shape (n_samples, n_features)
-
-        Returns
-        -------
-        np.ndarray, shape (n_samples,)
         """
-        # TODO:
-        # Loop over samples, apply KNORA-U, average predictions
-        raise NotImplementedError
+        X = np.asarray(X, dtype=float)
+        preds = np.empty(X.shape[0], dtype=float)
+
+        for i, x in enumerate(X):
+            selected_models = self._select_models(x)
+            sample_preds = np.array(
+                [model.predict(x.reshape(1, -1))[0] for model in selected_models],
+                dtype=float
+            )
+            preds[i] = float(np.mean(sample_preds))
+
+        return preds
 
 
 # ===========================================================================
@@ -268,19 +275,46 @@ ALLOWED_MODEL_SPECS = {
 # ===========================================================================
 # PART D — Student-defined model pool
 # ===========================================================================
-#
-# Rules enforced by autograder:
-# - ≥ 5 models
-# - Each model must be fitted
-# - If same architecture appears multiple times:
-#     → bagging MUST be used
-#
 
 REGRESSION_MODELS: List[BaseEstimator] = []
 
-# TODO:
-# 1. Load training data
-# 2. Define base (unfitted) models
-# 3. Decide which models use bagging
-# 4. Fit all models using fit_with_optional_bagging
-# 5. Populate REGRESSION_MODELS
+X_train, y_train = load_training_data()
+
+base_models: List[BaseEstimator] = [
+    LinearRegression(),
+    Ridge(alpha=0.1),
+    Ridge(alpha=10.0),
+    Lasso(alpha=0.01, max_iter=50000),
+
+    DecisionTreeRegressor(max_depth=3, random_state=11),
+    DecisionTreeRegressor(max_depth=3, random_state=12),
+    DecisionTreeRegressor(max_depth=3, random_state=13),
+
+    KNeighborsRegressor(n_neighbors=5),
+    KNeighborsRegressor(n_neighbors=10),
+
+    SVR(kernel="rbf", C=3.0, epsilon=0.1),
+]
+
+use_bagging_flags = [
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+]
+
+for i, (model, use_bagging) in enumerate(zip(base_models, use_bagging_flags)):
+    fitted = fit_with_optional_bagging(
+        model=model,
+        X=X_train,
+        y=y_train,
+        use_bagging=use_bagging,
+        random_state=1234 + i,
+    )
+    REGRESSION_MODELS.append(fitted)

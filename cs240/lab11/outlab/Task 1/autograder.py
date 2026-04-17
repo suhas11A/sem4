@@ -107,6 +107,9 @@ def main():
 
     if len(learners) < 5:
         raise RuntimeError("At least 5 weak learners are required")
+    
+    if len(learners) > 10:
+        raise RuntimeError("No more than 10 weak learners are allowed")
 
     for i, model in enumerate(learners):
         if not isinstance(model, BaseEstimator):

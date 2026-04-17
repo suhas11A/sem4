@@ -5,7 +5,7 @@ Do NOT rename any class, method, or variable — the autograder depends on them.
 
 import numpy as np
 from typing import List
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, clone
 from sklearn.preprocessing import StandardScaler
 
 # ===========================================================================
@@ -34,8 +34,12 @@ def huber_loss(residuals: np.ndarray, delta: float) -> float:
     -------
     float — mean Huber loss across all residuals
     """
-    # TODO
-    raise NotImplementedError
+    residuals = np.asarray(residuals, dtype=float)
+    abs_r = np.abs(residuals)
+    quadratic = 0.5*(residuals**2)
+    linear = delta*abs_r - 0.5*(delta**2)
+    loss = np.where(abs_r<=delta, quadratic, linear)
+    return float(np.mean(loss))
 
 
 def huber_pseudo_residuals(y_true: np.ndarray,
@@ -48,8 +52,11 @@ def huber_pseudo_residuals(y_true: np.ndarray,
     -------
     np.ndarray — pseudo-residuals, same shape as y_true
     """
-    # TODO
-    raise NotImplementedError
+    y_true = np.asarray(y_true, dtype=float)
+    y_pred = np.asarray(y_pred, dtype=float)
+    residuals = y_true - y_pred
+    abs_r = np.abs(residuals)
+    return np.where(abs_r<=delta, residuals, delta * np.sign(residuals))
 
 
 # ===========================================================================
@@ -69,15 +76,12 @@ class GradientBoostingEnsemble:
         - F_m is the m-th weak learner fitted on pseudo-residuals
     """
 
-    def __init__(self, delta: float = 1.0):
+    def __init__(self, delta: float = 15.0):
         self.delta = delta
         self.models_: List[BaseEstimator] = []
         self.initial_prediction_: float = 0.0
-        self.scaler_ = StandardScaler()  # For feature scaling (if needed)
+        self.scaler_ = StandardScaler()
 
-    # ------------------------------------------------------------------
-    # B1 · learning_rate
-    # ------------------------------------------------------------------
     def learning_rate(self, m: int) -> float:
         """
         Return the coefficient (learning rate) for the m-th boosting stage.
@@ -86,12 +90,8 @@ class GradientBoostingEnsemble:
         -------
         float — positive learning rate for stage m
         """
-        # TODO
-        raise NotImplementedError
+        return 1.0
 
-    # ------------------------------------------------------------------
-    # B2 · _compute_pseudo_residuals
-    # ------------------------------------------------------------------
     def _compute_pseudo_residuals(self,
                                   y_true: np.ndarray,
                                   f_pred: np.ndarray) -> np.ndarray:
@@ -102,12 +102,8 @@ class GradientBoostingEnsemble:
         -------
         np.ndarray — pseudo-residuals
         """
-        # TODO
-        raise NotImplementedError
+        return huber_pseudo_residuals(y_true, f_pred, self.delta)
 
-    # ------------------------------------------------------------------
-    # B3 · fit
-    # ------------------------------------------------------------------
     def fit(self,
             weak_learners: List[BaseEstimator],
             X: np.ndarray,
@@ -118,17 +114,29 @@ class GradientBoostingEnsemble:
         Algorithm
         ---------
         1. Initialise f(x) = mean(y)
-        2. For each weak learner:
+        2. Scale X using StandardScaler
+        3. For each weak learner:
              a. Compute pseudo-residuals
              b. Fit learner on (X, residuals)
              c. Update ensemble prediction
         """
-        # TODO
-        raise NotImplementedError
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
 
-    # ------------------------------------------------------------------
-    # B4 · predict
-    # ------------------------------------------------------------------
+        self.models_ = []
+        self.initial_prediction_ = float(np.mean(y))
+        X_scaled = self.scaler_.fit_transform(X)
+        f_pred = np.full(y.shape, self.initial_prediction_, dtype=float)
+
+        for m, learner in enumerate(weak_learners, start=1):
+            g = self._compute_pseudo_residuals(y, f_pred)
+            model = clone(learner)
+            model.fit(X_scaled, g)
+            f_pred += self.learning_rate(m) * model.predict(X_scaled)
+            self.models_.append(model)
+
+        return self
+
     def predict(self, X: np.ndarray) -> np.ndarray:
         """
         Generate final predictions for new data.
@@ -137,12 +145,15 @@ class GradientBoostingEnsemble:
         -------
         np.ndarray — predictions, shape (n_samples,)
         """
-        # TODO
-        raise NotImplementedError
+        X = np.asarray(X, dtype=float)
+        X_scaled = self.scaler_.transform(X)
+        y_pred = np.full(X_scaled.shape[0], self.initial_prediction_, dtype=float)
 
-    # ------------------------------------------------------------------
-    # B5 · staged_loss
-    # ------------------------------------------------------------------
+        for m, model in enumerate(self.models_, start=1):
+            y_pred += self.learning_rate(m) * model.predict(X_scaled)
+
+        return y_pred
+
     def staged_loss(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
         """
         Compute the loss after each boosting stage on dataset (X, y).
@@ -151,8 +162,16 @@ class GradientBoostingEnsemble:
         -------
         np.ndarray — loss after each stage
         """
-        # TODO
-        raise NotImplementedError
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
+        X_scaled = self.scaler_.transform(X)
+        f_pred = np.full(y.shape, self.initial_prediction_, dtype=float)
+        losses = []
+        for m, model in enumerate(self.models_, start=1):
+            f_pred += self.learning_rate(m) * model.predict(X_scaled)
+            losses.append(huber_loss(y - f_pred, self.delta))
+
+        return np.asarray(losses, dtype=float)
 
 
 # ===========================================================================
@@ -206,5 +225,18 @@ ALLOWED_MODEL_SPECS = {
 # ===========================================================================
 
 REGRESSION_LEARNERS: List[BaseEstimator] = [
-    # TODO: populate with at least 5 valid weak learners
+    DecisionTreeRegressor(max_depth=1, random_state=1),
+    
+    DecisionTreeRegressor(max_depth=2, random_state=5),
+
+    DecisionTreeRegressor(max_depth=3, random_state=12),
+    DecisionTreeRegressor(max_depth=3, random_state=13),
+
+    DecisionTreeRegressor(max_depth=3, random_state=20),
+    DecisionTreeRegressor(max_depth=3, random_state=21),
+    DecisionTreeRegressor(max_depth=3, random_state=22),
+    DecisionTreeRegressor(max_depth=3, random_state=23),
+    DecisionTreeRegressor(max_depth=3, random_state=24),
+
+    Lasso(alpha=0.005, max_iter=100000),
 ]
