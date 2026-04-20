@@ -13,16 +13,17 @@ from itertools import combinations
 # ==================================================
 
 train = np.load("../train.npz")
-X_train = train["X"]
-y_train = train["y"]
+test = np.load("../test.npz")
+train, test = test, train
+X_train = test["X"]
+y_train = test["y"]
 
 # -------------------------------
 # LOAD TEST DATA
 # (also used as DSEL)
 # -------------------------------
-test = np.load("../test.npz")
-X_test = test["X"]
-y_test = test["y"]
+X_test = train["X"]
+y_test = train["y"]
 
 # DSEL is exactly the test set
 X_dsel = X_test
