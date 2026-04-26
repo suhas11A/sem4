@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PriceDynamics</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML ">
+    </script>
+    <style>
+        body, p, li, div {
+        color: black !important;
+        line-height: 1.6;
+        }
+        ol.latex-enumerate, ol.latex-enumerate li {
+            line-height: 1.6 !important;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        /* Updated TOC styles */
+        #toc-panel {
+            font-size: 0.9em;
+        }
+        .toc-chapter, 
+        .toc-section, 
+        .toc-subsection {
+            color: black !important;
+        }
+        .toc-chapter a,
+        .toc-section a,
+        .toc-subsection a {
+            color: black !important;
+            text-decoration: none;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        #toc-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #1a73e8;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #toc-panel {
+            position: fixed;
+            top: 0;
+            left: -350px;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            padding: 20px;
+            overflow-y: auto;
+            transition: left 0.3s ease-out;
+            will-change: transform;
+        }
+        #toc-panel.open {
+            left: 0;
+        }
+        #close-toc {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #content {
+            padding: 20px;
+            padding-top: 60px;
+            max-width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
+        }
+        .toc-chapter {
+            margin-bottom: 10px;
+            border-left: 3px solid #1a73e8;
+            padding-left: 10px;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        .chapter-link {
+            font-weight: bold;
+            color: #1a73e8;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+        }
+        .toc-sections {
+            margin-left: 15px;
+            display: none;
+        }
+        .toc-sections.expanded {
+            display: block;
+        }
+        .toc-section {
+            padding: 3px 0;
+            margin-left: 10px;
+        }
+        .toc-subsection {
+            padding: 3px 0;
+            margin-left: 25px;
+            font-size: 0.95em;
+        }
+        .toc-subsubsection {
+            padding: 3px 0;
+            margin-left: 40px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        :target {
+            scroll-margin-top: 80px;
+            animation: highlight 1.5s ease;
+        }
+        @keyframes highlight {
+            0% { background-color: rgba(26, 115, 232, 0.1); }
+            100% { background-color: transparent; }
+        }
+        @media (max-width: 768px) {
+            #toc-panel {
+                width: 85%;
+                left: -90%;
+            }
+            #toc-panel.open {
+                left: 0;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            }
+            #content {
+                transition: transform 0.3s ease-out;
+            }
+            #toc-panel.open ~ #content {
+                transform: translateX(85%);
+            }
+        }
+        .note {
+  background-color: color-mix(in srgb, var(--primary) 7%, white);
+border: 5px solid var(--primary);
+  padding: 5px;
+  margin: 10px;
+}
+.problem {
+  background-color: color-mix(in srgb, var(--primary) 18%, white);
+border: 1px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.example {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 10px;
+  margin: 10px;
+}
+.remark {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 20px;
+  margin: 10px;
+}
+.definition {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px double var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.lemma {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.theorem {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.proofs {
+  background-color: var(--environmentBackground);
+border: 5px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.project {
+  background-color: var(--environmentBackground);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.hint {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.code {
+  background-color: color-mix(in srgb, var(--primary) 13%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.algorithm {
+  background-color: color-mix(in srgb, var(--primary) 5%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+</style>
+</head>
+<body>
+    <button id="toc-button">☰ Table of Contents</button>
+    <div id="toc-panel">
+        <button id="close-toc">×</button>
+
+      <!-- Small Main Page Button -->
+<div style="text-align:right; margin-bottom: 10px;">
+  <a href="index.html" 
+     style="
+       background: var(--toc-primary, #2738F5);
+       color: white;
+       padding: 4px 10px;
+       border-radius: 16px;
+       font-size: 0.75em;
+       font-weight: 900;
+       text-decoration: none;
+       display: inline-block;
+       box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+     ">
+    Main Page
+  </a>
+</div>
+        <div class="full-toc">
+
+       <div class="toc-chapter ">
+            <a href="Overview of Financial Systems.html" class="chapter-link">
+                Chapter 1: Overview of Financial Systems
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Overview of Financial Systems.html#FinancialSystem.ch">
+                        Financial System: An Overview
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#financialmarketframework.sec">
+                        Financial Market Framework
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#financial.instrument.ssec">
+                        Financial Instruments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#securities">
+                        Securities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-levels">
+                        Market Levels
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#market-segments">
+                        Market Segments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#trading-mechanism">
+                        Trading Mechanism
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#marketparticipants.sec">
+                        Market Participants
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-makers">
+                        Market Makers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#investors">
+                        Investors
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#speculators">
+                        Speculators
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#hedgers">
+                        Hedgers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#arbitrageurs">
+                        Arbitrageurs
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#overviewderivatives.sec">
+                        Overview of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#essential-market-terms">
+                        Essential Market Terms
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#purpose-of-derivatives">
+                        Purpose of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#need-for-pricing-models-and-analysis">
+                        Need for Pricing Models and Analysis
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#noncontingentclaims.sec">
+                        Non-Contingent Claims: Forwards, Futures, and Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#forwards-and-futures">
+                        Forwards and Futures
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#swaps">
+                        Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#options.sec">
+                        Contingent Claims: Options
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter current">
+            <a href="PriceDynamics.html" class="chapter-link">
+                Chapter 2: PriceDynamics
+            </a>
+            <div class="toc-sections expanded">
+
+                <div class="toc-item ">
+                    <a href="PriceDynamics.html#price.dynamics.ch">
+                        Price Dynamics
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="PriceDynamics.html#deterministic-interest-rate-models">
+                        Deterministic Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#discrete-time-models">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#continuous-time-model">
+                        Continuous Time Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#nonconstant.interest.rate.subs">
+                        Non-constant Interest Rate
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#present.value.subs">
+                        Present Value
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#cash-flow-stream">
+                        Cash Flow Stream
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="PriceDynamics.html#stochastic-models">
+                        Stochastic Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#stochastic-processes">
+                        Stochastic Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#stock-price-model">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#wiener-process">
+                        Wiener Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#ito-formula">
+                        Itô Formula
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#GBMParameterCalibration.sec">
+                        Parameter Calibration
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#interest-rate-models">
+                        Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#wiener-integral">
+                        Wiener Integral
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#numerical-simulation">
+                        Numerical Simulation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#distribution-of-the-stochastic-increment">
+                        Distribution of the stochastic increment
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#exact-simulation-scheme">
+                        Exact simulation scheme
+                    </a>
+                </div>
+</div></div>
+	        <div class="toc-chapter ">
+            <a href="Portfolio And Arbitrage.html" class="chapter-link">
+                Chapter 3: Portfolio And Arbitrage
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Portfolio And Arbitrage.html#PortfolioNArbitrage.ch">
+                        Portfolio and Arbitrage
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#portfolioconcepts.ssec">
+                        Portfolio Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#value-and-gain-processes">
+                        Value and Gain Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#market-model">
+                        Market Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#predictable-strategy">
+                        Predictable Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#self-financing-strategy">
+                        Self-financing Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.opportunity.sec">
+                        Arbitrage Opportunity
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage-portfolio">
+                        Arbitrage Portfolio
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#application-forward-pricing">
+                        Application: Forward Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#law.of.one.price.subs">
+                        Law of One Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.strategy.ssec">
+                        Arbitrage Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#futures.sec">
+                        Application: Future Contracts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#marking-to-market">
+                        Marking to Market
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#pricing-model">
+                        Pricing Model
+                    </a>
+                </div>
+</div></div>
+        <div class="toc-chapter ">
+            <a href="Basic Concepts of Options.html" class="chapter-link">
+                Chapter 4: Basic Concepts of Options
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Basic Concepts of Options.html#BasicConceptsOptions.ch">
+                        Basic Concepts of Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#call.put.sec">
+                        Basic Terminology
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#defining-parameters">
+                        Defining Parameters
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#payoff-and-gain">
+                        Payoff and Gain
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#time-value-in-an-option-price">
+                        Time Value in an Option Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#Bounds.EuropeanOption.sec">
+                        Premium Bounds and Arbitrage Opportunities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#european-options">
+                        European Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#american-options">
+                        American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#put-call-parity-estimates">
+                        Put-Call Parity Estimates
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#premium-valuation">
+                        Premium Valuation
+                    </a>
+                </div>
+</div></div>
+
+</div>
+    </div>
+    <div id="content">
+        <p>
+<h1 id="price.dynamics.ch">Price Dynamics</h1></p><p>In this chapter, we develop mathematical models to study the dynamics of asset prices over time. We begin with simple concepts of interests in discrete time capturing the time value of money. We then update the model to continuous time framework where an ordinary differential equation is obtained to describe the evolution of the deterministic price value under constant interest rate, ignoring the randomness.  Finally, we extend the framework to stochastic models, where uncertainty in price movements is incorporated through a Wiener process. We also list some of the commonly used stochastic differential equations for stock prices and interest rates, which form the foundation of modern quantitative finance.</p><p><h2 id="deterministic-interest-rate-models">Deterministic Interest-rate Models</h2></p><p>The interest, expressed as a percentage divided by 100, is referred to as the <b>interest rate</b>.</p><p>Typically, interest rates are calculated annually. In this section, we explore the theory of interest rates using a bank fixed deposit as an example of an investment tool. These concepts can be easily applied to other types of investment tools.</p><p>Let <span class="math">\(t\)</span> denote the time variable. We consider <span class="math">\(t=0\)</span> as the initial time of investment, and the investment period spans the interval <span class="math">\([0, T]\)</span>, where <span class="math">\(T > 0\)</span> denotes the <b>maturity time</b>. The interest is paid at a certain <b>frequency</b>, representing the number of times interest is paid per annum. For example, if the interest is paid quarterly, the frequency is 4.</p><p>If the frequency of interest payments is denoted by <span class="math">\(m\)</span>, with <span class="math">\(n=mT\)</span> being an integer, then the times at which interest payments are due are given by
+</p><div class="math">\[
+t_k = \frac{k}{m},\quad k=1,2,\ldots,n.
+\]</div><p>
+Let <span class="math">\(r\)</span> denote the interest rate per annum (or annual interest rate), expressed as a decimal (<i>i.e.</i>, <span class="math">\(r \times 100%\)</span>). In this case, each interest payment is calculated at the rate <span class="math">\(r/m\)</span>, which is referred to as the <b>per period</b> rate.</p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+Note that the phrase `per period' refers to each payment period <span class="math">\([t_{k-1}, t_k]\)</span>, for <span class="math">\(k=1,2,\ldots,n,\)</span> whereas <span class="math">\([0,T]\)</span> refers to the entire investment period. Observe that the per period rate <span class="math">\(r/m\)</span> can be expressed as <span class="math">\(rT/n\)</span>.
+</div></p><p><h3 id="discrete-time-models">Discrete Time Models</h3></p><p>Let the principal be denoted by <span class="math">\(P(0)\)</span> and the interest rate be <span class="math">\(r\)</span> per annum.  Let the payout frequency be <span class="math">\(m\)</span> and the maturity time be <span class="math">\(T\)</span>, with <span class="math">\(n=mT\)</span> being an integer.  Let us derive the formula for <b>compound interest</b>.</p><p>At time <span class="math">\(t=t_1\)</span>, the accumulated amount is 
+</p><div class="math">\[
+P(t_1) = P(0) \left(1+ \frac{r}{m}\right),
+\]</div><p>
+which is considered as the principal for the period <span class="math">\((t_1,t_2].\)</span></p><p>At time <span class="math">\(t=t_2\)</span>, we have
+</p><div class="math">\[
+P(t_2) = P(t_1) \left(1+ \frac{r}{m}\right) = P(0)\left(1+\frac{r}{m}\right)^2.
+\]</div><p>
+Continuing in this way, we see that 
+</p><div class="math">\[
+P(t_k) = P(0)\left(1+\frac{r}{m}\right)^k, \quad k=1,2,\ldots, n.
+\]</div><p>
+In particular, at the maturity <span class="math">\(T\)</span>, the net amount obtained by the creditor (equivalently, the net amount paid by the debtor) is given by
+</p><div class="math" id="CI.FR">\begin{eqnarray}
+P(T) = P(0)\left(1+\frac{r}{m}\right)^{n},
+\end{eqnarray}<div style="text-align:right;">(2.1)</div></div><p>
+which is the <b>nominal value</b> or the <b>future value</b> of the investment with compound interest. The factor <span class="math">\(\left(1+\frac{r}{m}\right)^{n}\)</span> is called the <b>growth factor</b> for compound interest. </p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+<li>The growth factor for compound interest can also be written as <span class="math">\(\left(1+\frac{rT}{n}\right)^{n}\)</span>.
+</li><li>When <span class="math">\(n=1\)</span>, we call the scheme a <b>simple interest</b> scheme.
+</div></p><p>Observe that the compound interest scheme is significantly influenced by the payout frequency <span class="math">\(m\)</span>. As the frequency increases, the maturity amount in the compound interest scheme also increases.</p><p><div class="example" id="CI.EX1">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+</p><p>Mr. Megh invests ₹ 100 in a bank fixed deposit scheme at the rate of 10% per annum and for two and a half years. Assume that the bank pays out the interest every quarter. Then, the interest is paid 10 times to Mr. Megh with the interest payout frequency 4. Hence, we have <span class="math">\(m=4,\)</span> whereas <span class="math">\(T=2.5,\)</span> <span class="math">\(P(0)=100,\)</span> and <span class="math">\(r=0.1\)</span>.</p><p>Using the compound interest formula, we can determine the accumulated amount at maturity (the nominal value), given by
+</p><div class="math">\[
+P(T) = 100\times\left(1+\frac{0.1}{4}\right)^{4\times 2.5} \approx 128.
+\]</div><p>Let us now increase the payout frequency from every quarter to every month, then we have <span class="math">\(m=12\)</span> (instead of <span class="math">\(m=4\)</span>) and the nominal value of the investment becomes
+</p><div class="math">\[
+P(T) = 100\times\left(1+\frac{0.1}{12}\right)^{12\times 2.5} 
+\approx 128.27.
+\]</div><p>
+Hence the total interest obtained is ₹ 28.27, which is higher than the interest obtained with the quarterly compounding scheme.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+In the above example, we observe that, despite the interest rate being <span class="math">\(r=0.1\)</span>, (<i> i.e.</i> 10%) per annum for two and a half years with quarterly compounding, the final interest obtained is ₹ 28. This amount is obviously more than 10% per annum with simple interest calculation.  Thus, the nominal interest rate alone is not a clear indicator of the compounding effect. An equivalent way to express the amount of interest obtained is through the <b>effective annual rate</b> (EAR) (or <b>effective interest rate</b>), defined as the annual interest rate <span class="math">\(r_e\)</span> such that</p><div class="math">\[
+P(0)\left(1 + r_e\right)^T = P(0)\left(1+\frac{r}{m}\right)^{n}.
+\]</div><p>
+Since <span class="math">\(n=mT\)</span>, the above expression can be rewritten as</p><div class="math">\[
+r_e = \left(1+\frac{r}{m}\right)^{m} - 1.
+\]</div><p>
+Using this formula, we can find the EAR in the above example as <span class="math">\(r_e \approx 0.1038\)</span> (or 10.38%).</p><p>The basic annual interest rate (<span class="math">\(r=0.1\)</span> in the above example) is termed the <b>nominal annual rate</b> (NAR) or simply the <b>interest rate</b> per annum or <b>nominal interest rate</b>.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Find the EAR for the following schemes:
+<ol class="latex-enumerate">
+</li><li>3% compounded monthly for one year.
+</li><li>18% compounded quarterly for one year.
+</li></ol>
+<div style="text-align:right;"><b> Answer:</b> 1. 3.04%. 2. 19.25%. </div>
+</div></p><p><h3 id="continuous-time-model">Continuous Time Model</h3></p><p>The compound interest discussed above assumes discrete payout times with a finite payout frequency <span class="math">\(m\)</span>. However, in theoretical contexts, it is often necessary to model compounding in a continuous time framework, which can be achieved by taking <span class="math">\(m\rightarrow \infty\)</span>. This is equivalent to taking <span class="math">\(n\rightarrow \infty\)</span> in <a href="#CI.FR">(2.1)</a> and leads to
+</p><div class="math" id="CCI.FR">\begin{eqnarray}
+P(T) = P(0) e^{rT},
+\end{eqnarray}<div style="text-align:right;">(2.2)</div></div><p>
+the nominal value (or the future value) of the investment under <b>continuous compound interest</b>.   </p><p><div class="example">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+The nominal value of the fixed deposit offer given in  <a href="PriceDynamics.html#CI.EX1">Example &laquo;Click Here&raquo; </a> using the continuous compound interest scheme is expressed as
+</p><div class="math">\[
+P(T) = 100\times e^{(0.1\times 2.5)} \approx 128.4.
+\]</div><p>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+To emphasize the distinction between continuous compounding and compounding with a finite frequency, the latter is often referred to as <b>discrete compound interest</b>. In our discussions, `compound interest' always refers to discrete compound interest.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+Observe that the growth in simple interest, compound interest, and continuous compound  interest schemes is, respectively, the linear growth given by <span class="math">\(P(0)(1+rT)\)</span>, the geometric growth given by <span class="math">\(P(0)(1+r/m)^{mT}\)</span> and the exponential growth given by <span class="math">\(P(0)e^{rT}\)</span>. </p><p>The factors
+</p><div class="math">\[
+A_s = (1+rT),\quad A_c = \left(1+\frac{r}{m}\right)^{mT}, ~\text{and}\quad A_{cc} = e^{rT}
+\]</div><p>
+are referred to as the <b>accumulation factor</b> for simple interest, compound interest, and continuous compound interest, respectively. The following figure illustrates the behavior of these three accumulation factors over time.
+</div></p><p><div class="figure">
+
+<img src="Figures/AccumulationFactor.png" class="standalone-figure">
+<div style="text-align: center; font-weight: bold;">An illustration of accumulation factors</div>
+
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Mr. Megh requires  ₹ 10,000 exactly one year from today. He borrowed  ₹ 10,00,000 from a friend with a commitment to repay the amount along with 4% continuously compounded interest after this one-year period. Now, he is exploring an opportunity to lend the borrowed money for one year in a simple interest scheme with an interest rate <span class="math">\(r\)</span> to meet his financial need. Determine the approximate minimum value of <span class="math">\(r\)</span>.</p><p><span class="math">\(~\)</span><div style="text-align:right;"><b> Answer:</b> <span class="math">\(r \approx 0.05081077\)</span>. </div>
+</div></p><p>Often practitioners prefer continuous compounding interest rate in their models rather than discrete compounding interest rate. This may be because different markets often have different day count conventions. The following problem provides formulae to convert one interest rate to the other.</p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Let <span class="math">\(r_d\)</span> and <span class="math">\(r_c\)</span> denote the discrete and continuous compound interest rates, respectively.  If <span class="math">\(m\)</span> is the payout frequency for the discrete compounding scheme and if the nominal value in both the schemes are equal at any maturity time, then show that
+</p><div class="math">\[
+r_c = m \ln\left(1+\frac{r_d}{m}\right)
+\quad \text{and}\quad
+r_d = m\left(e^{\frac{r_c}{m}} - 1\right).
+\]</div><p>
+</div></p><p><h3 id="nonconstant.interest.rate.subs">Non-constant Interest Rate</h3></p><p>We have derived the formula for continuous compounding in the case of a constant interest rate. However, a more realistic situation involves considering an interest rate that changes continuously over time. Hence, we need a model to calculate <span class="math">\(P(t)\)</span> for all <span class="math">\(t \in [0,T]\)</span>, where <span class="math">\(r=r(t)\)</span> represents the time-dependent interest rate.</p><p>We now derive an ODE that models the continuous compounding scheme with interest rate <span class="math">\(r=r(t)\)</span> per annum at any given time <span class="math">\(t\in [0,T]\)</span>.  </p><p>For a given number <span class="math">\(\Delta t>0\)</span>, the net interest obtain for the period <span class="math">\([t,t+\Delta t]\)</span> is given by <span class="math">\(P(t+\Delta t) - P(t)\)</span>, for any <span class="math">\(t\in [0,T-\Delta t]\)</span>.  Assume that <span class="math">\(\Delta t\)</span> is very small so that the compound interest during the period <span class="math">\([t,t+\Delta t]\)</span> is approximately the same as the simple interest.  In other words, we take
+</p><div class="math" id="Interest.per.period.eq">\begin{eqnarray}
+P(t+\Delta t) - P(t) \approx r(t)\Delta t P(t).
+\end{eqnarray}<div style="text-align:right;">(2.3)</div></div><p>
+Dividing both sides by <span class="math">\(\Delta t\)</span> and then letting <span class="math">\(\Delta t\rightarrow 0\)</span>, we get
+</p><div class="math">\[
+\lim_{\Delta t\rightarrow 0}\frac{P(t+\Delta t) - P(t) }{\Delta t} =  r(t)P(t).
+\]</div><p>
+This leads to the required model, which is an ordinary differential equation (ODE) given by
+</p><div class="math" id="ODE.CComp.eq">\begin{eqnarray}
+\frac{dP}{dt} = rP.
+\end{eqnarray}<div style="text-align:right;">(2.4)</div></div><p>
+If we assume the interest rate <span class="math">\(r\)</span> to be a constant, then the solution of <a href="#ODE.CComp.eq">(2.4)</a> at <span class="math">\(t=T\)</span>, with the initial condition as the principal <span class="math">\(P(0)\)</span>, is given by <a href="#CCI.FR">(2.2)</a>. </p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+By substituting <a href="#ODE.CComp.eq">(2.4)</a> into <a href="#Interest.per.period.eq">(2.3)</a>, we observe that <a href="#Interest.per.period.eq">(2.3)</a> is (approximately) the mean value theorem for <span class="math">\(P.\)</span>
+</div></p><p>Integrating <a href="#ODE.CComp.eq">(2.4)</a> over <span class="math">\([0,t]\)</span>, we can derive our required model as the integral equation
+</p><div class="math" id="IE.CComp.eq">\begin{eqnarray}
+P(t) = P(0) + \int\limits_{0}^t r(s)P(s) ds.
+\end{eqnarray}<div style="text-align:right;">(2.5)</div></div><p>
+Using the fundamental theorem of calculus, we can see that if <span class="math">\(r\)</span> and <span class="math">\(P\)</span> are continuous, then <a href="#ODE.CComp.eq">(2.4)</a> and <a href="#IE.CComp.eq">(2.5)</a> are equivalent. </p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The advantage of the model <a href="#IE.CComp.eq">(2.5)</a> over <a href="#ODE.CComp.eq">(2.4)</a> is that <a href="#IE.CComp.eq">(2.5)</a> makes sense as long as <span class="math">\(r\)</span> and <span class="math">\(P\)</span> are integrable, whereas <a href="#ODE.CComp.eq">(2.4)</a> requires both <span class="math">\(r\)</span> and <span class="math">\(P\)</span> to be continuous. Often, we come across a situation where <span class="math">\(r\)</span> is not continuous and hence <a href="#IE.CComp.eq">(2.5)</a> is preferred in financial applications.
+</div></p><p><div class="problem" id="linearODE.particular.solution.pr">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+
+Show, using the separation of variables method, that the particular solution of the ODE <a href="#ODE.CComp.eq">(2.4)</a> at some time <span class="math">\(T>0\)</span> is 
+</p><div class="math">\[
+P(T) = P(0)e^{\int\limits_0^T r(t) dt},
+\]</div><p>
+where the principle value <span class="math">\(P(0)\)</span> is given.
+</div></p><p>Another important random phenomenon in finance is the <b>mean-reverting</b> process.  Many natural and economic systems exhibit a mean-reverting tendency of a state variable (for instance, an interest rate), which can be described as follows:</p><p><i>Whenever the state variable deviates significantly from its long-term equilibrium (mean) level, forces arise that drive it back toward that mean. </i></p><p><div class="problem" id="deterministic.meanreverting.model.pr">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>Deterministic Mean-Reverting Model</b>]
+</p><p>Show that the solution of the ODE
+</p><div class="math">\[
+dr_t = \lambda(\mu - r_t)dt.
+\]</div><p>
+is
+</p><div class="math">\[
+r_t = \mu + (r_0-\mu)e^{-\lambda t}.
+\]</div><p> 
+By taking <span class="math">\(r(t)=r_t\)</span>, obtain the particular solution of the ODE <a href="#ODE.CComp.eq">(2.4)</a> at some time <span class="math">\(T>0\)</span>.
+</div></p><p>The above problem shows the deterministic part of such dynamics and highlights the role of the stochastic part of mean-reverting models, which will be introduced at a later part of this chapter.</p><p><h3 id="present.value.subs">Present Value</h3></p><p>So far, we have established models to calculate the nominal value <span class="math">\(P(T)\)</span> of a deposit, given the principal <span class="math">\(P(0)\)</span>, interest rate <span class="math">\(r\)</span>, and the frequency <span class="math">\(m\)</span> of the interest payment per year. Here <span class="math">\(P(T)\)</span> can be regarded as the <b>future value</b> of the principal <span class="math">\(P(0)\)</span> with respect to the given interest rate <span class="math">\(r\)</span> and the frequency <span class="math">\(m\)</span>.</p><p>The concept of <b>present value</b> is the inverse of future value, where <span class="math">\(P(T)\)</span> is given, and we are required to find <span class="math">\(P(0)\)</span> for the given values of <span class="math">\(r\)</span> and <span class="math">\(m\)</span>.</p><p>The present value with simple interest is given by
+</p><div class="math">\[
+P(0)  = \frac{P(T)}{1+rT}.
+\]</div><p>
+In the case of a compound interest scheme, the present value is given by
+</p><div class="math">\[
+P(0) = P(T)\left(1+\frac{r}{m}\right)^{-n} = P(T)\left(1+\frac{rT}{n}\right)^{-n},
+\]</div><p>
+where <span class="math">\(m\)</span> denotes the frequency (the number of times interest is accumulated per annum) and <span class="math">\(n=mT\)</span> is the total number of times interest is accumulated during the entire investment period.</p><p>Finally, for a continuous compounding scheme, the present value is given by
+</p><div class="math">\[
+P(0) = P(T) e^{-rT}.
+\]</div><p>
+The procedure of finding the present value for a future amount is referred to as <b>discounting</b>. Correspondingly, the present value is often referred to as <b>discount value</b>.  The factor by which the present value <span class="math">\(P(0)\)</span> is discounted from the future value <span class="math">\(P(T)\)</span> is called the <b>discount factor</b>. The discount factor for simple interest, compound interest, and continuous compound interest are, respectively,
+</p><div class="math" id="DF.formula">\begin{eqnarray}
+D_s = \frac{1}{1+rT},~~
+D_c = \left(1+\frac{r}{m}\right)^{-mT}, \text{ and }
+D_{cc} = e^{-rT}.
+\end{eqnarray}<div style="text-align:right;">(2.6)</div></div><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The concept of discounting plays an important role in pricing options because it provides a measure of the risk-free future value of money.
+</div></p><p><h4 id="cash-flow-stream">Cash Flow Stream</h4></p><p>The concepts of present and future values can be extended to a sequence of cash flows occurring at multiple times.  Let us first introduce the concept of a cash flow stream. </p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Cash Flow Stream</b>]</p><p>For a given time partition <span class="math">\(\{t_0,t_1,\ldots,t_n\}\)</span> of the period <span class="math">\([0,T]\)</span> with <span class="math">\(0=t_0 < t_1 <t_2 < \cdots < t_n=T\)</span>, the \textbfNI{cash flow stream} is represented by the <span class="math">\((n+1)\)</span>-tuple <span class="math">\(\boldsymbol{x} = (x_0,x_1,\ldots,x_n)\)</span>, where <span class="math">\(x_k\)</span>, for <span class="math">\(k=0,1,\ldots,n\)</span>, denotes the value of money transacted at time <span class="math">\(t=t_k\)</span>. </p><p>Whenever the time partition is important, we may also represent a cash flow stream as (<span class="math">\(\boldsymbol{x},\boldsymbol{t}\)</span>), where <span class="math">\(\boldsymbol{t} = (t_0,t_1,\ldots,t_n)\)</span>.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+Generally, we set <span class="math">\(t_0=0\)</span> as the initial investment time and <span class="math">\(t_n = T\)</span> as the maturity time. A positive <span class="math">\(x_k>0\)</span> indicates an inflow of money, while a negative <span class="math">\(x_k<0\)</span> represents an outflow.  If an entity holds the cash flow stream <span class="math">\(\boldsymbol{x}\)</span>, then the opposing party holds the cash flow stream <span class="math">\(-\boldsymbol{x}\)</span>, representing the exact opposite transactions.
+</div></p><p><div class="example">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+Suppose Mr. Poor borrowed ₹ 1200  from his friend, Mr. Rich, and promised to pay ₹ 300 every quarter.  If no interest charged, then the cash flow stream for Mr. Poor is
+<span class="math">\((1200, -300, -300, -300, -300),\)</span>
+whereas the cash flow stream for Mr. Rich is given by
+<span class="math">\((-1200, 300, 300, 300, 300).\)</span>
+If we denote the cash flow stream of Mr. Poor as <span class="math">\(\boldsymbol{x}\)</span> and that of Mr. Rich as <span class="math">\(\boldsymbol{y}\)</span>, then we see that <span class="math">\(\boldsymbol{x} = -\boldsymbol{y}\)</span>.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Consider the cash flow stream <span class="math">\((-100,3,3,3,103)\)</span> into a bank, where transactions occur annually. Determine whether this represents a deposit received or a loan given by the bank. Additionally, find the annual rate of interest and identify the type of interest scheme (<i> i.e.</i>, whether it is simple interest or compound interest).
+</div></p><p>The <b>future value</b> of a cash flow stream <span class="math">\(\boldsymbol{x} = (x_0,x_1,\ldots,x_n)\)</span> at the rate of <span class="math">\(r\)</span> (per annum) during the time period <span class="math">\([0,T]\)</span> with equally spaced time partition <span class="math">\(\{t_0,t_1,\ldots, t_n\}\)</span> (with <span class="math">\(t_0=0\)</span> and <span class="math">\(t_n=T\)</span>) is given by
+</p><div class="math" id="FVStream.eq">\begin{eqnarray}
+\text{FV}(\boldsymbol{x}) = 
+\left\{\begin{array}{ll}
+	\displaystyle{\sum_{k=0}^n} x_k\big(1+r(T-t_k)\big),&amp;\text{ for simple interest},\\
+	\displaystyle{\sum_{k=0}^n} x_k\left(1+\frac{rT}{n}\right)^{n-k},&amp;\text{ for compound interest,}\\
+	 \displaystyle{\sum_{k=0}^n} x_k e^{r(T-t_k)},&amp;\text{for continuous compound interest.}
+\end{array}\right.
+\end{eqnarray}<div style="text-align:right;">(2.7)</div></div><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+If <span class="math">\(m\)</span> is the interest payout frequency per annum, then <span class="math">\(n=mT\)</span>.  Thus the FV formula for compound interest is obtained by substituting <span class="math">\(m=n/T\)</span> in <a href="#FVStream.eq">(2.7)</a>.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+Define
+</p><div class="math">\[
+\tilde{r} = \frac{rT}{n}.
+\]</div><p>
+We can see that <span class="math">\(\tilde{r}\)</span> represents the interest rate <b>per period</b>. Using <span class="math">\(\tilde{r}\)</span> in the discrete  compound interest formula, we get
+</p><div class="math">\[
+\text{FV}(\boldsymbol{x}) = \sum_{k=0}^m x_k\left(1+\tilde{r}\right)^{n-k}.
+\]</div><p>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+Depending on the given information about the interest rate (<i> i.e.</i>, whether it is the annual interest rate or interest rate per period), one has to choose the corresponding formula carefully.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+A depositor opted for a <i> recurring deposit</i> scheme in a bank, where she pays ₹ 1000 on the first day of every month, and for one year. Obtain the future value of the recurring deposit if the bank offers 6% annual interest with monthly compounding. Write the cash flow stream for the bank till the end of the scheme.</p><p><b> Answer:</b> <span class="math">\(\boldsymbol{x}=(1000,1000,\ldots,1000, -12397.24)\)</span>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+One can easily obtain the formula for future value if the interest rate per period varies from period to period.
+</div></p><p>We now discuss the present value of a cash flow stream. Consider a cash flow stream <span class="math">\(\boldsymbol{x} = (x_0,x_1,\ldots,x_n)\)</span>.  The <b>present value</b> of the cash flow stream <span class="math">\(\boldsymbol{x}\)</span>  at the interest rate of <span class="math">\(r\)</span> per annum and for the  time period <span class="math">\([0,T]\)</span>  with equally spaced time partition <span class="math">\(\{t_0,t_1,\ldots, t_n\}\)</span> (with <span class="math">\(t_0=0\)</span> and <span class="math">\(t_n=T\)</span>) is given by
+</p><div class="math">\[
+\text{PV}(\boldsymbol{x}) = \sum_{k=0}^n x_k D_k,
+\]</div><p>
+where <span class="math">\(D_k\)</span> denotes the discount factor at time <span class="math">\(t_k\)</span> given by one of the formulae in <a href="#DF.formula">(2.6)</a> (with <span class="math">\(n=mT\)</span>) depending on the type of the interest scheme. More precisely, we have</p><div class="math" id="PV.Stream.Formula">\begin{eqnarray}
+\text{PV}(\boldsymbol{x}) = 
+\left\{\begin{array}{ll}
+	 \displaystyle{\sum_{k=0}^n} \frac{x_k}{1+rt_k},&amp;\text{for simple interest},\\
+	 \displaystyle{\sum_{k=0}^n} \frac{x_k}{\left(1+\dfrac{rT}{n}\right)^k},&amp;\text{for compound interest},\\
+	 \displaystyle{\sum_{k=0}^n} x_ke^{-rt_k},&amp;\text{for continuous compound interest.}
+\end{array}\right.
+\end{eqnarray}<div style="text-align:right;">(2.8)</div></div><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+We always assume that, for a given cash flow stream <span class="math">\(\boldsymbol{x}=(x_0,x_1,\ldots, x_n)\)</span>, the number of times interest is paid or accumulated is <span class="math">\(n\)</span>. Unless otherwise stated, we assume a compound interest scheme where the interest due times coincide with the cash flow transaction times. Also, unless otherwise specified, we assume that in each period, interest is first accumulated, and then the transaction occurs.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Determine the fair price of an annual cash flow stream <span class="math">\((0,50,50,50)\)</span> for three years, given a prevailing compounding annual interest rate of <span class="math">\(r=0.08.\)</span></p><p><span class="math">\(~\)</span><div style="text-align:right;"><b> Answer:</b> 128.8548 </div>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+When the initial payment in a cash flow stream is zero (like the one given in the above problem), then we call the present value as the fair price of the cash flow stream.  Whereas, if the initial payment is non-zero, then we refer the present value as the <b>net present value</b> (NPV).
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Find the net present value of the cash flow stream <span class="math">\(\boldsymbol{x} = (-10, 2, 3, 5, 2)\)</span> if the prevailing per period interest rate is <span class="math">\(r=0.02\)</span>.<div style="text-align:right;"><b> Answer:</b> 1.4036 </div>
+</div></p><p>One can use present value to compare investments and prefer the one that yields higher value.</p><p><div class="example">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+Consider a project where an initial amount of ₹ 5000 is invested in buying  young goats that grow into marketable size within a year. After one year, the goats can either be sold for ₹ 7200 or left to grow further for an additional year, yielding better quality meat and higher demand, which can then be sold for ₹ 7600.</p><p>The corresponding cash flow streams are
+</p><div class="math">\[
+\boldsymbol{x_1} = (-5000,7200),~~\boldsymbol{x_2} = (-5000,0,7600).
+\]</div><p>
+If the prevailing interest rate is 6% per annum compounded annually, then which of the two cash flow streams is preferable?</p><p>To answer this question, let's calculate the net present value (NPV) for both streams. We have
+</p><div class="math">\[
+\text{NPV}(\boldsymbol{x_1}) = -5000 + \frac{7200}{1+0.06} \approx 1792.45,~~
+\text{NPV}(\boldsymbol{x_2}) = -5000 + \frac{7600}{(1+0.06)^2} \approx 1763.97.
+\]</div><p>
+Therefore, based on the NPV criterion, it is more profitable to sell the goats at the end of the first year.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Consider two annual cash flows</p><div class="math">\[
+\boldsymbol{x}_1 = (-13000, 5000, 6000, 7000) ~\text{ and }~
+\boldsymbol{x}_2 = (-13000, 7000, 4800, 6000).
+\]</div><p>
+Answer the following questions with annual compound interest rates:
+<ol class="latex-enumerate"> 
+<li>If <span class="math">\(r = 4.5%\)</span>, which cash flow is more profitable? 
+</li><li>If <span class="math">\(r = 9%\)</span>, which cash flow is more profitable? 
+</li></ol>
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Uncountable Cash Flow Stream</b>]</p><p>Often it is useful to consider an uncountable cash flow stream defined by a function <span class="math">\(f(t)\)</span>.  
+The future value of such a cash flow stream under a constant interest rate <span class="math">\(r\)</span> is given by
+</p><div class="math">\[
+\text{FV}(f) = \int\limits_0^T f(t)e^{r(T-t)}dt
+\]</div><p>
+and the present value is given by
+</p><div class="math">\[
+\text{PV}({f}) =  \int\limits_0^T f(t)e^{-rt}dt.
+\]</div><p>
+The following example illustrates a potential application of a continuous cash flow stream and its present value.
+</div></p><p><h2 id="stochastic-models">Stochastic Models</h2></p><p>Deterministic models discussed in the previous section captures the average or expected growth of financial variables such as prices or interest rates.  However, real-world financial markets are inherently noisy and uncertain, and these variables are influenced by unpredictable factors such as news events, macroeconomic shocks, investor sentiments, and market reactions. Consequently, their dynamics cannot be modeled deterministically and to account this randomness, we extend our framework to include stochastic components, leading to stochastic differential equations (SDEs).</p><p><h3 id="stochastic-processes">Stochastic Processes</h3></p><p>In this subsection, we denote a financial variable by <span class="math">\(X\)</span> (from our previous discussions, <span class="math">\(X\)</span> can be the principal <span class="math">\(P\)</span> or interest-rate <span class="math">\(r\)</span>). In deterministic setup, <span class="math">\(X\)</span> is viewed as a deterministic function of time <span class="math">\(X=X(t)\)</span>, where each time <span class="math">\(t\)</span> corresponds to a single predictable value. However, in stochastic modeling, we abandon this deterministic view and treat  <span class="math">\(X\)</span> as a <b>stochastic process</b>.</p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Stochastic Process</b>]</p><p>Let <span class="math">\(\mathbb{T}\)</span> denote the time index set.  A collection of random variables <span class="math">\(\{X_t~|~t\in \mathbb{T}\}\)</span> defined on a probability space <span class="math">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> is called a <b>stochastic process</b>. If <span class="math">\(\mathbb{T}\)</span> is an interval, then <span class="math">\(\{X_t\}\)</span> is a <b>continuous-time</b> stochastic process and if <span class="math">\(\mathbb{T}\)</span> is finite or countably infinite, then the process is a  <b>discrete-time</b> stochastic process.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+Often we use the notation <span class="math">\(X=\{X_t\}\)</span>, and view it as a function of two variables.
+<ol class="latex-enumerate">
+<li>For a fixed time <span class="math">\(t\in \mathbb{T}\)</span>, <span class="math">\(X_t:\Omega\rightarrow \mathbb{R}\)</span> is a random variable and we write
+</p><div class="math">\[
+X(\omega) = X_t(\omega), ~ \omega\in \Omega.
+\]</div><p>
+</li><li>For a fixed random outcome <span class="math">\(\omega\in \Omega\)</span>, <span class="math">\(X:\mathbb{T}\rightarrow \mathbb{R}\)</span> is a (deterministic) function of time, 
+</p><div class="math">\[
+X(t) = X_t(\omega), ~t\in \mathcal{T},
+\]</div><p>
+called a <b>sample path</b> of the process.
+</li></ol>
+</div></p><p>The time evolution of financial quantities inherently involve randomness, where the information unfolds progressively as events occur. This gradual flow of information is represented mathematically by the concept of <b>filtration</b>.</p><p><div class="definition" id="filtration.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Filtration</b>]
+</p><p>A collection <span class="math">\(\{\mathcal{F}_t~|~t\in \mathbb{T}\}\)</span> of <span class="math">\(\sigma\)</span>-fields on a sample space <span class="math">\((\Omega,\mathcal{F})\)</span> is called a <b>filtration</b> if 
+</p><div class="math">\[
+\mathcal{F}_s \subseteq \mathcal{F}_t 
+\subseteq \mathcal{F},~{for all }0\le s\le t.
+\]</div><p>
+A probability space <span class="math">\((\Omega,\mathcal{F},\mathbb{P}, \{\mathcal{F}_t\})\)</span> is called a <b>filtered probability space</b>.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The above definition is given in a general time framework.  In discrete time, we have <span class="math">\(\mathbb{T} = \{t_0, t_1, \ldots\}\)</span> (finite or infinite) and the corresponding filtration is denoted by <span class="math">\(\{\mathcal{F}_k~|~k=0,1,\ldots\}\)</span>. </p><p>In a finite horizon <span class="math">\([0, T]\)</span> with partition <span class="math">\(\mathbb{T}_n = \{0=t_0, t_1, \ldots, t_n=T\}\)</span>, we often consider a filtration <span class="math">\(\{\mathcal{F}_k~|~k=0,1,\ldots, n\}\)</span> with <span class="math">\(\mathcal{F}_n = \mathcal{F},\)</span> the <span class="math">\(\sigma\)</span>-field of the probability space (as obtained in <a href="PriceDynamics.html#discrete.time.filtration.binomial.ex">Example &laquo;Click Here&raquo; </a>).
+</div></p><p>Often, filtrations are constructed using generated <span class="math">\(\sigma\)</span>-fields, either from a partition of <span class="math">\(\Omega\)</span> or from a stochastic process. These are the <b>natural filtrations</b> in financial applications. Here, we recall the definition of a generated <span class="math">\(\sigma\)</span>-field by a partition of <span class="math">\(\Omega\)</span> and postpone the discussion of <span class="math">\(\sigma\)</span>-field generated  by stochastic processes to a later chapter.</p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Generated <span class="math">\(\sigma\)</span>-Field</b>]</p><p>For a given collection of subsets <span class="math">\(\{E_1, E_2, \ldots \}\)</span> (finite or infinite) of <span class="math">\(\Omega\)</span>, the <b>generated <span class="math">\(\sigma\)</span>-field</b>, denoted by <span class="math">\(\sigma\{E_1, E_2, \ldots \}\)</span>, is defined as the intersection of all <span class="math">\(\sigma\)</span>-fields on <span class="math">\(\Omega\)</span> that contain the given collection.  Equivalently, it is the smallest <span class="math">\(\sigma\)</span>-field containing <span class="math">\(\{E_1, E_2, \ldots\}\)</span>.
+</div></p><p>Let us recall an elementary result from probability.</p><p><div class="problem" id="generated.sigmafield.pr">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+
+Show that the generated <span class="math">\(\sigma\)</span>-field,  of a partition <span class="math">\(\texttt{P}\)</span> of a set <span class="math">\(\Omega\)</span>, denoted by <span class="math">\(\sigma(\texttt{P})\)</span>,  is the collection of all finite unions of the sets in <span class="math">\(\texttt{P}\)</span> along with the empty set <span class="math">\(\emptyset\)</span>.
+</div></p><p>The following lemma is a direct consequence of the above problem.</p><p><div class="lemma">
+<div class="heading-container">
+<b class="heading">Lemma:</b>
+</div>
+For a given partition  <span class="math">\(\mathbb{T}_n:=\{0=t_0,t_1,\ldots,t_n=T\}\)</span> of <span class="math">\([0,T]\)</span>, let <span class="math">\(\{\texttt{P}_k~|~k=0,1,2\ldots, n\}\)</span> be a sequence of partitions of <span class="math">\(\Omega\)</span> such that <span class="math">\(\texttt{P}_{k+1}\)</span> is finer than <span class="math">\(\texttt{P}_k\)</span> for every <span class="math">\(k\in \{0,1,2,\ldots,n-1\}\)</span>. For each <span class="math">\(k\in \{0,1,2,\ldots,n\}\)</span> if <span class="math">\(\mathcal{F}_k=\sigma(\texttt{P}_k)\)</span>, 
+then the collection <span class="math">\(\{\mathcal{F}_k~|~k=0,1,\ldots, n\}\)</span> is a filtration on <span class="math">\((\Omega, \mathcal{F}_n)\)</span>.
+</div></p><p>Each <span class="math">\(\sigma\)</span>-field <span class="math">\(\mathcal{F}_t\)</span> in a filtration can be interpreted as the collection of all information (about the market or a particular stock) that is available to an investor at time <span class="math">\(t\)</span>. This idea is illustrated in the following example.   </p><p><div class="example" id="discrete.time.filtration.binomial.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+[<b>Discrete-Time Filtration in a Binomial Framework</b>]
+</p><p>Given a pair of real numbers <span class="math">\(0 < B < 1 < U\)</span>.
+Consider a set of discrete time points <span class="math">\(\mathbb{T} = \{t_0, t_1, t_2\}\)</span> and a sample space
+</p><div class="math">\[
+\Omega = \{\text{UU}, \text{UD}, \text{DU}, \text{DD}\},
+\]</div><p>
+where each <span class="math">\(\omega=m_1m_2 \in \Omega\)</span>, with <span class="math">\(m_1,m_2\in \{U,D\}\)</span>, represents a possible sequence of a stock price movements at two time levels <span class="math">\(t_1\)</span> and <span class="math">\(t_2,\)</span> where U stands for an upward move and D represents a downward move.</p><p>Let us now choose a filtration that is relevant for the present problem.
+
+    <li>At the initial time <span class="math">\(t_0\)</span>, no information is available. In order to reflect this, we choose the trivial <span class="math">\(\sigma\)</span>-field
+</p><div class="math">\[
+\mathcal{F}_0 = \{ \emptyset, \Omega \}.
+\]</div><p>
+    </li><li>At time <span class="math">\(t_1\)</span>, the first movement (Up or Down) has been observed. 
+    Define
+</p><div class="math">\[
+E_1 = \{\text{UU}, \text{UD}\}, \quad 
+    E_2 = \{\text{DU}, \text{DD}\}.
+\]</div><p>
+    The information available at <span class="math">\(t_1\)</span> is then represented by the generated <span class="math">\(\sigma\)</span>-field of the partition <span class="math">\(\{E_1, E_2\}\)</span> of <span class="math">\(\Omega\)</span>. That is,
+</p><div class="math">\[
+\mathcal{F}_1 = \sigma\{E_1, E_2\} 
+    = \{ \emptyset, \Omega, E_1, E_2 \}.
+\]</div><p>
+    </li><li>At time <span class="math">\(t_2\)</span>, both movements have been observed, so the entire path is known. Thus, we define <span class="math">\(\mathcal{F}_2\)</span> as the generated <span class="math">\(\sigma\)</span>-field of the partition 
+</p><div class="math">\[
+\{\text{UU}\}, \{\text{UD}\}, \{\text{DU}\}, \{\text{DD}\}
+\]</div><p> 
+of <span class="math">\(\Omega\)</span>.  That is,
+</p><div class="math">\[
+\mathcal{F}_2 = \sigma\{\{\text{UU}\}, \{\text{UD}\}, \{\text{DU}\}, \{\text{DD}\}\} 
+    = 2^\Omega.
+\]</div><p>
+
+Thus, the collection of <span class="math">\(\sigma\)</span>-fields <span class="math">\(\{\mathcal{F}_0, \mathcal{F}_1, \mathcal{F}_2\}\)</span> defined on <span class="math">\(\Omega\)</span> satisfies the condition
+</p><div class="math">\[
+\mathcal{F}_0 \subset \mathcal{F}_1 \subset \mathcal{F}_2 = 2^\Omega,
+\]</div><p>
+and hence forms a filtration on the sample space <span class="math">\((\Omega, 2^\Omega)\)</span>.  We refer to this filtration as the <b>natural filtration</b> for the binomial stock price process in discrete-time setup. This filtration represents the gradual flow of information over time, where as time progresses, the investor learns more about the realized path of the stock price.
+</div></p><p>The information structure described by a filtration is that the information increases in time and at any fixed time <span class="math">\(t\)</span> an investor knows all information from the past to present but has no knowledge of future events.  In financial terms, this expresses the no-insider-trading assumption: decisions at time <span class="math">\(t\)</span> can depend only on currently available information.</p><p>In stochastic modeling, it is essential that the random quantities we study (such as stock prices, interest rates, or portfolio values) evolve consistently with the flow of information represented by the filtration. This needs another important concept called the <b>adapted process</b>.</p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Adapted Process</b>]</p><p>A stochastic process <span class="math">\(\{X_t~|~t\in \mathbb{T}\}\)</span> defined on a probability space <span class="math">\((\Omega, \mathcal{F},\mathbb{P})\)</span> is said to be <b>adapted</b> to a filtration <span class="math">\(\{\mathcal{F}_t~|~t\in \mathbb{T}\}\)</span> if <span class="math">\(X_t\)</span> is <span class="math">\(\mathcal{F}_t\)</span>-measurable, for every <span class="math">\(t\in \mathbb{T}\)</span>.
+</div></p><p>From the above definition, we see that an adapted process represents a realistic financial quantity whose evolution respects the market’s information structure.</p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+</p><p>Let the initial stock price <span class="math">\(S_0>0\)</span> at time <span class="math">\(t_0\)</span> (present time) be known, and let the up and down factors be <span class="math">\(U=1.1\)</span> and <span class="math">\(D=0.95\)</span>, respectively. For <span class="math">\(\mathbb{T} = \{t_0,t_1, t_2\}\)</span>, with <span class="math">\(t_1 < t_2\)</span>, consider the sample space <span class="math">\((\Omega, 2^\Omega)\)</span>, where <span class="math">\(\Omega\)</span> is given in <a href="PriceDynamics.html#discrete.time.filtration.binomial.ex">Example &laquo;Click Here&raquo; </a> with <span class="math">\(UD = U\times D.\)</span> </p><p>Let us use the notation <span class="math">\(\omega = m_1\times m_2\)</span>, for any <span class="math">\(\omega \in \Omega\)</span>, where each <span class="math">\(m_1, m_2\in \{U,D\}\)</span>.  Define the stochastic process <span class="math">\(S = \{S_k~|~ t_k \in \mathbb{T}, ~k=1,2\}\)</span> by
+</p><div class="math">\[
+S_1(\omega) = m_1S_0 , ~~
+S_2(\omega) = (m_1\times m_2)S_0, ~\omega\in \Omega.
+\]</div><p>
+Show that <span class="math">\(S\)</span> is adapted to the filtration <span class="math">\(\{\mathcal{F}_0, \mathcal{F}_1, \mathcal{F}_2\}\)</span> constructed in <a href="PriceDynamics.html#discrete.time.filtration.binomial.ex">Example &laquo;Click Here&raquo; </a>.
+</div></p><p>In financial modeling, stochastic processes are used to describe quantities whose future values are uncertain, such as stock price or interest rates. </p><p><h3 id="stock-price-model">Stock Price Model</h3></p><p>In this section, we derive a stochastic differential equation (SDE) governing the evolution of a stock price process, whose solution in known as the <b>geometric Brownian motion</b>. We also outline a computational procedure for simulating a stock price process.</p><p>Following the motivation from a previous <a href="PriceDynamics.html#nonconstant.interest.rate.subs" class="internal-link">Section  &laquo;Click Here&raquo;</a>, let us take the deterministic part of the model as
+</p><div class="math" id="Deterministic.Stock.Price.Process.eq">\begin{eqnarray}
+\frac{dS_t}{dt} = \tilde{\mu} S_t,
+\end{eqnarray}<div style="text-align:right;">(2.9)</div></div><p>
+where <span class="math">\(\tilde{\mu}\)</span>, called the <b>drift rate</b>, is the average rate of return of the stock. This model provides a simple description of deterministic exponential price growth. Since stock prices evolve multiplicatively, it is suitable to model the logarithm of the price process rather than the price itself.  So, let us consider the process
+</p><div class="math">\[
+X_t = \log\left(\frac{S_t}{S_0}\right).
+\]</div><p>
+Then, at the deterministic level, <span class="math">\(X_t\)</span> satisfies the ODE
+</p><div class="math">\[
+dX_t = \tilde{\mu} dt.
+\]</div><p>
+We now extend the deterministic model by introducing randomness through an additive noise term, leading to the stochastic model
+</p><div class="math" id="StochasticModelNoise.eq">\begin{eqnarray}
+dX_t = \mu dt + {noise},
+\end{eqnarray}<div style="text-align:right;">(2.10)</div></div><p>
+where the term `noise' represents the random fluctuation component to be characterized. Observe that we now use the notation <span class="math">\(\mu\)</span> to denote the drift coefficient, representing the expected rate of change (or mean drift) of the stochastic process <span class="math">\(\{X_t\}\)</span>.</p><p>The basic idea of a stochastic model is to assume the noise term to be <b>Gaussian white noise</b>.  In order to keep the mathematical discussion simple, we begin with a discrete-time approximation of <b>Gaussian white noise</b>.</p><p>Consider the partition of <span class="math">\([0,T]\)</span> as
+</p><div class="math">\[
+\mathbb{T}_n = \{ t_0, t_1, \ldots, t_n \}, \quad 
+t_k = k \Delta t, \quad \Delta t = \frac{T}{n}.
+\]</div><p>
+A <b>discrete Gaussian white noise</b> is a stochastic process <span class="math">\(\big\{\epsilon_t~|~t\in \mathbb{T}_n\big\}\)</span> that satisfies the following properties for all <span class="math">\(j, k=0,1,\ldots, n-1\)</span>:
+<ol class="latex-enumerate">
+</li><li><span class="math">\(\epsilon_{t_k} \sim\mathcal{N}(0,\sigma^{2}_{\epsilon})\)</span>, for some constant <span class="math">\(\sigma^{2}_{\epsilon}>0\)</span>; and
+</li><li>the autocorrelation property
+<span class="math">\(
+\mathbb{E}[\epsilon_{t_j}\epsilon_{t_k}] =
+0,\)</span> for <span class="math">\( j \neq k.\)</span>
+</li></ol></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+Often Property 2 is replaced by a stronger condition that <span class="math">\(\epsilon_t\)</span> and <span class="math">\(\epsilon_s\)</span> are independent for <span class="math">\(s\ne t\)</span>.  Note that independence implies zero autocorrelation, but the converse need not hold. In what follows, we always assume that Gaussian white noise is an <i>i.i.d</i> process <span class="math">\(\{\epsilon_{t}\}\)</span> such that <span class="math">\(\epsilon_t \sim\mathcal{N}(0,\sigma^{2}_{\epsilon})\)</span>, for some <span class="math">\(\sigma_\epsilon>0\)</span>.
+</div></p><p>Let us take <span class="math">\(\epsilon_{t_k}\sim\mathcal{N}(0,1)\)</span> and define the discrete process
+</p><div class="math">\[
+W_{t_k} = \sqrt{\Delta t}\sum_{j=0}^{k-1} \epsilon_{t_j}, ~~ k=1,2,\ldots, n.
+\]</div><p>
+This process satisfies the recursive relation
+</p><div class="math" id="RandomWalk.eq">\begin{eqnarray}
+W_{t_{k+1}} = W_{t_k} + \epsilon_{t_k}\sqrt{\Delta t}, ~~ k=0,1,\ldots, n-1
+\end{eqnarray}<div style="text-align:right;">(2.11)</div></div><p>
+ with <span class="math">\(W_0=0\)</span>, and the process <span class="math">\(\{W_{t_k}~|~k=0,1,\ldots, n\}\)</span> is called a <b>random walk</b>. </p><p><div class="figure">
+
+<img src="Figures/WienerWhiteNoise.png" class="standalone-figure">
+<div style="text-align: center; font-weight: bold;">An illustration of the random walk <a href="#RandomWalk.eq">(2.11)</a> (a,c) and the corresponding discrete white noise (b,d) in the interval <span class="math">\([0,1]\)</span>.</div>
+
+</div></p><p>The random walk and the corresponding discrete white noise are depicted in <a href="PriceDynamics.html#RWCN.fig">Figure &laquo;Click Here&raquo; </a> for <span class="math">\(T=1\)</span>. </p><p><h4 id="wiener-process">Wiener Process</h4> </p><p>For every <span class="math">\(j,k=0,1,\ldots,n,\)</span> with <span class="math">\(j < k\)</span>, we can write
+</p><div class="math">\[
+W_{t_k} - W_{t_j} = \sum_{i=j}^{k-1} \epsilon_{t_i} \sqrt{\Delta t},
+\]</div><p>
+which shows that <span class="math">\(W_k-W_j\)</span> is a normally distributed random variable with
+</p><div class="math">\[
+E\big( W_{t_k} - W_{t_j}\big) = 0
+	~~{and}~~
+	{Var}\big(W_{t_k} - W_{t_j}\big) = t_k - t_j.
+\]</div><p>Since <span class="math">\(\{\epsilon_{t_k}\}\)</span> is an independent process, for any <span class="math">\(t_0\le t_{k_1} < t_{k_2} < t_{k_3}\le t_n\)</span>, the random variables <span class="math">\(W_{t_{k_2}} - W_{t_{k_1}}\)</span> and <span class="math">\(W_{t_{k_3}} - W_{t_{k_2}}\)</span> are independent because these random variables are sum of two distinct set of <span class="math">\(\epsilon\)</span>'s which are themselves independent.</p><p>Now, we consider the limiting behaviour of the discrete-time process <span class="math">\(\{W_k\}\)</span> as the time step <span class="math">\(\Delta t \to 0\)</span>. 
+To obtain a continuous-time process on <span class="math">\([0,T]\)</span>, we define the piecewise linear interpolation
+</p><div class="math">\[
+W^{(n)}(t) 
+= W_{t_k} + \frac{t - t_k}{\Delta t}\big(W_{t_{k+1}} - W_{t_k}\big),
+~~ t \in [t_k, t_{k+1}),~~k=0,1,\ldots,n-1.
+\]</div><p>
+Thus, <span class="math">\(W^{(n)}(t)\)</span> is a continuous, piecewise linear random function that satisfies (by <a href="#RandomWalk.eq">(2.11)</a>, also see <a href="PriceDynamics.html#RWCN.fig">Figure &laquo;Click Here&raquo; </a>(a,c))
+</p><div class="math" id="PiecewiseLinear.Path.eq">\begin{eqnarray}
+W^{(n)}(t_{k+1}) - W^{(n)}(t_k) = \epsilon_{t_k}\sqrt{\Delta t}.
+\end{eqnarray}<div style="text-align:right;">(2.12)</div></div><p>
+By taking <span class="math">\(\Delta t\rightarrow 0\)</span> (or equivalently, <span class="math">\(n \to \infty\)</span>), the sequence of processes <span class="math">\(\{W^{(n)}(t)\}\)</span> converges in distribution (weakly) in the space <span class="math">\(C[0,T]\)</span> of continuous functions to a process  <span class="math">\(\{W_t: t \in [0,T]\}\)</span> and we write the expression <a href="#PiecewiseLinear.Path.eq">(2.12)</a> symbolically as
+</p><div class="math">\[
+dW_t = \epsilon_t \sqrt{dt}.
+\]</div><p>
+The process <span class="math">\(\{W_t\}\)</span> obtained above is a Wiener process (or Brownian motion)   as defined below.</p><p><div class="definition" id="GBM.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Standard Brownian motion</b>]</p><p>Let <span class="math">\((\Omega, \mathcal{F}, \mathbb{P}, \{\mathcal{F}_t\})\)</span> be a filtered probability space.  An adapted stochastic process <span class="math">\(\mathcal{W}=\{W_t~|~t\in [0,T]\}\)</span> defined on this filtered probability space is called a <b>standard Brownian motion</b> (also  known as a <b>Wiener process</b>) if it satisfies the following conditions:
+<ol class="latex-enumerate">
+<li><b>Initial condition</b>: <span class="math">\(W_0 = 0\)</span> (<span class="math">\(\mathbb{P}\)</span>-a.s).
+</p><p></li><li><b>Continuity property</b>: For each <span class="math">\(s\in \Omega\)</span>, the map <span class="math">\(t\longmapsto W_t(s)\)</span> from <span class="math">\([0,T]\)</span> to <span class="math">\(\mathbb{R}\)</span> is continuous. This is to say  <span class="math">\(\mathcal{W}\)</span> is a continuous stochastic process (<span class="math">\(\mathbb{P}\)</span>-a.s is sufficient).</p><p></li><li><b>Independent increment property</b>: For any partition <span class="math">\(t_0=0 < t_1 < t_2 < \ldots < t_n=T\)</span>, the random variables <span class="math">\(W_{t_1}\)</span>, <span class="math">\(W_{t_2}-W_{t_1}\)</span>, <span class="math">\(\ldots,\)</span> <span class="math">\(W_{t_n} - W_{t_{n-1}}\)</span> are independent.</p><p></li><li><b>Normal distribution</b>: For each <span class="math">\(s,t\in [0,T]\)</span> with <span class="math">\(s < t\)</span>, <span class="math">\(W_t-W_s\sim \mathcal{N}(0,t-s).\)</span>
+</li></ol>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+We omit the details and accept that the random walk process defined above tends to a Wiener process <span class="math">\(\{W_t~|~t\in [0,T]\}\)</span>  as <span class="math">\(\Delta t\rightarrow 0\)</span>.  This convergence result follows from the celebrated <b>Donsker’s invariance principle</b>
+(or <b>functional central limit theorem</b>), which states that suitably scaled random walks converge in law to the Wiener process.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+Although the derivative <span class="math">\(\frac{dW_t}{dt}\)</span> does not exist in the classical sense
+(because <span class="math">\(W_t\)</span> is almost surely nowhere differentiable),
+the above differential relation is interpreted in the sense of
+<b>Itô calculus</b>, where <span class="math">\(dW_t\)</span> represents an infinitesimal Gaussian increment
+with variance <span class="math">\(dt\)</span>.
+</div></p><p>In view of the above discussions, we propose to take the noise term to be proportional to <span class="math">\(dW_t\)</span>. Hence, we write the model <a href="#StochasticModelNoise.eq">(2.10)</a> as
+</p><div class="math" id="GeneralizedWienerProcess.eq">\begin{eqnarray}
+dX_t = \mu dt + \sigma dW_t,
+\end{eqnarray}<div style="text-align:right;">(2.13)</div></div><p>
+where <span class="math">\(\mu\)</span> and <span class="math">\(\sigma>0\)</span> are constants, and <span class="math">\(\{W_t\}\)</span> is a Wiener process.  This is a <b>stochastic model</b>, which is a <b>stochastic differential equation</b>. The process <span class="math">\(X=\{X_t\}\)</span> governed by the above equation is called a <b>generalized Wiener process</b> with <b>drift</b> <span class="math">\(\mu\)</span> and <b>volatility</b> <span class="math">\(\sigma\)</span>.</p><p><div class="problem" id="GBM.eq">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Show, by a formal integration, that the solution  of the equation <a href="#GeneralizedWienerProcess.eq">(2.13)</a> can be written in terms of the stock price process <span class="math">\(\{S_t\}\)</span> as
+</p><div class="math" >\begin{eqnarray} 
+S_t = S_0\exp\big(\mu t+\sigma W_t\big).
+\end{eqnarray}<div style="text-align:right;">(2.14)</div></div><p>
+</div></p><p><div class="remark" id="GBM.rem">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+
+The drift coefficient <span class="math">\(\mu\)</span> in the model <a href="#GeneralizedWienerProcess.eq">(2.13)</a> and in the solution <a href="#GBM.eq">(?)</a> represents the instantaneous expected growth rate of the logarithmic return process <span class="math">\(\{X_t\}\)</span>. </p><p>On the other hand, the drift parameter <span class="math">\(\tilde{\mu}\)</span> in the deterministic model <a href="#Deterministic.Stock.Price.Process.eq">(2.9)</a> is interpreted as the expected rate of return (drift) of the stock process <span class="math">\(\{S_t\}\)</span>. The corresponding stochastic model for <span class="math">\(\{S_t\}\)</span> is given by
+</p><div class="math" >\begin{eqnarray}
+dS_t = \tilde{\mu} S_t dt + \sigma S_t dW_t.
+\end{eqnarray}<div style="text-align:right;">(2.15)</div></div><p>
+The relation between <span class="math">\(\mu\)</span> and <span class="math">\(\tilde{\mu}\)</span> can be obtained using the <b>Itô's formula</b> (discussed below) and is given by
+</p><div class="math" >\begin{eqnarray}
+\tilde{\mu} = \mu + \frac{\sigma^2}{2}.
+\end{eqnarray}<div style="text-align:right;">(2.16)</div></div><p>
+Therefore, the stock price process <span class="math">\(\{S_t\}\)</span> can also be expressed in terms of <span class="math">\(\tilde{\mu}\)</span> as
+</p><div class="math" >\begin{eqnarray}
+S_t = S_0\exp\left(\left( \tilde{\mu} - \frac{\sigma^2}{2}\right)t+\sigma W_t\right)
+\end{eqnarray}<div style="text-align:right;">(2.17)</div></div><p>
+which is known as the <b>geometric Brownian motion</b> (GBM).</p><p>
+</div></p><p><h4 id="ito-formula">Itô Formula</h4></p><p>As given in <a href="PriceDynamics.html#GBM.rem">Remark &laquo;Click Here&raquo; </a>, it is important to note that <span class="math">\(\mu=\tilde{\mu}\)</span> holds only in deterministic models. In stochastic models, the presence of randomness alters the relationship between the drift of the price process and that of the log-price process, and hence <span class="math">\(\mu\)</span> and <span class="math">\(\tilde{\mu}\)</span> are generally different.  This discrepancy arises because the classical chain rule of calculus is no longer valid for stochastic processes driven by Brownian motion. The appropriate replacement is given by Itô’s formula, which we discuss in this section in a general setting.  We begin with the definition of an <b>Itô process</b>.</p><p><div class="definition" id="ItoProcess.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Itô process</b>]
+</p><p>A stochastic process <span class="math">\(X=\{X_t\}\)</span> is said to be an <b>Itô process</b> if it is governed by a stochastic differential equation of the form
+</p><div class="math" >\begin{eqnarray}
+dX = \mu(X,t) dt + \sigma(X,t) dW,
+\end{eqnarray}<div style="text-align:right;">(2.18)</div></div><p>
+where <span class="math">\(W\)</span> represents a Wiener process, and both the drift and volatility are functions of <span class="math">\(X\)</span> and <span class="math">\(t\)</span>.
+</div></p><p>From <a href="PriceDynamics.html#GBM.rem">Remark &laquo;Click Here&raquo; </a>, we see that the stock price process <span class="math">\(\{S_t\}\)</span> is an Itô process.  Further, we also derived an equation of the form given in the above definition for the process defined by <span class="math">\(X_t = \log(S_t/S_0)\)</span>. This shows that the process <span class="math">\(\{X_t\}\)</span> is also an Itô process.  The following lemma generalizes this result to any Itô process.</p><p><div class="lemma" id="ItoLemma.lm">
+<div class="heading-container">
+<b class="heading">Lemma:</b>
+</div>
+[<b>Itô Lemma</b>]</p><p>Let <span class="math">\(X\)</span> be an Itô process of the form in <a href="PriceDynamics.html#ItoProcess.def">Definition &laquo;Click Here&raquo; </a> and let <span class="math">\(F=F(X,t)\)</span>, where <span class="math">\(F\in C^{2,1}(\mathbb{R}^2)\)</span>. Then, <span class="math">\(F\)</span> is an Itô process satisfying the equation</p><div class="math">\[
+dF = \mu_F dt + \sigma_F dW,
+\]</div><p>
+where the drift and the volatility processes are given by
+</p><div class="math" >\begin{eqnarray}
+\mu_F &amp;=&amp; \frac{\partial F}{\partial t}  + \mu \frac{\partial F}{\partial X} 
+			+  \frac{\sigma^2}{2} \frac{\partial^2 F}{\partial X^2},  \\
+\sigma_F &amp;=&amp; \sigma \frac{\partial F}{\partial X}.
+\end{eqnarray}<div style="text-align:right;">(2.19)</div></div><p>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+In the calculus of deterministic functions, the expression for <span class="math">\(\mu_F\)</span> does not include the term 
+<span class="math">\(\sigma^2 \frac{1}{2} \frac{\partial^2 F}{\partial x^2}.\)</span>
+</div></p><p><div class="proofs" id="Eq1">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+We omit the rigorous proof of the lemma and present only a formal derivation of the formula.</p><p>Let us take <span class="math">\(F=F(X,t)\)</span>, for <span class="math">\((X,t)\in \mathbb{R}^2\)</span> and assume that <span class="math">\(F\)</span> is smooth.</p><p>Using Taylor expansion, we can write
+</p><div class="math" >\begin{eqnarray}
+\Delta F =  \frac{\partial F}{\partial X} \Delta X + \frac{\partial F}{\partial t} \Delta t +
+		 \frac{1}{2}\frac{\partial^2 F}{\partial X^2} \Delta X^2 + 
+		 \frac{\partial^2 F}{\partial X\partial t} \Delta X \Delta t +
+		 \frac{1}{2}\frac{\partial^2 F}{\partial t^2} \Delta t^2 + \cdots
+\end{eqnarray}<div style="text-align:right;">(2.20)</div></div><p>
+Let us consider discrete form of the Itô process 
+</p><div class="math">\[
+\Delta X = \mu(X,t) \Delta t + \sigma(X,t) \Delta W.
+\]</div><p>
+Since <span class="math">\(W\)</span> satisfies the Wiener process, we have</p><div class="math">\[
+\Delta W= \epsilon \sqrt{\Delta t}.
+\]</div><p>
+Therefore, we have (dropping the arguments for the sake of notational convenience)
+</p><div class="math">\[
+\Delta X = \mu \Delta t + \sigma \epsilon \sqrt{\Delta t},
+\]</div><p>
+Squaring both sides, we get
+</p><div class="math">\[
+\Delta X^2 = \sigma^2 \epsilon^2 \Delta t + o(\Delta t).
+\]</div><p>
+Substituting these expressions in <a href="#Eq1">(?)</a>, we get
+</p><div class="math" >\begin{eqnarray}
+\Delta F &amp;=&amp;\left(
+		\mu \frac{\Delta F}{\Delta X} + \frac{\Delta F}{\Delta t}+
+		\frac{1}{2} \sigma^2 \frac{\Delta^2 F}{\Delta X^2}  \epsilon^2
+	\right)\Delta t  +  \sigma  \frac{\Delta F}{\Delta X}\Delta W + o(\Delta t).	
+\end{eqnarray}<div style="text-align:right;">(2.21)</div></div><p>
+Since <span class="math">\(\epsilon \sim \mathcal{N}(0,1),\)</span> we have
+</p><div class="math">\[
+\mathbb{E}(\epsilon^2 \Delta t) = \Delta t,
+~~
+\operatorname{Var}(\epsilon^2 \Delta t) = 2\Delta t^2.
+\]</div><p>
+Hence, we see that
+<span class="math">\(\epsilon^2 \Delta t - \Delta t \xrightarrow[]{~\text{m.s.}~} 0,\)</span> as <span class="math">\(\Delta t\rightarrow 0\)</span>. This allows us to write
+</p><div class="math">\[
+\epsilon^2 \Delta t = \Delta t + o(\Delta t)
+~~ (\text{in  probability}),~ \text{as}~\Delta t\rightarrow 0.
+\]</div><p>
+Substituting this in the above expression for <span class="math">\(\Delta F\)</span>, neglecting <span class="math">\(o(\Delta t)\)</span> terms and then taking <span class="math">\(\Delta t\rightarrow 0\)</span>, we get
+</p><div class="math">\[
+dF =\left(
+		\mu \frac{\partial F}{\partial X} + \frac{\partial F}{\partial t}+
+		\frac{1}{2}\sigma^2\frac{\partial^2 F}{\partial X^2}  
+	\right)d t  +  \sigma  \frac{\partial F}{\partial X}d W.
+\]</div><p>
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Let <span class="math">\(S = \{S_t\}\)</span> satisfies the SDE 
+</p><div class="math">\[
+dS_t = \tilde{\mu} S_t dt + \sigma S_t dW_t,
+\]</div><p> 
+for some given <span class="math">\(S_0>0.\)</span>  Define the process <span class="math">\(X=\{X_t\}\)</span> by <span class="math">\(X_t = \log(S_t/S_0)\)</span>. Show that <span class="math">\(X\)</span> is an Itô process and find its drift and volatility.
+</div></p><p><h4 id="GBMParameterCalibration.sec">Parameter Calibration</h4></p><p>In order to simulate the stock price process numerically using GBM given by the formula 
+</p><div class="math" id="GBMSol.eq">\begin{eqnarray}
+S_t = S_0\exp\left(\left( \tilde{\mu} - \frac{\sigma^2}{2}\right)t+\sigma W_t\right),
+\end{eqnarray}<div style="text-align:right;">(2.22)</div></div><p>
+we need to estimate the model parameters, namely, the drift <span class="math">\(\tilde{\mu}\)</span> (or equivalently <span class="math">\(\mu= \tilde{\mu} - \tfrac{1}{2}\sigma^2\)</span>) and the volatility <span class="math">\(\sigma>0\)</span>. This process of determining the model parameter values from historical data is referred to as 
+<b>parameter calibration</b>.</p><p>In this section, we obtain the empirical estimate of <span class="math">\(\mu\)</span>, denoted by <span class="math">\(\widehat{\mu}\)</span> and <span class="math">\(\sigma\)</span>, denoted by <span class="math">\(\widehat{\sigma}\)</span>.</p><p>Given stock price observations <span class="math">\(\{S_k~|~k=0,1,\ldots, N\}\)</span> at equally spaced times 
+<span class="math">\(t_k = k\,\Delta t\)</span>, define the log-returns
+</p><div class="math">\[
+r_k = \ln\!\left(\frac{S_k}{S_{k-1}}\right),~~k=1,2,\ldots, N.
+\]</div><p>
+The empirical estimators <span class="math">\(\widehat{\mu}\)</span> of the drift <span class="math">\(\mu\)</span> of the log-return process can be obtained as
+</p><div class="math">\[
+\widehat{\mu} = \frac{1}{\Delta t} \left(\frac{1}{N}\sum_{k=1}^N r_k\right).
+\]</div><p>
+The empirical estimate <span class="math">\(\widehat{\sigma}\)</span> of the volatility <span class="math">\(\sigma\)</span> is obtained from the relation
+</p><div class="math">\[
+\widehat{\sigma}^2 = \frac{1}{(N-1)\,\Delta t}\sum_{k=1}^N (r_k - \overline{r})^2,
+\]</div><p>
+where <span class="math">\(\overline{r}\)</span> denotes the sample mean of <span class="math">\(\{r_k\}\)</span>.</p><p>The stock price process using the GBM can now be simulated using the formula <a href="#GBMSol.eq">(2.22)</a> with the estimated drift and volatility, given by
+</p><div class="math" id="Calibrated.GBM.eq">\begin{eqnarray}
+\widehat{S}_k = \widehat{S}_{k-1}\exp\left( \widehat{\mu} \Delta t + \widehat{\sigma} \epsilon_k \sqrt{\Delta t}\right), ~~ k=N+1, N+2, \ldots,
+\end{eqnarray}<div style="text-align:right;">(2.23)</div></div><p>
+where <span class="math">\(\epsilon_k \sim \mathcal{N}(0,1).\)</span></p><p>The following figure depicts three sample paths simulated using the calibrated GBM formula <a href="#Calibrated.GBM.eq">(2.23)</a>, with <span class="math">\(\Delta t = 1/252\)</span> (a standard convention for the number of trading days per year).</p><p><div class="figure">
+
+<img src="Figures/GBM.png" class="standalone-figure">
+<div style="text-align: center; font-weight: bold;">One year daily closing price of Infosys Technology  (labeled <i>Past</i>) and the stock price process (labeled <i>Future</i>) simulated using the calibrated GBM formula <a href="#Calibrated.GBM.eq">(2.23)</a>.</div>
+
+</div></p><p><div class="code">
+<div class="heading-container">
+<b class="heading">Code:</b>
+</div>
+Write a python code to simulate 3 sample paths using the calibrated GBM formula <a href="#Calibrated.GBM.eq">(2.23)</a> for a given time series data. You may get the data used in the simulation of the above figure from the following link:
+<a href="https://drive.google.com/file/d/18BxV45Mfrejov-2TObhjDZkfEdJOnU8W/view?usp=sharing" target="_blank">Daily closing price of Infosys</a>
+</div></p><p><h3 id="interest-rate-models">Interest-rate Models</h3></p><p>In the previous subsection, we introduced a stochastic model for the stock price process based on a multiplicative growth criterion, leading to exponential behavior in the absence of random fluctuations.  In this section, we introduce a stochastic model for the interest-rate process based on the mean-reverting phenomenon, which describes a process that tends to revert toward a long-term average level.  </p><p>Recall that the deterministic version of the mean-reverting model was introduced in <a href="PriceDynamics.html#deterministic.meanreverting.model.pr">Problem &laquo;Click Here&raquo; </a>.  by including a stochastic component driven by Brownian motion, we obtain the stochastic model for the interest-rate process <span class="math">\(\{r_t\}\)</span> as
+</p><div class="math" id="Vasicek.model.eq">\begin{eqnarray}
+dr_t = \lambda (\mu - r_t) dt + \sigma dW_t,
+\end{eqnarray}<div style="text-align:right;">(2.24)</div></div><p>
+where <span class="math">\(\lambda>0\)</span> is the speed of mean reversion, <span class="math">\(\mu\)</span> is the long-term mean level, and <span class="math">\(\sigma\)</span> is the volatility (standard deviation) of random fluctuations.</p><p>This model is known as the <b>Vasicek model</b> in the financial context, especially for modeling the short-term interest-rate.  Mathematically, the process <span class="math">\(\{r_t\}\)</span> follows an <b>Ornstein--Uhlenbeck process</b>, 
+a Gaussian mean-reverting stochastic process originally introduced in statistical physics.</p><p>The Vasicek model <a href="#Vasicek.model.eq">(2.24)</a> is a linear SDE, which can be written in the linear form as
+</p><div class="math">\[
+dr_t + \lambda r_t\,dt = \lambda \mu\,dt + \sigma\,dW_t.
+\]</div><p>
+Multiplying both sides by the integrating factor <span class="math">\(e^{\lambda t}\)</span> and using Itô lemma, we can rewrite the above equation equivalently as
+</p><div class="math">\[
+d\!\left(e^{\lambda t} r_t\right)
+    = \lambda \mu e^{\lambda t}\,dt + \sigma e^{\lambda t}\,dW_t.
+\]</div><p>Integrate both sides from <span class="math">\(0\)</span> to <span class="math">\(t\)</span> gives
+</p><div class="math">\[
+e^{\lambda t} r_t - r_0
+    = \int_0^t \lambda \mu e^{\lambda s}\,ds
+      + \int_0^t \sigma e^{\lambda s}\,dW_s.
+\]</div><p>
+Multiplying both sides by <span class="math">\(e^{-\lambda t}\)</span>, we obtain the exact solution of the Vasicek (Ornstein--Uhlenbeck) process as
+</p><div class="math" id="VasicekSolution.eq">\begin{eqnarray}
+    r_t = r_0 e^{-\lambda t}
+           + \mu(1 - e^{-\lambda t})
+           + \sigma \int_0^t e^{-\lambda(t-s)}\,dW_s.
+\end{eqnarray}<div style="text-align:right;">(2.25)</div></div><p>
+The first two terms represent the deterministic mean-reverting component, while the third term represents the stochastic contribution driven by the Wiener process and is expressed as a <b>stochastic integral</b>, which in this case is a <b>Wiener integral</b> because the integrand is a deterministic function.</p><p>Observe that, unlike the stock price process governed by the GBM, the exact solution <a href="#VasicekSolution.eq">(2.25)</a> for the process <span class="math">\(\{r_t\}\)</span> cannot be used directly to generate (or plot) simulated data, even when the parameters are given (or calibrated).  This is because of the presence of the stochastic integral <span class="math">\(\int_0^t e^{-\lambda(t-s)}\,dW_s\)</span>, which is a random variable depending on the entire Brownian path <span class="math">\(\{W_t~|~t\in [0,1]\}\)</span>. Thus, the process <span class="math">\(\{r_t\}\)</span> is known only in law (<i>i.e.</i>, through its distribution), but not as an explicit function of time. </p><p><h4 id="wiener-integral">Wiener Integral</h4></p><p>From the above discussion, it is clear that to simulate (or even interpret) the process <span class="math">\(\{r_t\}\)</span>, we must first understand how to define and evaluate a Wiener integral.  </p><p>Let <span class="math">\(\{W_t\}_{t\ge 0}\)</span> be a Wiener process defined on a probability space
+<span class="math">\((\Omega,\mathcal{F},\mathbb{P})\)</span>.</p><p>
+<b>Step 1: Definition for step functions.</b>
+Let <span class="math">\(f:[0,T]\to\mathbb{R}\)</span> be a step function of the form
+</p><div class="math">\[
+f(t) = \sum_{k=0}^{n-1} a_k {1\hspace{-0.09in}1}_{(t_k,t_{k+1}]}(t),
+\qquad
+0=t_0 < t_1 < \cdots < t_n=T,
+\]</div><p>
+where <span class="math">\(a_k\in\mathbb{R}\)</span> are constants.  
+The <b>Wiener integral</b> of <span class="math">\(f\)</span> with respect to <span class="math">\(W_t\)</span> is defined as
+</p><div class="math">\[
+\int_0^T f(t)\,dW_t
+:=
+\sum_{k=0}^{n-1} a_k \bigl(W_{t_{k+1}}-W_{t_k}\bigr).
+\]</div><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>Isometry Property for Step Functions</b>]</p><p>Show that for any step function <span class="math">\(f\)</span>, 
+</p><div class="math">\[
+\mathbb{E}\!\left[\left(\int_0^T f(t)\,dW_t\right)^2\right]
+=
+\int_0^T f(t)^2\,dt.
+\]</div><p>
+</div></p><p><b>Step 2: Extension to square-integrable functions.</b>
+Let <span class="math">\(f\in L^2([0,T])\)</span>. Consider a uniform partition of <span class="math">\([0,T]\)</span> in the form
+</p><div class="math">\[
+0 = t_0^{(n)} < t_1^{(n)} < \cdots < t_n^{(n)} = T,
+~~
+t_k^{(n)} = \frac{kT}{n},~~
+k=0,1,\ldots, n.
+\]</div><p>
+Define a sequence of step functions
+</p><div class="math">\[
+f_n(t)
+:=
+\sum_{k=0}^{n-1}
+f\!\left(t_k^{(n)}\right)\,
+{1\hspace{-0.09in}1}_{(t_k^{(n)},\, t_{k+1}^{(n)}]}(t).
+\]</div><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Show that the sequence <span class="math">\(\{f_n\}\)</span> given above satisfies
+</p><div class="math">\[
+\int_0^T |f_n(t)-f(t)|^2\,dt \;\longrightarrow\; 0.
+\]</div><p>
+</div></p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Wiener Integral</b>]</p><p>Let <span class="math">\(f\in L^2([0,T])\)</span> and let <span class="math">\(\{f_n\}\)</span> be a sequence of step functions such that
+</p><div class="math" >\begin{eqnarray}
+\int_0^T |f_n(t)-f(t)|^2\,dt \;\longrightarrow\; 0.
+\end{eqnarray}<div style="text-align:right;">(2.26)</div></div><p>
+The <b>Wiener integral</b> of <span class="math">\(f\)</span> with respect to the Wiener process <span class="math">\(\{W_t\}\)</span> is defined as
+</p><div class="math" >\begin{eqnarray}
+\int_0^T f(t)\,dW_t
+\;:=\;
+\lim_{n\to\infty} \int_0^T f_n(t)\,dW_t,
+\end{eqnarray}<div style="text-align:right;">(2.27)</div></div><p>
+where the limit is taken in the <b>mean-square sense</b>, that is,
+</p><div class="math">\[
+\lim_{n\to\infty}
+\mathbb{E}\!\left[
+\left|
+ \int_0^T f_n(t)\,dW_t
+-
+\int_0^T f(t)\,dW_t
+\right|^2
+\right]
+=0.
+\]</div><p>
+</div></p><p>The isometry property of the Wiener integral for step functions can be extended to <span class="math">\(L^2\)</span>-functions.</p><p><div class="problem" id="isometry.l2.prob">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>Isometry Property for <span class="math">\(L^2\)</span>-Functions</b>]
+</p><p>Let <span class="math">\(\{W_t\}_{t\ge 0}\)</span> be a Wiener process.  Show that for any deterministic function <span class="math">\(f\in L^2([0,T])\)</span>, the Wiener
+integral satisfies the isometry property
+</p><div class="math">\[
+\mathbb{E}\!\left[
+\left(
+\int_0^T f(t)\,dW_t
+\right)^2
+\right]
+=
+\int_0^T f(t)^2\,dt.
+\]</div><p>
+</div></p><p><div class="remark" id="normal.distribution.Wiener.integral.rem">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+
+Since the integrand <span class="math">\(f\)</span> is deterministic and belongs to <span class="math">\(L^2([0,T])\)</span>, the Wiener integral is a Gaussian random variable with
+</p><div class="math">\[
+\int_0^T f(t)\,dW_t
+\sim
+\mathcal{N}\!\left(0,\;\int_0^T f(t)^2\,dt\right).
+\]</div><p>
+</div></p><p>The above result can be proved easily when the integrand <span class="math">\(f\)</span> is a step function, and this case is left as an exercise.  The proof for general <span class="math">\(f\in L^2([0,T])\)</span> is omitted.</p><p><h4 id="numerical-simulation">Numerical Simulation</h4></p><p>We now discuss an exact numerical procedure to simulate the discrete-time mean-reverting process <span class="math">\(\{r_{t_k}\}_{k=0}^N\)</span>, for a partition
+</p><div class="math">\[
+0=t_0 < t_1 < \cdots < t_N=T,
+\qquad
+\Delta t = t_{k+1}-t_k = \frac{T}{N},
+\]</div><p>
+where <span class="math">\(N>0\)</span> is a given integer.</p><p>The Wiener integral in <a href="#VasicekSolution.eq">(2.25)</a> at <span class="math">\(t=t_{k+1}\)</span> can be written as
+</p><div class="math" >\begin{eqnarray}
+\int_0^{t_{k+1}} e^{-\lambda(t_{k+1}-s)}\,dW_s
+&amp;=&amp;
+\int_0^{t_k} e^{-\lambda(t_{k+1}-s)}\,dW_s
++
+\int_{t_k}^{t_{k+1}} e^{-\lambda(t_{k+1}-s)}\,dW_s\\
+&amp;=&amp;
+e^{-\lambda\Delta t}
+\int_0^{t_k} e^{-\lambda(t_k-s)}\,dW_s
++
+\int_{t_k}^{t_{k+1}} e^{-\lambda(t_{k+1}-s)}\,dW_s.
+\end{eqnarray}<div style="text-align:right;">(2.28)</div></div><p>Substituting the above expression in <a href="#VasicekSolution.eq">(2.25)</a> gives the exact recursion relation
+</p><div class="math" id="VasicekRecursion">\begin{eqnarray}
+r_{t_{k+1}}
+=
+\mu + (r_{t_k}-\mu)e^{-\lambda\Delta t}
++
+\sigma
+\int_{t_k}^{t_{k+1}} e^{-\lambda(t_{k+1}-s)}\,dW_s.
+\end{eqnarray}<div style="text-align:right;">(2.29)</div></div><p><h4 id="distribution-of-the-stochastic-increment">Distribution of the stochastic increment</h4></p><p>The integrand
+</p><div class="math" >\begin{eqnarray}
+s \mapsto e^{-\lambda(t_{k+1}-s)}
+\end{eqnarray}<div style="text-align:right;">(2.30)</div></div><p>
+is deterministic and belongs to <span class="math">\(L^2([t_k,t_{k+1}])\)</span>. Hence by <a href="PriceDynamics.html#normal.distribution.Wiener.integral.rem">Remark &laquo;Click Here&raquo; </a>, the stochastic
+integral in <a href="#VasicekRecursion">(2.29)</a> is a centered Gaussian random variable. </p><p>By the isometry property <a href="PriceDynamics.html#isometry.l2.prob">Problem &laquo;Click Here&raquo; </a>, we have
+</p><div class="math" >\begin{eqnarray}
+\begin{aligned}
+\mathbb{E}\!\left[
+\left(
+\int_{t_k}^{t_{k+1}} e^{-\lambda(t_{k+1}-s)}\,dW_s
+\right)^2
+\right]
+&amp;=
+\int_{t_k}^{t_{k+1}} e^{-2\lambda(t_{k+1}-s)}\,ds \\
+&amp;=
+\frac{1-e^{-2\lambda\Delta t}}{2\lambda}.
+\end{aligned}
+\end{eqnarray}<div style="text-align:right;">(2.31)</div></div><p>Therefore,
+</p><div class="math" >\begin{eqnarray}
+\int_{t_k}^{t_{k+1}} e^{-\lambda(t_{k+1}-s)}\,dW_s
+\sim
+\mathcal{N}\!\left(
+0,\;\frac{1-e^{-2\lambda\Delta t}}{2\lambda}
+\right).
+\end{eqnarray}<div style="text-align:right;">(2.32)</div></div><p><h4 id="exact-simulation-scheme">Exact simulation scheme</h4></p><p>Let <span class="math">\(\{Z_k\}_{k=0}^{N-1}\)</span> be independent standard normal random variables,
+<span class="math">\(Z_k\sim\mathcal{N}(0,1)\)</span>. Then, we can write
+</p><div class="math" >\begin{eqnarray}
+\int_{t_k}^{t_{k+1}} e^{-\lambda(t_{k+1}-s)}\,dW_s
+=
+\sqrt{\frac{1-e^{-2\lambda\Delta t}}{2\lambda}}\; Z_k.
+\end{eqnarray}<div style="text-align:right;">(2.33)</div></div><p>Substituting into <a href="#VasicekRecursion">(2.29)</a> yields the <b>exact numerical
+scheme</b>:
+</p><div class="math" id="VasicekExactScheme">\begin{eqnarray}
+r_{k+1}
+=
+\mu + (r_k-\mu)e^{-\lambda\Delta t}
++
+\sigma
+\sqrt{\frac{1-e^{-2\lambda\Delta t}}{2\lambda}}\; Z_k,
+\qquad
+Z_k\sim\mathcal{N}(0,1).
+\end{eqnarray}<div style="text-align:right;">(2.34)</div></div><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+<span class="math">\(~\)</span></p><p>The scheme <a href="#VasicekExactScheme">(2.34)</a> uses the exact transition
+distribution of the Vasicek model and therefore introduces no discretization
+bias.
+</div></p><p>The following figure depicts the numerical simulation of the mean-reverting process using the formula <a href="#VasicekExactScheme">(2.34)</a>.</p><p><div class="figure">
+
+<img src="Figures/vasicek.png" class="standalone-figure">
+<div style="text-align: center; font-weight: bold;"> Numerical simulation of the mean-reverting process using <a href="#VasicekExactScheme">(2.34)</a>.</div>
+
+</div></p><p><div class="code">
+<div class="heading-container">
+<b class="heading">Code:</b>
+</div>
+Understand the python code given in the following link:
+<a href="https://drive.google.com/file/d/1cd5AXkVOCMf_edF5S_glW1RdpQHaUVN6/view?usp=sharing" target="_blank">Vasicek</a>
+</div></p>
+    </div>
+
+   
+    <script>
+    document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+    document.addEventListener("keydown", function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "s")) {
+            e.preventDefault();
+        }
+    });
+    </script>
+       
+ <footer>
+  © S. Baskar, Department of Mathematics, IIT Bombay. 2026 (This material is licensed under CC BY-NC 4.0.) — Updated: 01-Feb-2026
+</footer>
+
+<style>
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #f8f8f8;
+  color: #888;
+  font-size: 0.75em;
+  text-align: center;
+  padding: 6px 0;
+  border-top: 1px solid #ddd;
+  z-index: 10;               /* low z-index */
+  pointer-events: none;      /* allows clicks to pass through */
+}
+
+/* Small screen adjustments */
+@media (max-width: 600px) {
+  footer {
+    font-size: 0.68em;
+    padding: 4px 0;
+  }
+}
+</style>   
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocButton = document.getElementById('toc-button');
+            const tocPanel = document.getElementById('toc-panel');
+            const closeToc = document.getElementById('close-toc');
+
+            if (localStorage.getItem('tocOpen') === 'true') {
+                tocPanel.classList.add('open');
+                localStorage.removeItem('tocOpen');
+            }
+
+            tocButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                tocPanel.classList.toggle('open');
+            });
+
+            function closeTocPanel() {
+                tocPanel.classList.remove('open');
+            }
+
+            closeToc.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeTocPanel();
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!tocPanel.contains(e.target) && e.target !== tocButton) {
+                    closeTocPanel();
+                }
+            });
+
+            tocPanel.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            document.querySelectorAll('#toc-panel a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (!this.getAttribute('href').startsWith('#')) {
+                        localStorage.setItem('tocOpen', 'true');
+                    }
+                    if (this.hash) {
+                        e.preventDefault();
+                        const target = document.getElementById(this.hash.substring(1));
+                        if (target) {
+                            window.scrollTo({
+                                top: target.offsetTop - 70,
+                                behavior: 'smooth'
+                            });
+                            history.pushState(null, null, this.hash);
+                            if (window.innerWidth < 768) {
+                                closeTocPanel();
+                            }
+                        }
+                    }
+                });
+            });
+
+            if (window.location.hash) {
+                const target = document.getElementById(window.location.hash.substring(1));
+                if (target) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: target.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

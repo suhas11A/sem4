@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hedging With Options</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML ">
+    </script>
+    <style>
+        body, p, li, div {
+        color: black !important;
+        line-height: 1.6;
+        }
+        ol.latex-enumerate, ol.latex-enumerate li {
+            line-height: 1.6 !important;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        /* Updated TOC styles */
+        #toc-panel {
+            font-size: 0.9em;
+        }
+        .toc-chapter, 
+        .toc-section, 
+        .toc-subsection {
+            color: black !important;
+        }
+        .toc-chapter a,
+        .toc-section a,
+        .toc-subsection a {
+            color: black !important;
+            text-decoration: none;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        #toc-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #1a73e8;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #toc-panel {
+            position: fixed;
+            top: 0;
+            left: -350px;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            padding: 20px;
+            overflow-y: auto;
+            transition: left 0.3s ease-out;
+            will-change: transform;
+        }
+        #toc-panel.open {
+            left: 0;
+        }
+        #close-toc {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #content {
+            padding: 20px;
+            padding-top: 60px;
+            max-width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
+        }
+        .toc-chapter {
+            margin-bottom: 10px;
+            border-left: 3px solid #1a73e8;
+            padding-left: 10px;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        .chapter-link {
+            font-weight: bold;
+            color: #1a73e8;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+        }
+        .toc-sections {
+            margin-left: 15px;
+            display: none;
+        }
+        .toc-sections.expanded {
+            display: block;
+        }
+        .toc-section {
+            padding: 3px 0;
+            margin-left: 10px;
+        }
+        .toc-subsection {
+            padding: 3px 0;
+            margin-left: 25px;
+            font-size: 0.95em;
+        }
+        .toc-subsubsection {
+            padding: 3px 0;
+            margin-left: 40px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        :target {
+            scroll-margin-top: 80px;
+            animation: highlight 1.5s ease;
+        }
+        @keyframes highlight {
+            0% { background-color: rgba(26, 115, 232, 0.1); }
+            100% { background-color: transparent; }
+        }
+        @media (max-width: 768px) {
+            #toc-panel {
+                width: 85%;
+                left: -90%;
+            }
+            #toc-panel.open {
+                left: 0;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            }
+            #content {
+                transition: transform 0.3s ease-out;
+            }
+            #toc-panel.open ~ #content {
+                transform: translateX(85%);
+            }
+        }
+        .note {
+  background-color: color-mix(in srgb, var(--primary) 7%, white);
+border: 5px solid var(--primary);
+  padding: 5px;
+  margin: 10px;
+}
+.problem {
+  background-color: color-mix(in srgb, var(--primary) 18%, white);
+border: 1px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.example {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 10px;
+  margin: 10px;
+}
+.remark {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 20px;
+  margin: 10px;
+}
+.definition {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px double var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.lemma {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.theorem {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.proofs {
+  background-color: var(--environmentBackground);
+border: 5px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.project {
+  background-color: var(--environmentBackground);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.hint {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.code {
+  background-color: color-mix(in srgb, var(--primary) 13%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.algorithm {
+  background-color: color-mix(in srgb, var(--primary) 5%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+    </style>
+</head>
+
+<body>
+    <button id="toc-button">☰ Table of Contents</button>
+    <div id="toc-panel">
+        <button id="close-toc">×</button>
+
+      <!-- Small Main Page Button -->
+<div style="text-align:right; margin-bottom: 10px;">
+  <a href="index.html" 
+     style="
+       background: var(--toc-primary, #2738F5);
+       color: white;
+       padding: 4px 10px;
+       border-radius: 16px;
+       font-size: 0.75em;
+       font-weight: 900;
+       text-decoration: none;
+       display: inline-block;
+       box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+     ">
+    Main Page
+  </a>
+</div>
+
+        <div class="full-toc">
+
+        <div class="toc-chapter ">
+            <a href="Overview of Financial Systems.html" class="chapter-link">
+                Chapter 1: Overview of Financial Systems
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Overview of Financial Systems.html#FinancialSystem.ch">
+                        Financial System: An Overview
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#financialmarketframework.sec">
+                        Financial Market Framework
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#financial.instrument.ssec">
+                        Financial Instruments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#securities">
+                        Securities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-levels">
+                        Market Levels
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#market-segments">
+                        Market Segments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#trading-mechanism">
+                        Trading Mechanism
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#marketparticipants.sec">
+                        Market Participants
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-makers">
+                        Market Makers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#investors">
+                        Investors
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#speculators">
+                        Speculators
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#hedgers">
+                        Hedgers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#arbitrageurs">
+                        Arbitrageurs
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#overviewderivatives.sec">
+                        Overview of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#essential-market-terms">
+                        Essential Market Terms
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#purpose-of-derivatives">
+                        Purpose of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#need-for-pricing-models-and-analysis">
+                        Need for Pricing Models and Analysis
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#noncontingentclaims.sec">
+                        Non-Contingent Claims: Forwards, Futures, and Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#forwards-and-futures">
+                        Forwards and Futures
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#swaps">
+                        Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#options.sec">
+                        Contingent Claims: Options
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Price Dynamics.html" class="chapter-link">
+                Chapter 2: Price Dynamics
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Price Dynamics.html#price.dynamics.ch">
+                        Price Dynamics
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Price Dynamics.html#deterministic-interest-rate-models">
+                        Deterministic Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#discrete-time-models">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#continuous-time-model">
+                        Continuous Time Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#nonconstant.interest.rate.subs">
+                        Non-constant Interest Rate
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#present.value.subs">
+                        Present Value
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#cash-flow-stream">
+                        Cash Flow Stream
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Price Dynamics.html#stochastic-models">
+                        Stochastic Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#stochastic-processes">
+                        Stochastic Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#stock-price-model">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#wiener-process">
+                        Wiener Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#ito">
+                        It\^{o
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#GBMParameterCalibration.sec">
+                        Parameter Calibration
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#interest-rate-models">
+                        Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#wiener-integral">
+                        Wiener Integral
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#numerical-simulation">
+                        Numerical Simulation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#distribution-of-the-stochastic-increment">
+                        Distribution of the stochastic increment
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#exact-simulation-scheme">
+                        Exact simulation scheme
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Portfolio And Arbitrage.html" class="chapter-link">
+                Chapter 3: Portfolio And Arbitrage
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Portfolio And Arbitrage.html#PortfolioNArbitrage.ch">
+                        Portfolio and Arbitrage
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#portfolioconcepts.ssec">
+                        Portfolio Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#value-and-gain-processes">
+                        Value and Gain Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#market-model">
+                        Market Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#predictable-strategy">
+                        Predictable Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#self-financing-strategy">
+                        Self-financing Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.opportunity.sec">
+                        Arbitrage Opportunity
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage-portfolio">
+                        Arbitrage Portfolio
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#application-forward-pricing">
+                        Application: Forward Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#law.of.one.price.subs">
+                        Law of One Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.strategy.ssec">
+                        Arbitrage Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#futures.sec">
+                        Application: Future Contracts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#marking-to-market">
+                        Marking to Market
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#pricing-model">
+                        Pricing Model
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Basic Concepts of Options.html" class="chapter-link">
+                Chapter 4: Basic Concepts of Options
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Basic Concepts of Options.html#BasicConceptsOptions.ch">
+                        Basic Concepts of Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#call.put.sec">
+                        Basic Terminology
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#defining-parameters">
+                        Defining Parameters
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#payoff-and-gain">
+                        Payoff and Gain
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#time-value-in-an-option-price">
+                        Time Value in an Option Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#Bounds.EuropeanOption.sec">
+                        Premium Bounds and Arbitrage Opportunities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#european-options">
+                        European Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#american-options">
+                        American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#put-call-parity-estimates">
+                        Put-Call Parity Estimates
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#premium-valuation">
+                        Premium Valuation
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Discrete Time Models.html" class="chapter-link">
+                Chapter 5: Discrete Time Models
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Discrete Time Models.html#DiscreteTimeModels.ch">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Time Models.html#1step.BM.sec">
+                        Single-Step Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#underlying-model">
+                        Underlying Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#risk-neutral.probability.1sBM.ssec">
+                        Risk-neutral Probability
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#Eur.OPM.1S.ssec">
+                        European Option Pricing Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Time Models.html#MultiStep.BM.sec">
+                        Multi-step Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#Stock.Price.Model.ssec">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#Eur.OPM.nS.ssec">
+                        European Option Pricing Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Discrete Time Models.html#generalization-to-multi-step-method">
+                        Generalization to Multi-step Method
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#log.return.model.sec">
+                        Logarithmic Return Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Discrete Time Models.html#application-to-binomial-model">
+                        Application to Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#hedge-strategy">
+                        Hedge Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#pricing-for-american-options">
+                        Pricing for American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#exotic-options">
+                        Exotic Options
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Discrete Martingale Theory.html" class="chapter-link">
+                Chapter 6: Discrete Martingale Theory
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Discrete Martingale Theory.html#discrete.martingale.ch">
+                        Discrete Martingale Theory
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Martingale Theory.html#basic-concepts">
+                        Basic Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#numeraire.rem">
+                        Normalized Market and Num\'eraire
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Discrete Martingale Theory.html#characterization-of-self-financing-condition">
+                        Characterization of Self-financing condition
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#conditional-expectation">
+                        Conditional Expectation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Martingale Theory.html#martingale-process-and-measure">
+                        Martingale Process and Measure
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#discrete-martingale-process">
+                        Discrete Martingale Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#fundamental-theorem-of-asset-pricing">
+                        Fundamental Theorem of Asset Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#general-pricing-model">
+                        General Pricing Model
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Continuous Time Model.html" class="chapter-link">
+                Chapter 7: Continuous Time Model
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Continuous Time Model.html#continuous-time-models">
+                        Continuous Time Models 
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Continuous Time Model.html#stock.price.models.sec">
+                        Stock Price Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#lognormal-model">
+                        Lognormal Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#brownian-motion">
+                        Brownian Motion
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Continuous Time Model.html#option.pricing.model.sec">
+                        Option Pricing Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#black-scholes-formula">
+                        Black-Scholes Formula
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#black-scholes-differential-equation">
+                        Black-Scholes Differential Equation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Continuous Time Model.html#continuous-time-martingale-pricing">
+                        Continuous-Time Martingale Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#martingale-representation-theorem">
+                        Martingale Representation Theorem
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#girsanovs-theorem">
+                        Girsanov's Theorem
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#feynman-kavc">
+                        Feynman-Ka\v{c
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter current">
+            <a href="Hedging With Options.html" class="chapter-link">
+                Chapter 8: Hedging With Options
+            </a>
+            <div class="toc-sections expanded">
+
+                <div class="toc-item ">
+                    <a href="Hedging With Options.html#hedging.trading.strategies.ch">
+                        Hedging and Trading Strategies
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Hedging With Options.html#greeks.sec">
+                        Greeks and Hedging
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#delta">
+                        Delta
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Hedging With Options.html#delta-hedge">
+                        Delta Hedge
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#gamma">
+                        Gamma
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#theta">
+                        Theta
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#vega">
+                        Vega
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#rho">
+                        Rho
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Hedging With Options.html#option.trading.strategy.sec">
+                        Option Trading Strategies
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#spreads">
+                        Spreads
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Hedging With Options.html#bull-spread">
+                        Bull Spread
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Hedging With Options.html#bear-spread">
+                        Bear Spread
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Hedging With Options.html#butterfly-spread">
+                        Butterfly Spread
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#volatility-speculation">
+                        Volatility Speculation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Hedging With Options.html#straddle">
+                        Straddle
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Hedging With Options.html#strangle">
+                        Strangle
+                    </a>
+                </div>
+</div></div>
+</div>
+    </div>
+    <div id="content">
+        <p>
+<h1 id="hedging.trading.strategies.ch">Hedging and Trading Strategies</h1></p><p>The previous chapter was mainly dedicated to the Black-Scholes model for option pricing.  The purpose of this model is not to predict the market movement, but to eliminate risk through hedging. In particular, one can eliminate the instantaneous market risk by constructing a portfolio of an option and the underlying asset with appropriately chosen hedge ratio (Delta). In fact, this can lead to a risk-free portfolio under the model assumptions. The model also provides the price dynamics.  A similar idea also appears in the binomial model, where delta hedging is used to replicate the option payoff and derive its price. Thus, pricing and hedging are fundamentally two sides of the same principle. </p><p>The concepts used in deriving the pricing models, both in discrete and in continuous time framework, also form the basis for risk management in practice.  In particular, delta hedging can be used as a dynamic trading strategy to reduce exposure to movements in the underlying asset.   Recall that the delta is defined as the partial derivative of the option price with respect to the underlying asset price <span class="math">\(S\)</span>, and hence it measures the sensitivity of the option value to change in <span class="math">\(S\)</span>.  However, the sensitivity of an option is not limited to the underlying price.  One can also analyze the sensitivity of the option value changes with respect to other parameters such as time <span class="math">\(t\)</span>, the interest rate <span class="math">\(r\)</span>, and volatility <span class="math">\(\sigma\)</span>. These sensitivities are commonly represented by Greek letters and they are referred to as <b>Greeks</b>.</p><p>In this chapter, we use the pricing framework established in the previous chapters to study how options can be used for risk management and trading.  The discussion is organized into two parts.  In <a href="Hedging With Options.html#greeks.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a>, we focus on hedging using sensitivity measures, the Greeks, and examine how these quantities can be used to construct portfolios that reduces exposure to various sources of risk.  In <a href="Hedging With Options.html#option.trading.strategy.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a>, we turn to commonly used option trading strategies, where options are combined to achieve specific payoff profiles and risk-return characteristics.  </p><p><h2 id="greeks.sec">Greeks and Hedging</h2></p><p>A hedge is a position that offsets the price risk of another position.
+The main purpose of an option is to hedge a position in an asset.  A risk in holding an asset is due to the fluctuations in the underlying asset price, which causes volatility.  Thus, the underlying asset price <span class="math">\(S\)</span> and the volatility parameter <span class="math">\(\sigma\)</span> mainly influences an option's price which is also apparent from the Black-Scholes model.  It is important to understand the dependency of the option price on <span class="math">\(S\)</span> and <span class="math">\(\sigma\)</span> (also on <span class="math">\(r\)</span> and <span class="math">\(t\)</span>) more closely in order to use options as a powerful hedging tool.   To this end, we introduce certain terms that can be used in dependency analysis, called the <b>sensitivity analysis</b>, of the option price on the variables. Some of the sensitivity terms are commonly denoted by Greek alphabets and hence the name <b>Greeks</b> is used in the literature.  In this section, we introduce some important Greeks used in option price sensitivity analysis and discuss their usage in hedging strategies.</p><p>The Black-Scholes formulae for European put and call options are derived in <a href="Hedging With Options.html#BSFormula.Put.cor">Corollary &laquo;Click Here&raquo; </a> and <a href="Hedging With Options.html#BSFormula.Call.cor">Corollary &laquo;Click Here&raquo; </a>, respectively. We can see that these prices depend on <span class="math">\(t\)</span>, <span class="math">\(S\)</span>, <span class="math">\(\sigma\)</span>, <span class="math">\(r\)</span>, and <span class="math">\(K\)</span>.  For a fixed strike <span class="math">\(K\)</span>, we write the Black-Scholes formulae as
+</p><div class="math" >\begin{eqnarray}
+C(t,S,r,\sigma) &amp;=&amp; S \Phi(d_{+}) - K e^{-r(T-t)}\Phi(d_{-}) ,\\
+P(t,S,r,\sigma) &amp;=&amp; K e^{-r(T-t)}\Phi(-d_{-}) - S \Phi(-d_{+}),
+\end{eqnarray}<div style="text-align:right;">(8.1)</div></div><p>
+where
+</p><div class="math">\[
+d_{\pm}(t,S,r,\sigma) = \frac{\log\left(\frac{S}{K}\right)+\left(r\pm \frac{\sigma^2}{2}\right)(T-t)}
+			{\sigma \sqrt{T-t}}.
+\]</div><p>
+In this section, we analyze the sensitivity of these prices with respect to the parameters <span class="math">\(t\)</span>, <span class="math">\(S\)</span>, <span class="math">\(\sigma\)</span>, and <span class="math">\(r\)</span>. More precisely, we study the fundamental properties of the partial derivatives of <span class="math">\(C\)</span> and <span class="math">\(P\)</span> (we use the notation <span class="math">\(V\)</span>, the value of an option or a portfolio, in a general discussion not specific to call or put) with respect to the parameters occurring in the Black-Scholes formulae. 
+The collection of all the partial derivatives is called the <b>Greeks</b>.  
+The purpose of studying Greeks is to build hedging portfolios to reduce the sensitivity of the value of a portfolio (or  an option) to changes in the underlying by means of diversifying the position. </p><p><h3 id="delta">Delta</h3></p><p>Let us start our sensitivity analysis with the dependency of <span class="math">\(V\)</span> with respect to the price of the underlying asset <span class="math">\(S\)</span>.</p><p>The <b>delta</b> of an option or a portfolio of options is the sensitivity of the option or portfolio to the underlying and is given by</p><div class="math">\[
+\Delta_V = \frac{\partial V}{\partial S}.
+\]</div><p>We shall now see how the knowledge of delta can be used in hedging a portfolio.</p><p><h4 id="delta-hedge">Delta Hedge</h4></p><p>Consider the portfolio <span class="math">\(\Pi=(0,\theta,h)\)</span>, where <span class="math">\(\theta\)</span> and <span class="math">\(h\)</span> are the number of units in the underlying and the option, respectively.  </p><p>Then, the value of the portfolio is given by
+</p><div class="math">\[
+V = \theta S + hH,
+\]</div><p>
+where <span class="math">\(S\)</span> is the price of the underlying and <span class="math">\(H\)</span> is the price of the option.</p><p><b>Perfect hedging</b> is to maintain the value <span class="math">\(V\)</span> of the portfolio unchanged while the underlying price fluctuates. This is achieved by selecting <span class="math">\(\theta\)</span> for a given <span class="math">\(h\)</span> (or choosing <span class="math">\(h\)</span> for a given <span class="math">\(\theta\)</span>) such that
+</p><div class="math">\[
+\frac{\partial V}{\partial S} = 0.
+\]</div><p>
+Let <span class="math">\(\Delta_H=\partial H/\partial S\)</span> be the delta of the option.  Then, we have
+</p><div class="math" >\begin{eqnarray}
+\theta = -h\Delta_H ~~~\text{or}~~~h = -\frac{\theta}{\Delta_H}.
+\end{eqnarray}<div style="text-align:right;">(8.2)</div></div><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+Often, give <span class="math">\(h\)</span>, finding <span class="math">\(\theta\)</span> is referred to as the <b>delta hedge</b>.
+</div></p><p><div class="problem" id="Delta.formula.prob">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+
+Show that
+<ol class="latex-enumerate">
+<li>the delta of a European call option is given by
+</p><div class="math">\[
+\Delta_C := \frac{\partial C}{\partial S} =  \Phi(d_+).
+\]</div><p>
+</li><li>the delta of a European put option is given by
+</p><div class="math">\[
+\Delta_P := \frac{\partial P}{\partial S} =  -\Phi(-d_+).
+\]</div><p>
+</li></ol>
+</div></p><p>From <a href="Hedging With Options.html#Delta.formula.prob">Problem &laquo;Click Here&raquo; </a>, we can see that <span class="math">\(\Delta_C>0\)</span> and <span class="math">\(\Delta_P<0\)</span> (the delta for call and put options, respectively).  Thus, a short position in call leads to a long spot position and so on.</p><p>A portfolio is called <b>delta neutral</b> at some time <span class="math">\(t\in [0,T]\)</span> if <span class="math">\(\Delta_V = 0\)</span> at <span class="math">\(t\)</span>. </p><p>Building a delta neutral portfolio by having an opposite spot market position in the underlying of an option position is referred to as <b>delta-hedging</b> of a portfolio.</p><p><div class="example" id="delta-hedge.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+
+Consider a <span class="math">\(K\)</span>-strike call (European) option whose delta is given by <span class="math">\(\Delta_C=0.6\)</span>.
+and the lot size is 100.  
+Assume that 
+a trader sold (wrote) 20 call options. Thus, the portfolio of the trader is <span class="math">\(\Pi
+= (0,\theta,-2000)\)</span> and the value of the portfolio is given by
+</p><div class="math">\[
+V = \theta S - 2000\times C.
+\]</div><p> 
+To keep the portfolio delta neutral, we have to choose the number of units of the stock <span class="math">\(\theta\)</span> such that the delta of the portfolio is zero.  But the delta of the portfolio is </p><div class="math">\[
+\Delta_V 
+= \theta - 2000\times 0.6.
+\]</div><p>
+Thus, in order to keep the portfolio delta neutral (or in order to delta-hedge the portfolio <span class="math">\(\Pi\)</span>) at the present time instance, the trader has to buy <span class="math">\(\theta=1200\)</span> shares in the underlying.</p><p><b> Explanation:</b> At time <span class="math">\(t=0\)</span>, let the underlying be trading at ₹ 100 per share and the trader sold the call options at ₹ 10 per share. 
+Then the initial investment in the portfolio <span class="math">\(\Pi\)</span> is
+</p><div class="math">\[
+V(\Pi)(0) = 1200\times 100 - 2000 \times 10 = 100000.
+\]</div><p>
+At time <span class="math">\(t=\Delta t\)</span>, let the stock price goes up by ₹ 1.</p><p>Since <span class="math">\(\Delta_C=0.6\)</span>, we can say approximately that the change in the call option price 
+</p><div class="math">\[
+C(\Delta t) - C(0) \approx 0.6(S(\Delta t) - S(0)) = 0.6\times 1 = 0.6.
+\]</div><p>
+Thus, the corresponding call option price is approximately <span class="math">\(C(\Delta t) = 10.6\)</span>.</p><p>Assuming that the call option price at time <span class="math">\(\Delta t\)</span> is 10.6 per share, the value of the portfolio <span class="math">\(\Pi\)</span> at time <span class="math">\(t=\Delta t\)</span> is given by
+</p><div class="math">\[
+V(\Pi)(\Delta t)  = 1200\times 101 - 2000\times 10.6 = 100000.
+\]</div><p>
+Since <span class="math">\(V(\Pi)(0) = V(\Pi)(\Delta t)\)</span>, we see that the change in the stock price did not make any profit or loss to the trader leading to a delta neutral portfolio.</p><p><b>Delta drift:</b> Suppose the stock price increases at a later time and consequently the call delta also increased to, say <span class="math">\(\Delta_C = 0.7\)</span>. Since the hedge position remains <span class="math">\(\theta=1200\)</span>, the portfolio delta is no longer zero and is given by
+</p><div class="math">\[
+\Delta_V = -200,
+\]</div><p>
+which is the <b>delta drift</b> of the portfolio caused by the price changes.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+Delta hedging is based on a first-order approximation and is therefore accurate over a very short time period, <i> i.e.</i> when <span class="math">\(\Delta t\)</span> is very small, and when the stock price variation is very small.  If the time step is large or the stock price variation is very large, then one has to recompute the delta of the option (<span class="math">\(\Delta_C\)</span> or <span class="math">\(\Delta_P\)</span> depending on whether the traded option is a call or a put option, respectively) and reconstruct the delta-hedging portfolio.  This process is called the <b>rebalancing</b> of the portfolio.</p><p>If a hedged position is rebalanced time to time to maintain a delta-neutral portfolio, then the hedging process is called the <b>dynamic hedge</b>.  On the other hand, if a hedging position is held over time without rebalancing, then the hedging process is called the <b>static hedge</b>.
+</div></p><p>In the following example, we illustrate the dynamic hedging to maintain a delta-neutrality of a portfolio.  The aim is also to show that we can maintain delta-neutrality not only by trading in the underlying asset but also by adjusting positions in multiple options.  In particular, we consider a portfolio of two call options and show the procedure for achieving the delta neutrality by trading the underlying asset or by modifying the option positions.</p><p><div class="example">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+Consider two call options on the same underlying asset and expiration <span class="math">\(T\)</span>:
+<ol class="latex-enumerate"> 
+<li><span class="math">\(K_1=22,150\)</span> with premium <span class="math">\(C_{1,0}=89\)</span>;
+</li><li><span class="math">\(K_2=22,250\)</span> with premium <span class="math">\(C_{2,0}=48\)</span>.  
+</li></ol>
+Here, we used the notation <span class="math">\(C_{1,0}\)</span> for <span class="math">\(C_1(t_0)\)</span> and a similar notation for the other option.</p><p>Consider a portfolio <span class="math">\(\Pi = (0,\theta, (c_1, -c_2))\)</span>. Here, <span class="math">\(\theta\)</span> is the number of units in the underlying, and <span class="math">\(c_i > 0\)</span>, <span class="math">\(i=1,2,\)</span> is the number of units held in the <span class="math">\(K_i\)</span>-strike call option.</p><p>Consider the portfolio at time <span class="math">\(t=t_0\)</span> as <span class="math">\(\Pi_1 = (0,0, (c, -c))\)</span>, for some c > 0.  Such a portfolio is called a <b>bull spread</b>. A more detailed discussions on bull spread and similar other trading strategies are discussed in the next section.</p><p>At time <span class="math">\(t_0 < t_1 < T\)</span>, assume that the price of  <span class="math">\(K_1\)</span>-strike option is <span class="math">\(C_{1,1} = 155\)</span> with delta <span class="math">\(\Delta_{1,1}=0.53\)</span> and <span class="math">\(K_2\)</span>-strike price is <span class="math">\(C_{2,1}=65\)</span> with delta <span class="math">\(\Delta_{2,1}=0.44.\)</span>. </p><p>Our interest is to adjust the portfolio <span class="math">\(\Pi_1\)</span> at time <span class="math">\(t=t_1\)</span> to obtain a delta-neutral portfolio. 
+There are two ways to achieve this.  </p><p><b>Method 1: Delta Hedging</b></p><p>Delta neutrality can be achieved through delta-hedging, where an appropriate position is taken in the underlying asset, whereas the option positions are kept unchanged. Let the new portfolio be <span class="math">\(\Pi_2 = (0,\theta, (c, -c))\)</span>. </p><p>In this case we have to find <span class="math">\(\theta\)</span> such that <span class="math">\(\Delta_V=0\)</span>.  Thus, we have
+</p><div class="math">\[
+\theta = -c(\Delta_{1,1} - \Delta_{2,1}) = -0.09c.
+\]</div><p>
+Therefore, the delta-hedge portfolio adds a short position in the underlying asset, which offsets the positive delta of the option portfolio.</p><p><b> Method 2: Option Rebalancing or Adjustment Using Options</b></p><p>We have
+<span class="math">\(\Pi_1 = (0,0,(1,-1))\)</span> created at time <span class="math">\(t=t_0\)</span>. At time <span class="math">\(t=t_1\)</span>, we have to make another portfolio <span class="math">\(\Pi_2\)</span> such that <span class="math">\(\Delta_{V_2} = 0\)</span>. Let the portfolio be <span class="math">\(\Pi_2 = (0,0,(c,-c_2))\)</span>. Then, we have
+</p><div class="math">\[
+V_1(\Pi_2) = c C_{1,1} - c_2C_{2,1}.
+\]</div><p>
+Therefore, <span class="math">\(\Delta_{V}=0\)</span> implies
+</p><div class="math">\[
+c_2 = \frac{\Delta_{1,1}}{\Delta_{2,1}} c \approx 1.2045 c.
+\]</div><p>
+We already hold <span class="math">\(c\)</span> units of <span class="math">\(K_2\)</span>-strike option in our portfolio.  Therefore, we must short an additional <span class="math">\(c_2 - c = 0.2045 c\)</span> units of <span class="math">\(K_2\)</span>-strike option to make the portfolio <span class="math">\(\Pi_2\)</span>.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The portfolio adjustment illustrated in the above example is only one way to achieve a delta-neutral position.  In general, delta neutrality is not unique. For instance, we may also adjust the position in the <span class="math">\(K_1\)</span>-strike option, or use other traded options (example, a <span class="math">\(K_3\)</span>-strike option) possibly with a different expiration.  The choice of instruments typically depends on market liquidity and trading considerations.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+As a continuation of the above example, consider a scenario at time <span class="math">\(t=t_2\)</span> with <span class="math">\(t_0 < t_1 < t_2 < T\)</span> as <span class="math">\(C_{1,2}=237\)</span>, <span class="math">\(C_{2,2}=129\)</span>, <span class="math">\(\Delta_{1,2}=0.5\)</span> and <span class="math">\(\Delta_{2,2}=0.32\)</span>. </p><p>Assume that at time <span class="math">\(t_1\)</span> the portfolio is <span class="math">\(\Pi_2 = (0, 0, (c, -c_2))\)</span>.
+<ol class="latex-enumerate">
+<li>Obtain a delta-neutral portfolio <span class="math">\(\Pi_3\)</span> by hedging <span class="math">\(\Pi_2\)</span> (this means we have to make changes in the underlying asset).
+</li><li>Alternatively, obtain <span class="math">\(\Pi_3\)</span> by adjusting the position in the <span class="math">\(K_2\)</span>-strike option (while keeping the position in the <span class="math">\(K_1\)</span>-strike option fixed) to achieve a delta neutral portfolio at time <span class="math">\(t_2\)</span>. 
+</li></ol>
+</div></p><p>From the above example and problem, we obtain a three level dynamic delta-neutral portfolio strategy <span class="math">\(\{\Pi_1, \Pi_2, \Pi_3\}\)</span>.  We can extend this procedure to any number of time steps.  Theoretically, we can even obtain a continuous time delta-neutral portfolio strategy <span class="math">\(\{\Pi_t\}\)</span>, which is naturally modelled as a stochastic process and forms the basis of the Black-Scholes framework.</p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Dynamic Delta-Hedging Strategy</b>]</p><p>Let the initial portfolio <span class="math">\(\Pi_1\)</span> be set at time <span class="math">\(t=0\)</span> (this may or may not be delta-neutral).</p><p>As time evolves and the underlying asset price changes, the deltas of the options also change. In order to maintain delta-neutrality, we have to adjust the portfolios time-to-time.  </p><p>To this end, let us consider a discrete time levels <span class="math">\(0=t_0 < t_1 < \ldots < t_n = T\)</span> at which we adjust the portfolio to restore delta-neutrality. </p><p>As illustrated in the above example, delta-neutrality can be achieved in multiple ways.
+In particular, adjusting the position in the underlying asset wile keeping the option positions unchanged, is referred to as a <b>delta-hedging strategy</b>.  Since delta-hedging is carried out at each time level, the process <span class="math">\(\{\Pi_1, \Pi_2, \ldots, \Pi_n\}\)</span> is often referred to as the <b>dynamic delta-hedging strategy</b>.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+A dynamic hedging strategy can also be made a self-financing strategy by making the risk-free component non-zero.
+</div></p><p><h3 id="gamma">Gamma</h3></p><p>In the previous subsection, we developed the idea of delta hedging and discussed how a portfolio can be made locally insensitive to small changes in the underlying asset price by maintaining delta-neutrality. This was achieved through dynamic rebalancing of the portfolio at discrete time points.  </p><p>Since delta hedging is based on the first-order approximation of the option price
+</p><div class="math">\[
+dC \approx \Delta\, dS.
+\]</div><p>
+a delta-neutral portfolio eliminates only the first-order sensitivity to changes in the underlying price.  However, in practice, the option price depends nonlinearly on the underlying asset price and consequently, the delta-neutral portfolio is exposed to residual risk. </p><p>There are two ways to reduce this residual risk. One way is to rebalance the portfolio more frequently. Another approach is to improve the accuracy of the hedge by incorporating gamma into the hedging strategy, which is defined for a portfolio as 
+</p><div class="math">\[
+\Gamma = \frac{\partial^2 V}{\partial S^2}.
+\]</div><p>
+A more accurate approximation involving gamma is given by
+</p><div class="math">\[
+dC \approx \Delta\, dS + \tfrac{1}{2}\Gamma (dS)^2,
+\]</div><p>
+and the delta-neutral portfolio using the above approximation is now exposed to a second-order residual risk.</p><p>Gamma measures the curvature of the option price with respect to the underlying asset price, or equivalently, the rate of change of delta with respect to the underlying price.</p><p>The gamma of an European call and put options are defined similarly and are denoted by <span class="math">\(\Gamma_C\)</span> and <span class="math">\(\Gamma_P\)</span>, respectively.</p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Using Black-Scholes formula for European call options show that
+</p><div class="math">\[
+\Gamma_C = \frac{e^{-\frac{d_{+}^2}{2}}}{\sqrt{2\pi(T-t)}S\sigma}.
+\]</div><p>
+Use put-call parity relation to obtain the expression for the European put option gamma <span class="math">\(\Gamma_P\)</span>.
+</div></p><p>We now illustrate the construction a <b>delta-gamma hedging</b> portfolio that is insensitive to both first- and second-order changes in the underlying asset price.</p><p><div class="example">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+Consider a European call options with two strikes, <span class="math">\(K_1\)</span> and <span class="math">\(K_2\)</span>, with prices denoted by <span class="math">\(C_1\)</span> and <span class="math">\(C_2\)</span>, respectively.  The portfolio is given by <span class="math">\(\Pi=(0,\theta,\boldsymbol{c})\)</span>, where <span class="math">\(\boldsymbol{c}=(c_1,c_2)\)</span> is the vector with components being the number of units in the respective options.  The value of the portfolio is given by
+</p><div class="math">\[
+V = \theta S + c_1C_1 + c_2C_2.
+\]</div><p>
+Differentiating with respect to <span class="math">\(S\)</span> twice, we get
+</p><div class="math">\[
+\Delta_V = \frac{\partial V}{\partial S} = \theta + c_1\Delta_{C_1} + c_2\Delta_{C_2}
+\]</div><p>
+and
+</p><div class="math">\[
+\Gamma_V = \frac{\partial^2 V}{\partial S^2} = c_1\Gamma_{C_1} + c_2\Gamma_{C_2}.
+\]</div><p>
+Equating both the above expressions to zero, we get the linear system
+</p><div class="math">\[
+\begin{array}{c}
+\theta + c_1\Delta_{C_1} + c_2\Delta_{C_2}=0\\
+c_1\Gamma_{C_1} + c_2\Gamma_{C_2}=0.
+\end{array}
+\]</div><p>
+Given the values of  <span class="math">\(\Delta_{C_j}\)</span> and <span class="math">\(\Gamma_{C_j}\)</span>, <span class="math">\(j=1,2\)</span>, and fixing one of the variables <span class="math">\(\theta\)</span> and <span class="math">\(c_j\)</span>, <span class="math">\(j=1,2\)</span>, the above system can be solved (if possible) to obtain the <b>delta-gamma-hedging portfolio</b>.</p><p><b>Interpretation:</b> One of the options is used to neutralize gamma, while the position in the underlying asset is then adjusted to eliminate the remaining delta.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+Since <span class="math">\(\Gamma_{C_j}\)</span>, <span class="math">\(j=1,2\)</span>, are positive, we need one of <span class="math">\(c_1\)</span> and <span class="math">\(c_2\)</span> to be negative in the above system to have a nonzero solution for the second equation.  Hence one needs to take opposite positions in the two call options in order to obtain a delta-gamma-hedging porfolio.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>Delta-Gamma Hedging with Call and Put</b>]</p><p>Consider a European call option <span class="math">\(C_1\)</span> with strike <span class="math">\(K_1\)</span> and a European put option <span class="math">\(P_2\)</span> with strike <span class="math">\(K_2\)</span>, both written on the same underlying asset with the same maturity <span class="math">\(T\)</span>.</p><p>At a given time <span class="math">\(t\)</span>, suppose:
+</p><div class="math">\[
+\begin{array}{c}
+\Delta_{C_1} = 0.60, \quad \Gamma_{C_1} = 0.020,\\
+\Delta_{P_2} = -0.35, \quad \Gamma_{P_2} = 0.015.
+\end{array}
+\]</div><p>Consider a portfolio of the form
+</p><div class="math">\[
+\Pi = (0,\theta, \boldsymbol{h}),
+\]</div><p>
+where <span class="math">\(\theta\)</span> is the number of units of the underlying asset, and <span class="math">\(\boldsymbol{h} = (c, p)\)</span> with <span class="math">\(c\)</span> and <span class="math">\(p\)</span> being the number of units of the call and put options, respectively.</p><p><ol class="latex-enumerate">
+<li>Find the relation between <span class="math">\(c\)</span> and <span class="math">\(p\)</span> required for gamma-neutrality.
+</li><li>Express <span class="math">\(\theta\)</span> in terms of <span class="math">\(c\)</span> so that the portfolio is delta-neutral.
+</li><li>If <span class="math">\(c = 100\)</span>, determine <span class="math">\(p\)</span> and <span class="math">\(\theta\)</span>.
+</li></ol>
+<div style="text-align:right;"><b>Answer:</b> (3) <span class="math">\(p\approx -133.33\)</span>, <span class="math">\(\theta\approx -106.67.\)</span> </div>
+</div></p><p><h3 id="theta">Theta</h3></p><p>So far we have seen that delta and gamma measure the sensitivity of the option price with respect to the underlying asset. As the option price depends on time, it is also important to include time sensitivity in hedging, which is known as <b>theta</b>, and is defined for a portfolio of options as
+</p><div class="math">\[
+\Theta = \frac{\partial V}{\partial t}.
+\]</div><p>
+The theta of European call and put options is defined similarly and is denoted by <span class="math">\(\Theta_C\)</span> and <span class="math">\(\Theta_P\)</span>, respectively.</p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Using Black-Scholes formula for European <span class="math">\(K\)</span>-strike call option show that
+</p><div class="math">\[
+\Theta_C = 
+	-\frac{S\sigma}{2\sqrt{2\pi(T-t)}} e^{-\frac{d_{+}^2}{2}} 
+		- rKe^{-r(T-t)}\Phi(d_-).
+\]</div><p>
+Using call theta expression and without differentiating the Black-Scholes formula for put option (rather using put-call parity relation), show that the theta of the corresponding put option is given by
+</p><div class="math">\[
+\Theta_P 
+= -\frac{S\sigma}{2\sqrt{2\pi (T-t)}} e^{-d_+^2/2}
++ r K e^{-r(T-t)} \Phi(-d_-).
+\]</div><p>
+</div></p><p>We have seen that a delta-gamma neutral portfolio eliminates the second-order sensitivity to changes in the underlying asset.  Using a second-order Taylor expansion, the change in the value of a portfolio <span class="math">\(V(t,S)\)</span> is given by
+</p><div class="math">\[
+dV \approx \Theta_V\, dt + \Delta_V\, dS + \tfrac{1}{2}\Gamma_V (dS)^2.
+\]</div><p>
+For a delta-gamma neutral portfolio (i.e., <span class="math">\(\Delta = 0\)</span> and <span class="math">\(\Gamma = 0\)</span>), this reduces to
+</p><div class="math">\[
+dV \approx \Theta\, dt.
+\]</div><p>
+Thus, a delta-gamma neutral portfolio is still exposed to changes in value arising from time decay. </p><p>Since the value <span class="math">\(V=V(t,S)\)</span> of a portfolio of options (with the same underlying) satisfy the Black-Schole PDE <a href="Continuous Time Model.html#PPDE.eq">(7.20)</a>, the theta of <span class="math">\(V\)</span> is given by
+</p><div class="math">\[
+\Theta_V
+= -\frac{1}{2}\sigma^2 S^2 \Gamma_V - r S \Delta_V + r V.
+\]</div><p>
+For simplicity, let us assume that the portfolio is delta neutral.  Then, we have
+</p><div class="math">\[
+\Theta_V
+= -\frac{1}{2}\sigma^2 S^2 \Gamma_V + r V.
+\]</div><p>
+From this expression, we see that if <span class="math">\(\Gamma_V>0\)</span>, then as it increases, <span class="math">\(\Theta_V\)</span> becomes negative and tends to decrease. This increases the magnitude of time decay. Thus, if the graph of the portfolio value in terms of <span class="math">\(S\)</span> is convex, then the portfolio typically experiences time decay. </p><p>On the other hand, if <span class="math">\(\Gamma_V<0\)</span>, then <span class="math">\(\Theta_V\)</span> tends to be positive, and the portfolio benefits from the passage of time.</p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+Theta measures the sensitivity of the portfolio value to the passage of time. Theta cannot be directly hedged, however, it plays an important role in risk management and reflects the cost (or benefit) of holding a given exposure to convexity.
+</div></p><p><h3 id="vega">Vega</h3></p><p>The <b>vega</b> of an option or a portfolio of options is defined as
+</p><div class="math">\[
+\mathcal{V} = \frac{\partial V}{\partial \sigma},
+\]</div><p>
+where <span class="math">\(\sigma\)</span> denotes the volatility parameter in the Black-Scholes model.  Vega measures the sensitivity of the option value to changes in volatility, and in practice is interpreted with respect to changes in implied volatility.</p><p>The vega of a European call and put options are defined similarly and are denoted by <span class="math">\(\mathcal{V}_C\)</span> and <span class="math">\(\mathcal{V}_P\)</span>, respectively.</p><p>For standard European options, vega is positive, reflecting the fact that option values increase with volatility.</p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Using Black-Scholes formula for European call option show that
+</p><div class="math">\[
+\mathcal{V}_C = 
+	\frac{S\sqrt{T-t}}{\sqrt{2\pi}} e^{-\frac{d_{+}^2}{2}}.
+\]</div><p>
+Is the vega of call and put option under the Black-Scholes formula are same? Justify your answer.
+</div></p><p>To hedge against the underlying volatility, one can construct a <b>vega-hedging</b> by equating <span class="math">\(\mathcal{V}=0\)</span>. Unlike delta hedging, this typically requires two option positions in the portfolio to have vega hedge as the hedging cannot be achieved using the underlying asset because <span class="math">\(\frac{\partial S}{\partial \sigma} = 0\)</span>.</p><p><div class="example">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+</p><p>Consider a portfolio <span class="math">\(\Pi = (0,\theta, \boldsymbol{h})\)</span>, where <span class="math">\(\boldsymbol{h} = (c, p).\)</span> Then, we have
+</p><div class="math">\[
+V = \theta S + c C + p P.
+\]</div><p>
+The portfolio vega is given by
+</p><div class="math">\[
+\mathcal{V}_V = \theta \frac{\partial S}{\partial \sigma} + c \mathcal{V}_C + p \mathcal{V}_P.
+\]</div><p>
+For vega neutral portfolio, we need to choose <span class="math">\(c\)</span>, for a given <span class="math">\(p\)</span> (or equivalently choose <span class="math">\(p\)</span> for a given <span class="math">\(c\)</span>), such that <span class="math">\(\mathcal{V}_V = 0\)</span>. That is
+</p><div class="math">\[
+c = -p\frac{\mathcal{V}_P}{\mathcal{V}_C}.
+\]</div><p>
+</div></p><p>One can also perform delta-vega and gamma-vega hedging in a similar way as in the case of delta-gamma hedging.  By including multiple options on the same underlying asset (with possibly different strikes and/or maturities) together with the underlying itself, one can construct portfolios that are simultaneously neutral with respect to delta, gamma, and vega. The minimum number of instruments required follows from the number of constraints imposed.</p><p><h3 id="rho">Rho</h3></p><p>The <b>rho</b> of an option or a portfolio of options is defined as
+</p><div class="math">\[
+\rho = \frac{\partial V}{\partial r}
+\]</div><p>
+The rho of a European call and put options are defined similarly and are denoted by <span class="math">\(\rho_C\)</span> and <span class="math">\(\rho_P\)</span>, respectively.</p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Using Black-Scholes formula for European <span class="math">\(K\)</span>-strike call option show that
+</p><div class="math">\[
+\rho_C = 
+	(T-t)Ke^{-r(T-t)}\Phi(d_-).
+\]</div><p>
+Also, obtain the expression for <span class="math">\(\rho_P\)</span>.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+In many practical settings, particularly for short-dated equity options, rho plays a relatively minor role compared to other Greeks such as delta, gamma, and vega. However, it becomes significant for long-dated options and in interest-rate-sensitive markets.
+</div></p><p><h2 id="option.trading.strategy.sec">Option Trading Strategies</h2></p><p>There are many strategies to make portfolios by combining options and the underlying assets. One can also build portfolios by combining several options. We discuss here a few which are more popular.</p><p>Options are primarily used for hedging. However, speculators come into the market as a consequence of high liquidity. Speculators are also attracted to a great advantage of <b>leverage</b> in trading options rather than trading directly in the underlying assets. The idea of leverage is well understood through simple examples.</p><p><div class="example">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+[<b>Leverage</b>]</p><p>Assume that a stock traded at the spot market for ₹ 1950 per share on 1<span class="math">\(^{\rm st}\)</span> February and the same stock was trading at ₹ 2150 on 25<span class="math">\(^{\rm th}\)</span> February. Mr. Megh bought 100 shares of the stock on 1<span class="math">\(^{\rm st}\)</span> February by paying ₹ 1,95,000 and sold it on 25<span class="math">\(^{\rm th}\)</span> February and obtained ₹ 20,000, which gave him 10.26% on his initial investment.</p><p>On the other hand, Mrs. Sahana bought a call option (with contract size 100 shares) for 1950-strike, expiration 25<span class="math">\(^{\rm th}\)</span> February, and the premium of ₹ 50 per share. Hence, she paid ₹ 5000 (= <span class="math">\(X\)</span>) as the premium to the call option. On the expiration date, the spot price was <span class="math">\(S_T = 2150\)</span>. Since the strike price was less than the spot price of the stock at expiration, Mrs. Sahana's call option was in-the-money. So, she would certainly exercise the option on the expiration and gone for the cash settlement of
+</p><div class="math">\[
+C_T = (2150-1950)\times 100 = 20,000 ~(\text{payoff}).
+\]</div><p>
+Since she paid 5000 as premium, the gain in the trade (with <span class="math">\(r=0\)</span>) was
+</p><div class="math">\[
+G_T = 20000 - 5000 = 15,000.
+\]</div><p>
+Mrs. Sahana obtained ₹ 5000 less than Mr. Megh's return in the spot market trade. However, Mrs. Sahana's gain was 300% of her initial investment, whereas Mr. Megh obtained only 10.26%.  </p><p>Obtaining a higher percentage return from an option is called <b>leverage</b>. In other words, the call option that Mrs. Sahana opted for had provided a leveraged return to her.</p><p><b> Caution:</b> On the contrary to the scenario considered above, if the spot price of the stock on 25<span class="math">\(^{\rm th}\)</span> February was at ₹ 1949, say, just ₹ 1 less than the strike price. Then, compute the percentage loss for Mrs. Sahana and Mr. Megh.
+</div></p><p>In the above example, the options trader is a <b>speculator</b>. This is because the trader's intention was not to reduce the uncertainty in the price fluctuation of a stock in the portfolio. Instead, the trader somehow predicted that the stock price would go up (or merely guessed it) and took a risk in the trade.</p><p>Hedgers are just opposite to speculators. They are more worried about the risk involved in their investment, and they do not mind compromising some portion of their return to reduce the risk. This is something similar to insurance. A hedge can be understood through simple examples.</p><p><img src="Figures/LongPutProtection.png" class="standalone-figure">
+<div class="figure">
+
+<div style="text-align: center; font-weight: bold;">Protective put graph for <a href="Hedging With Options.html#longput.ex">Example &laquo;Click Here&raquo; </a>.</div>
+
+</div></p><p><div class="example" id="longput.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+[<b>Hedge using protective put</b>]</p><p>Assume that Mr. Megh bought 100 shares of a stock at the rate of ₹ 1950 per share on 1<span class="math">\(^{\rm st}\)</span> February. He anticipated an up move in the stock price by the end of February, and hence he had the intention of selling it by the month-end. However, he was worried about the possibility of the stock price going downwards. He decided to reduce his risk by looking for an option.  </p><p>Mr. Megh noticed a put option with 1900-strike, expiration 25<span class="math">\(^{\rm th}\)</span> February, and the premium of ₹ 108.6 per share. He took a long position in one put option, whose contract size (<i> i.e.</i> lot) was 100 shares. </p><p>Mr. Megh's long put trade gave him a downward protection, which can be seen from the <b>net gain</b> given by
+</p><div class="math" >\begin{eqnarray}
+\mathcal{N}(S_T) &amp;=&amp; \text{Stock payoff} + \text{Long put gain/loss}\\
+&amp;=&amp; (S_T - S_0) + G_T,
+\end{eqnarray}<div style="text-align:right;">(8.3)</div></div><p>
+where <span class="math">\(S_0=1950\)</span> and <span class="math">\(G_T\)</span> is calculated with <span class="math">\(r=0\)</span>.</p><p><a href="Hedging With Options.html#LongPutProtection.fig">Figure &laquo;Click Here&raquo; </a> depicts the payoff graph.</p><p>One can see that the long put option position limited Mr. Megh's loss (which we call <b>limited loss</b>) in the spot market trade to <span class="math">\(-158.6\)</span> per share, and the profit is unbounded.  One can also see that Mr. Megh makes a profit if <span class="math">\(S_T>2058.6 =:S_*\)</span>.</p><p>Protecting a risky investment from losing too much using some counter trades (in the present case, it is the long put) is a <b>hedge</b>.  In other words, the put option Mr. Megh opted for had provided a hedge for his exposure to the stock that he traded in the spot market.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>Hedge using covered call</b>]</p><p>Obtain a hedge for Mr. Megh in the above example using the following call option:
+
+<li>1990-strike;
+</li><li>expiration 25<span class="math">\(^{\rm th}\)</span> February;
+</li><li>contract size 100; and
+</li><li>premium ₹ 91 per share.
+
+Obtain the net gain function, limited loss, and the minimum stock price <span class="math">\(S_*\)</span> such that <span class="math">\(S_T>S_*\)</span> gives profit to Mr. Megh.  Also, draw the graphs of stock payoff, gain/loss of the call, and net gain.
+</div></p><p><div class="hint">
+<div class="heading-container">
+<b class="heading">Hint:</b>
+</div>
+See whether you have to enter into the call option trade as a writer or a holder. In other words, see whether you have to take a short or a long position in the call option in order to hedge the spot market trade. For the net gain function, give the complete expression, including the expression for gain/loss; just writing <span class="math">\(G_T\)</span> is not enough.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Covered put</b>]</p><p>A <b>covered put</b> is a portfolio involving a short position in the spot market and a short position in the corresponding option.
+</div></p><p><h3 id="spreads">Spreads</h3></p><p>A <b>spread</b> is a portfolio consisting of options of the same type (either all calls or all puts). There are three basic kinds of spreads:
+<ol class="latex-enumerate">
+</li><li>A <b>vertical spread</b> (or <b>price spread</b>) is a portfolio in which the options have the same expiration date but different strike prices.
+</li><li>An <b>horizontal spread</b> (or <b>calendar spread</b>) is a portfolio in which the options have the same strike price but different expiration dates.
+</li><li>A <b>diagonal spread</b> is a portfolio in which the options have different strike prices and expiration dates.
+</li></ol></p><p>We restrict to only vertical spreads and discuss some popular vertical spreads among traders.</p><p><h4 id="bull-spread">Bull Spread</h4></p><p>Bull spread is a portfolio created when a trader anticipates an upward trend in the underlying asset price.</p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+For given <span class="math">\(0 < K_1 < K_2\)</span>, the portfolio consisting of a long position in a <span class="math">\(K_1\)</span>-strike call (put) option and a short position in a <span class="math">\(K_2\)</span>-strike call (put) option with the same expiration and the same underlying asset is called a <b>bull spread</b>.
+</div></p><p>A bull spread is an example of a vertical spread.
+The general form of the <b>net gain function</b> for bull spread is given by
+</p><div class="math" >\begin{eqnarray}
+\mathcal{N}(S_T) &amp;=&amp; \text{Gain in Long call}~ + \text{Gain in Short call}\\
+&amp;=&amp;\big(\max(0,S_T-K_1) - X_1\big)+\big(X_2-\max(0,S_T-K_2)\big)\\
+&amp;=&amp;\left\{\begin{array}{ll}
+X_2-X_1,&amp;\text{if } S_T\le K_1\\
+S_T-K_1 + X_2-X_1,&amp;\text{if } K_1\le S_T\le K_2\\
+K_2-K_1 + X_2-X_1,&amp;\text{if } K_2\le S_T.
+\end{array}\right.
+\end{eqnarray}<div style="text-align:right;">(8.4)</div></div><p>
+Observe that in order to maximize the profit, we have to look for maximizing <span class="math">\(K_2-K_1\)</span> and minimize <span class="math">\(X_2-X_1\)</span>, wherever the later is negative.  Note that <span class="math">\(X_2-X_1\)</span> is typically negative in practice.  Opting for out-of-the-money calls, which generally trade with lower premiums, can be advantageous in this regard.</p><p><img src="Figures/BullSpreadCall.png" class="standalone-figure">
+<div class="figure">
+
+<div style="text-align: center; font-weight: bold;">Gain graphs for <a href="Hedging With Options.html#Bull.Spread.ex">Example &laquo;Click Here&raquo; </a>.</div>
+
+</div></p><p><div class="example" id="Bull.Spread.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+</p><p>Mrs. Sahana believes that the share price of a stock will increase to ₹ 2150 in a month from its current price of ₹ 1950. In other words, Mrs. Sahana is <b>bullish</b> on the stock. She can perform one of the following trades:
+
+<li>she can buy the stock at the spot market; or
+</li><li>she can buy a future in the futures market; or
+</li><li>she can buy a 1950-strike call option; or
+</li><li>she can write a 1950-strike put option.
+
+The first choice is expensive, and all the choices are highly risky. However, if her prediction goes correct, they all will give a considerable profit.</p><p>Alternatively, Mrs. Sahana can go for a bull spread if she is ready to give up a part of the predicted profit.</p><p>Mrs. Sahana made the following portfolio 1<span class="math">\(^{\rm st}\)</span> February:
+
+</li><li>She bought the 1950-strike European call option for the premium ₹ 44.90 per share; and
+</li><li>sold the 2050-strike European call option for the premium ₹ 23 per share,
+
+both have expiration 25<span class="math">\(^{\rm th}\)</span> February. From the above description, we can see that the above trades give rise to a portfolio, which is a bull spread.</p><p>The net gain of the bull spread is given by
+</p><div class="math" >\begin{eqnarray}
+\mathcal{N}(S_T) = 
+\left\{\begin{array}{ll}
+-21.9,&amp;\text{if } S_T\le 1950\\
+S_T-1971.9,&amp;\text{if } 1950\le S_T\le 2050\\
+78.1,&amp;\text{if } 2050\le S_T.
+\end{array}\right.
+\end{eqnarray}<div style="text-align:right;">(8.5)</div></div><p>
+The gain graphs are depicted in <a href="Hedging With Options.html#Bull.Spread.Call.fig">Figure &laquo;Click Here&raquo; </a>.  Observe that Mrs. Sahana had invested ₹ 21.9 per share. The maximum loss that she can take in this portfolio is <span class="math">\(-21.9,\)</span> and the maximum profit she can achieve is 78.1.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Consider the following active call options trading at the market and all these options have the same expiration:</p><p><img src="Figures/BullSpreadCallTable.png" class="standalone-figure"></p><p>Construct a bull spread out of these call options. Obtain the general form of the net gain function and also obtain the net gain function for this problem. Draw the gain graphs for all the traded options and also draw the graph of the net gain function.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+One can also create a bull spread with put options.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Consider two active European put options </p><p><img src="Figures/BullSpreadPutTable.png" class="standalone-figure"></p><p>trading at the market with same underlying and expiration with <span class="math">\(K_1<K_2\)</span>. Construct a bull spread out of these put options and obtain the general form of the net gain function.  In particular, if <span class="math">\(K_1=1500\)</span>, <span class="math">\(X_1=30.05\)</span>, <span class="math">\(K_2=1520\)</span>, and <span class="math">\(X_2=40.45\)</span>, then
+ obtain the net gain function for the bull spread. Draw the gain graphs for all the traded options and also draw the graph of the net gain function.
+</div></p><p><h4 id="bear-spread">Bear Spread</h4></p><p>Bear spread is a portfolio formed by a trading having a bearish view on the underlying asset price.</p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Bear Spread</b>]</p><p>For given  <span class="math">\(0 < K_1 < K_2\)</span>, a <b>bear spread</b> is a portfolio can be created by buying a <span class="math">\(K_2\)</span>-strike call (put) option and write a <span class="math">\(K_1\)</span>-strike call (put) option with the same underlying asset and a same expiration date.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Obtain the general form of the net gain function of the following:</p><p><ol class="latex-enumerate">
+</li><li>a bear call spread
+</li><li>a bear put spread
+</li></ol>
+</div></p><p><div class="example" id="Bear.Spread.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+</p><p>On 2<span class="math">\(^{\rm nd}\)</span> March 2020, Mrs. Sahana felt that the entire market would crash in a month. In particular, she felt that HDFC Bank stock, which was trading at ₹ 1200 per share on the day, would crash up to ₹ 1100 per share. In other words, Mrs. Sahana was <b>bearish</b> on the HDFC Bank's stock.</p><p>Mrs. Sahana constructed a bear spread out of the stock options as follows:</p><p>
+<li>she bought a European put option of 1180-strike with premium ₹ 28; and
+</li><li>she wrote another European put option of 1140-strike with premium ₹ 20,</p><p>
+both had expiration 28<span class="math">\(^{\rm th}\)</span> March 2020.</p><p>The net gain of the bear spread is given by</p><div class="math" >\begin{eqnarray}
+\mathcal{N}(S_T) = 
+\left\{\begin{array}{ll}
+32,&amp;\text{if } S_T\le 1140\\
+1172 - S_T,&amp;\text{if } 1140\le S_T\le 1180\\
+-8,&amp;\text{if } 1180\le S_T.
+\end{array}\right.
+\end{eqnarray}<div style="text-align:right;">(8.6)</div></div><p>
+The gain graphs are depicted in <a href="Hedging With Options.html#Bear.Spread.Put.fig">Figure &laquo;Click Here&raquo; </a>.  Observe that Mrs. Sahana had invested ₹ 8 per share to build the portfilio. The maximum loss that she can take in this portfolio is <span class="math">\(-8,\)</span> and the maximum profit she can achieve is 32.
+</div></p><p><img src="Figures/BearSpreadPut.png" class="standalone-figure">
+<div class="figure">
+
+<div style="text-align: center; font-weight: bold;">Gain graphs for <a href="Hedging With Options.html#Bear.Spread.ex">Example &laquo;Click Here&raquo; </a>.</div>
+
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+One can also create a bear spread with call options.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+The following are the active put options trading at the market on 2<span class="math">\(^{\rm nd}\)</span> March 2020:</p><p><img src="Figures/BearSpreadPutTable.png" class="standalone-figure"></p><p>Mrs. Sahana (in <a href="Hedging With Options.html#Bear.Spread.ex">Example &laquo;Click Here&raquo; </a>) is looking for another bear spread.
+All the options were with expiration 28<span class="math">\(^{\rm th}\)</span> March 2020. Suggest another bear spread than the one opted in <a href="Hedging With Options.html#Bear.Spread.ex">Example &laquo;Click Here&raquo; </a>. Obtain the net gain per share and draw the gain graphs.
+</div></p><p><h4 id="butterfly-spread">Butterfly Spread</h4></p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+Let <span class="math">\(0 < K_1 < K_2 < K_3\)</span>, and <span class="math">\(K_2\in [S_0-\epsilon,S_0+\epsilon]\)</span> for some  sufficiently small <span class="math">\(\epsilon > 0\)</span>. Buy two call options, one in each of <span class="math">\(K_1\)</span>-strike and <span class="math">\(K_3\)</span>-strike. Write two call options with <span class="math">\(K_2\)</span>-strike. All options have the same underlying and expiration. The resulting portfolio is a <b>butterfly spread</b>.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The role of <span class="math">\(\epsilon\)</span> in the above definition is to indicate that <span class="math">\(K_2\)</span>-strike option is very near to the in-the-money option.  It is not always necessary that <span class="math">\(\epsilon\ll 1\)</span>. Practically, <span class="math">\(K_2\)</span> can be <span class="math">\(\pm 1%\)</span> of the spot price or even more depending on the situations.
+</div></p><p>The general form of the net gain function for butterfly spread is given by
+</p><div class="math" >\begin{eqnarray}
+\mathcal{N}(S_T) &amp;=&amp; \text{Gain in Long call-1} + 2\times \text{Gain in Short call-2} + \text{Gain in Long call-3}\\
+&amp;=&amp;\big(\max(0,S_T-K_1) - X_1\big)+2\big(X_2-\max(0,S_T-K_2)\big) \\
+&amp;&amp;~~~~~~~~~~~~~~+\big(\max(0,S_T-K_3) - X_3\big)\\
+&amp;=&amp;\left\{\begin{array}{ll}
+-X_1+2X_2-X_3,&amp;\text{if } S_T\le K_1\\
+S_T-K_1-X_1+2X_2-X_3,&amp;\text{if } K_1\le S_T\le K_2\\
+-S_T-K_1+2(K_2 + X_2)-X_1-X_3,&amp;\text{if } K_2\le S_T\le K_3\\
+-K_1+2K_2-K_3-X_1 + 2X_2-X_3,&amp;\text{if } K_3\le S_T.
+\end{array}\right.
+\end{eqnarray}<div style="text-align:right;">(8.7)</div></div><p><div class="example" id="Butterfly.Spread.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+</p><p>Assume that Titan was trading at ₹ 1457 (<span class="math">\(=S_0\)</span>) per share on 1<span class="math">\(^{\rm st}\)</span> February 2021. 
+Mrs. Sahana felt that the share price would not vary significantly during the month.  Based on her prediction, she made the following trades:
+
+</li><li>she wrote two call options with 1460-strike at the premium of ₹ 52.7 per share;
+</li><li>she bought one call option with 1420-strike for ₹ 73.2 per share; and 
+</li><li>she also bought one call option with 1500-strike for ₹ 42.7 per share.
+
+With these trades, she created a portfolio which is a butterfly spread.</p><p>The net gain of the butterfly spread is given by
+</p><div class="math" >\begin{eqnarray}
+\mathcal{N}(S_T) = 
+\left\{\begin{array}{ll}
+-10.5,&amp;\text{if } S_T\le 1420\\
+S_T-1430.5,&amp;\text{if } 1420\le S_T\le 1460\\
+1489.5-S_T,&amp;\text{if } 1460\le S_T\le 1500\\
+-10.5,&amp;\text{if } 1500\le S_T.
+\end{array}\right.
+\end{eqnarray}<div style="text-align:right;">(8.8)</div></div><p>
+The gain graphs are depicted in <a href="Hedging With Options.html#Butterfly.Spread.fig">Figure &laquo;Click Here&raquo; </a>.
+</div></p><p><img src="Figures/ButterflySpread.png" class="standalone-figure">
+<div class="figure">
+
+<div style="text-align: center; font-weight: bold;">Gain graphs for <a href="Hedging With Options.html#Butterfly.Spread.ex">Example &laquo;Click Here&raquo; </a>.</div>
+
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+One can also create a butterfly spread with put options.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+The following are the active call options trading at the market on 1<span class="math">\(^{\rm st}\)</span> February 2021, and Mrs. Sahana (in <a href="Hedging With Options.html#Butterfly.Spread.ex">Example &laquo;Click Here&raquo; </a>) is looking for a better butterfly spread:</p><p><img src="Figures/ButterflySpreadTable.png" class="standalone-figure"></p><p>All the options are with expiration 25<span class="math">\(^{\rm th}\)</span> February 2020. Suggest a butterfly spread different from the one opted in <a href="Hedging With Options.html#Butterfly.Spread.ex">Example &laquo;Click Here&raquo; </a>. Obtain the net gain per share and draw the gain graphs. Also, write the portfolio and find its initial value using the mathematical notations introduced in the course.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Consider the following active put options trading at the market and all these options have the same expiration :</p><p><img src="Figures/BullSpreadPutTable2.png" class="standalone-figure"></p><p>The current spot market price of the underlying stock is ₹ 160.2.  Construct a butterfly spread out of these put options. Obtain the general form of the net gain function and also obtain the net gain function for this problem. Draw the gain graphs for all the traded options and also draw the graph of the net gain function.
+</div></p><p><h3 id="volatility-speculation">Volatility Speculation</h3></p><p>The bull and bear spreads are directional speculations, whereas the butterfly spread is a volatility speculation.  In this section, we introduce two more strategies used as volatility speculations.</p><p><h4 id="straddle">Straddle</h4></p><p>A <b>straddle</b> is a portfolio made by taking long positions in a call and a put simultaneously with the same strike price, underlying asset, and the expiration.</p><p>For a given <span class="math">\(K>0\)</span>, the general form of the net gain function of a straddle is given by
+</p><div class="math" >\begin{eqnarray}
+\mathcal{N}(S_T) &amp;=&amp; \text{Gain in Long call} + \text{Gain in Long put}\\
+&amp;=&amp;\big(\max(0,S_T-K) - C\big)+\big(\max(0,K-S_T) - P\big)\\
+&amp;=&amp;\left\{\begin{array}{ll}
+-S_T+K-C-P,&amp;\text{if } S_T\le K\\
+S_T-K-C-P,&amp;\text{if } K\le S_T.
+\end{array}\right.
+\end{eqnarray}<div style="text-align:right;">(8.9)</div></div><p>
+A trader anticipating a less volatility in the underlying asset can take a <b>short straddle</b>, means that the trader should take short positions in both options. On the other hand, if a trader thinks that the stock price will be volatile, but not clear about which direction it will move, then a (long) straddle may be preferred.  </p><p><h4 id="strangle">Strangle</h4></p><p>The disadvantage of straddle is that both the options have the same strike price.  Thus, we have to go for either both at-the-money options or one in-the-money and another out-of-the-money options.  In any case, we can see that the total price of the portfolio will be high.  Generally, out-of-the-money options are cheaper than in-the-money options.  Therefore, if we relax the condition of having the same strike price, we can building portfolio with two long positions, one in call and another in put, but now with different strike prices.  Such a portfolio is called a <b>strangle</b>.</p><p>For given real numbers <span class="math">\(0 < K_1 < K_2\)</span>, a portfolio consisting of a long <span class="math">\(K_1\)</span>-strike put option and a long <span class="math">\(K_2\)</span> strike call option on the same underlying and with same expiration is called a <b>strangle</b> (also called <b>long strangle</b>).  A <b>short strangle</b> is a short position in a strangle, which means selling a <span class="math">\(K_1\)</span>-strike put option and a <span class="math">\(K_2\)</span> strike call option  on the same underlying and with same expiration.</p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Determine the net gain function for both a long strangle and a short strangle.</p><p>Given a pair of real numbers <span class="math">\(0 < K_1 < K_2\)</span>, find the positive real numbers <span class="math">\(S_*\)</span> and <span class="math">\(S^*\)</span> such that  the net gain function in the corresponding (long) strangle satisfies:
+</p><div class="math">\[
+\mathcal{N}(S_T) > 0, \text{ for all } S_T < S_* \text{ and } S_T > S^*.
+\]</div><p>
+</div></p>
+    </div>
+    
+    <script>
+    document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+    document.addEventListener("keydown", function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "s")) {
+            e.preventDefault();
+        }
+    });
+    </script>
+    
+     <footer>
+  © S. Baskar, Department of Mathematics, IIT Bombay. 2026 (This material is licensed under CC BY-NC 4.0.) — Updated: 15-April-2026
+</footer>
+
+<style>
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #f8f8f8;
+  color: #888;
+  font-size: 0.75em;
+  text-align: center;
+  padding: 6px 0;
+  border-top: 1px solid #ddd;
+  z-index: 10;               /* low z-index */
+  pointer-events: none;      /* allows clicks to pass through */
+}
+
+/* Small screen adjustments */
+@media (max-width: 600px) {
+  footer {
+    font-size: 0.68em;
+    padding: 4px 0;
+  }
+}
+</style> 
+
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocButton = document.getElementById('toc-button');
+            const tocPanel = document.getElementById('toc-panel');
+            const closeToc = document.getElementById('close-toc');
+
+            if (localStorage.getItem('tocOpen') === 'true') {
+                tocPanel.classList.add('open');
+                localStorage.removeItem('tocOpen');
+            }
+
+            tocButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                tocPanel.classList.toggle('open');
+            });
+
+            function closeTocPanel() {
+                tocPanel.classList.remove('open');
+            }
+
+            closeToc.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeTocPanel();
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!tocPanel.contains(e.target) && e.target !== tocButton) {
+                    closeTocPanel();
+                }
+            });
+
+            tocPanel.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            document.querySelectorAll('#toc-panel a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (!this.getAttribute('href').startsWith('#')) {
+                        localStorage.setItem('tocOpen', 'true');
+                    }
+                    if (this.hash) {
+                        e.preventDefault();
+                        const target = document.getElementById(this.hash.substring(1));
+                        if (target) {
+                            window.scrollTo({
+                                top: target.offsetTop - 70,
+                                behavior: 'smooth'
+                            });
+                            history.pushState(null, null, this.hash);
+                            if (window.innerWidth < 768) {
+                                closeTocPanel();
+                            }
+                        }
+                    }
+                });
+            });
+
+            if (window.location.hash) {
+                const target = document.getElementById(window.location.hash.substring(1));
+                if (target) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: target.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

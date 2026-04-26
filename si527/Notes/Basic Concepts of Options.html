@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Concepts of Options</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML ">
+    </script>
+    <style>
+        body, p, li, div {
+        color: black !important;
+        line-height: 1.6;
+        }
+        ol.latex-enumerate, ol.latex-enumerate li {
+            line-height: 1.6 !important;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        /* Updated TOC styles */
+        #toc-panel {
+            font-size: 0.9em;
+        }
+        .toc-chapter, 
+        .toc-section, 
+        .toc-subsection {
+            color: black !important;
+        }
+        .toc-chapter a,
+        .toc-section a,
+        .toc-subsection a {
+            color: black !important;
+            text-decoration: none;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        #toc-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #1a73e8;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #toc-panel {
+            position: fixed;
+            top: 0;
+            left: -350px;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            padding: 20px;
+            overflow-y: auto;
+            transition: left 0.3s ease-out;
+            will-change: transform;
+        }
+        #toc-panel.open {
+            left: 0;
+        }
+        #close-toc {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #content {
+            padding: 20px;
+            padding-top: 60px;
+            max-width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
+        }
+        .toc-chapter {
+            margin-bottom: 10px;
+            border-left: 3px solid #1a73e8;
+            padding-left: 10px;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        .chapter-link {
+            font-weight: bold;
+            color: #1a73e8;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+        }
+        .toc-sections {
+            margin-left: 15px;
+            display: none;
+        }
+        .toc-sections.expanded {
+            display: block;
+        }
+        .toc-section {
+            padding: 3px 0;
+            margin-left: 10px;
+        }
+        .toc-subsection {
+            padding: 3px 0;
+            margin-left: 25px;
+            font-size: 0.95em;
+        }
+        .toc-subsubsection {
+            padding: 3px 0;
+            margin-left: 40px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        :target {
+            scroll-margin-top: 80px;
+            animation: highlight 1.5s ease;
+        }
+        @keyframes highlight {
+            0% { background-color: rgba(26, 115, 232, 0.1); }
+            100% { background-color: transparent; }
+        }
+        @media (max-width: 768px) {
+            #toc-panel {
+                width: 85%;
+                left: -90%;
+            }
+            #toc-panel.open {
+                left: 0;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            }
+            #content {
+                transition: transform 0.3s ease-out;
+            }
+            #toc-panel.open ~ #content {
+                transform: translateX(85%);
+            }
+        }
+        .note {
+  background-color: color-mix(in srgb, var(--primary) 7%, white);
+border: 5px solid var(--primary);
+  padding: 5px;
+  margin: 10px;
+}
+.problem {
+  background-color: color-mix(in srgb, var(--primary) 18%, white);
+border: 1px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.example {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 10px;
+  margin: 10px;
+}
+.remark {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 20px;
+  margin: 10px;
+}
+.definition {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px double var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.lemma {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.theorem {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.proofs {
+  background-color: var(--environmentBackground);
+border: 5px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.project {
+  background-color: var(--environmentBackground);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.hint {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.code {
+  background-color: color-mix(in srgb, var(--primary) 13%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.algorithm {
+  background-color: color-mix(in srgb, var(--primary) 5%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+    </style>
+</head>
+<body>
+    <button id="toc-button">☰ Table of Contents</button>
+    <div id="toc-panel">
+        <button id="close-toc">×</button>
+      <!-- Small Main Page Button -->
+<div style="text-align:right; margin-bottom: 10px;">
+  <a href="index.html" 
+     style="
+       background: var(--toc-primary, #2738F5);
+       color: white;
+       padding: 4px 10px;
+       border-radius: 16px;
+       font-size: 0.75em;
+       font-weight: 900;
+       text-decoration: none;
+       display: inline-block;
+       box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+     ">
+    Main Page
+  </a>
+</div>
+
+        <div class="full-toc">
+
+        <div class="toc-chapter ">
+            <a href="Overview of Financial Systems.html" class="chapter-link">
+                Chapter 1: Overview of Financial Systems
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Overview of Financial Systems.html#FinancialSystem.ch">
+                        Financial System: An Overview
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#financialmarketframework.sec">
+                        Financial Market Framework
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#financial.instrument.ssec">
+                        Financial Instruments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#securities">
+                        Securities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-levels">
+                        Market Levels
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#market-segments">
+                        Market Segments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#trading-mechanism">
+                        Trading Mechanism
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#marketparticipants.sec">
+                        Market Participants
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-makers">
+                        Market Makers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#investors">
+                        Investors
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#speculators">
+                        Speculators
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#hedgers">
+                        Hedgers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#arbitrageurs">
+                        Arbitrageurs
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#overviewderivatives.sec">
+                        Overview of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#essential-market-terms">
+                        Essential Market Terms
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#purpose-of-derivatives">
+                        Purpose of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#need-for-pricing-models-and-analysis">
+                        Need for Pricing Models and Analysis
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#noncontingentclaims.sec">
+                        Non-Contingent Claims: Forwards, Futures, and Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#forwards-and-futures">
+                        Forwards and Futures
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#swaps">
+                        Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#options.sec">
+                        Contingent Claims: Options
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="PriceDynamics.html" class="chapter-link">
+                Chapter 2: PriceDynamics
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="PriceDynamics.html#price.dynamics.ch">
+                        Price Dynamics
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="PriceDynamics.html#deterministic-interest-rate-models">
+                        Deterministic Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#discrete-time-models">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#continuous-time-model">
+                        Continuous Time Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#nonconstant.interest.rate.subs">
+                        Non-constant Interest Rate
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#present.value.subs">
+                        Present Value
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#cash-flow-stream">
+                        Cash Flow Stream
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="PriceDynamics.html#stochastic-models">
+                        Stochastic Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#stochastic-processes">
+                        Stochastic Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#stock-price-model">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#wiener-process">
+                        Wiener Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#ito">
+                        It\^{o
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#GBMParameterCalibration.sec">
+                        Parameter Calibration
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#interest-rate-models">
+                        Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#wiener-integral">
+                        Wiener Integral
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#numerical-simulation">
+                        Numerical Simulation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#distribution-of-the-stochastic-increment">
+                        Distribution of the stochastic increment
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#exact-simulation-scheme">
+                        Exact simulation scheme
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Portfolio And Arbitrage.html" class="chapter-link">
+                Chapter 3: Portfolio And Arbitrage
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Portfolio And Arbitrage.html#PortfolioNArbitrage.ch">
+                        Portfolio and Arbitrage
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#portfolioconcepts.ssec">
+                        Portfolio Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#value-and-gain-processes">
+                        Value and Gain Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#market-model">
+                        Market Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#predictable-strategy">
+                        Predictable Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#self-financing-strategy">
+                        Self-financing Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.opportunity.sec">
+                        Arbitrage Opportunity
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage-portfolio">
+                        Arbitrage Portfolio
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#application-forward-pricing">
+                        Application: Forward Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#law.of.one.price.subs">
+                        Law of One Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.strategy.ssec">
+                        Arbitrage Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#futures.sec">
+                        Application: Future Contracts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#marking-to-market">
+                        Marking to Market
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#pricing-model">
+                        Pricing Model
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter current">
+            <a href="Basic Concepts of Options.html" class="chapter-link">
+                Chapter 4: Basic Concepts of Options
+            </a>
+            <div class="toc-sections expanded">
+
+                <div class="toc-item ">
+                    <a href="Basic Concepts of Options.html#BasicConceptsOptions.ch">
+                        Basic Concepts of Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#call.put.sec">
+                        Basic Terminology
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#defining-parameters">
+                        Defining Parameters
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#payoff-and-gain">
+                        Payoff and Gain
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#time-value-in-an-option-price">
+                        Time Value in an Option Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#Bounds.EuropeanOption.sec">
+                        Premium Bounds and Arbitrage Opportunities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#european-options">
+                        European Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#american-options">
+                        American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#put-call-parity-estimates">
+                        Put-Call Parity Estimates
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#premium-valuation">
+                        Premium Valuation
+                    </a>
+                </div>
+</div></div>
+</div>
+    </div>
+    <div id="content">
+        <p>
+<h1 id="BasicConceptsOptions.ch">Basic Concepts of Options</h1></p><p>In our study of derivative pricing, we have so far examined forwards and futures, which constitute noncontingent claims. These contracts require both the writer and the holder to filfil their obligations to execute the contract at the expiration date. In this chapter, let us shift our focus to another crucial aspect of derivative markets: <b>options</b>. Options are contingent claims that offer a buyer the right, but not the obligation, to buy or sell an underlying asset at a predetermined price within a specified time frame. The buyer acquires the contingent claim by paying a <b>premium</b> to the contract. This unique characteristic of options makes them a valuable instrument for investors seeking strategic opportunities and risk management solutions in financial markets.</p><p>There are two primary types of options, namely, a call option and a put option. A call option gives the holder the right, but not the obligation, to buy an underlying asset at a predetermined price, known as the <b>strike price</b>, within a specified period. On the other hand, a put option grants the holder the right, but not the obligation, to sell an underlying asset at the strike price within a specified timeframe. </p><p>A key aspect of options theory is the concept of option premiums, their properties, and how their dynamics are modeled. Option premiums are influenced by various factors, including the current market price of the underlying asset, the time remaining until the option expiration, and market volatility. Factors such as interest rates and dividend payments may also affect option premiums. Understanding these factors is essential for traders as they evaluate potential option trades and assess the risk-reward profile of their strategies. Moreover, understanding option pricing mechanics allows investors to make informed decisions and effectively manage their portfolios in dynamic market environments.</p><p>In this chapter, we discuss some fundamental properties of option premiums. In <a href="Basic Concepts of Options.html#call.put.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a>, we begin with an overview of the types of options, including call and put options, as well as the distinctions between American and European options. We also introduce the concepts of option payoffs and gains, providing the relationship between option payoffs and underlying asset prices.  An option price comprises intrinsic value and time value. We discuss these two components of option pricing and provide formulas for various cases.  Several option premium bounds are examined in <a href="Basic Concepts of Options.html#Bounds.EuropeanOption.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a> for both European and American options under the no-arbitrage market condition. We also derive some important properties of option premiums that include the derivation and application of an important relation between the put and call premiums with same strike price and the underlying asset, known as  <b>put-call parity</b>. The chapter concludes with key results on the relationship between premiums and strike prices, as well as the convexity property of option premiums.</p><p><h2 id="call.put.sec">Basic Terminology</h2></p><p>An option contract involves two parties, the party initiating the contract is the <b>writer</b> or the <b>seller</b> of the option contract, while the counter party is the <b>holder</b> or the <b>buyer</b>. </p><p>Depending on the trade set in the contract, options can be categorized into two types:
+<ol class="latex-enumerate">
+<li><b>Call Option:</b> 
+These options grant the holder the right but not the obligation to <b> buy</b> the underlying asset for a specified strike price by (or within) a predetermined time .</p><p></li><li><b>Put Option:</b> 
+These options grant the holder the right but not the obligation to <b> sell</b> the underlying asset for a specified strike price by (or within) a predetermined time.
+</li></ol>
+To acquire the contingent position in the contract, the holder must pay a token amount upfront to the writer at the contract's acceptance time. This token amount is known as the <b>premium</b> or <b>price</b> of the option.</p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The price of an option (<i> i.e.</i> the premium) should not be confused with the future or forward) price in a future (or forward) contract. A future price in a future contract is equivalent to the strike price in an option. Whereas the price of an option (often referred to as option price) is the amount paid by the holder to the writer in order to gain only the right but not the obligation to exercise the option contract (<i> i.e.</i> the contingent position in the contract).
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+The following is the list of all the basic parameters needed to define an option:
+<ol class="latex-enumerate">
+<li>Contract issue time, generally taken as <span class="math">\(t=0\)</span>;
+</li><li>Expiration or maturity (date or time or both), denoted by <span class="math">\(t=T\)</span>;
+</li><li>Strike price or exercise price, denoted by <span class="math">\(K\)</span>;
+</li><li><b>Contract size</b>, also called a <b>lot</b> size, which is the number of units of the underlying assets exercised in a contract; and
+</li><li>Option premium, denoted by <span class="math">\(X\)</span> in general.  When it comes to call option premium, we use the notation C and for the put option premium, we use P.
+</li></ol>
+</div></p><p>An option (a call or a put option) can further be categorized into two types depending on the time of execution of the contract. These are the <b>American option</b> and the <b>European option</b>.</p><p><b> American Option:</b> 
+In an <b>American option</b>, the contract can be exercised at any time up to the expiration time.</p><p><b> European Option:</b> 
+In a <b>European option</b>, the contract is allowed to be exercised only on the expiration time.</p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+Before 2010, stock options in India were American, while index options were European. After 2010, all options in India became European.
+</div></p><p>The underlying asset of an option can include stocks, commodities, or foreign currencies, which are settled by physical delivery. However, there are also underlying assets that cannot be physically delivered at expiration, such as stock indices (like Nifty and Sensex) and interest rates. In these cases, settlements are made in cash by paying the difference between the strike price and the spot price.</p><p><h3 id="defining-parameters">Defining Parameters</h3></p><p>Let <span class="math">\(S(t)\)</span> (also denoted by <span class="math">\(S_t\)</span>) be the spot market price of the underlying asset at any time <span class="math">\(t\)</span> and <span class="math">\(K\)</span> be the strike price of the option.  Let the period of the option be <span class="math">\([0,T]\)</span>, where <span class="math">\(T\)</span> is the expiration time or maturity. We proceed to find the payoff of an option at maturity <span class="math">\(T\)</span>. </p><p>Observe first that, since the holder of an option has no obligation to exercise the option, the holder will exercise it if and only if there is a positive return.  This means that 
+<ol class="latex-enumerate">
+<li>the holder of a <b> call</b> option will exercise it if and only if <span class="math">\(K < S_T\)</span>;
+</li><li>the holder of a <b> put</b> option will exercise it if and only if <span class="math">\(K > S_T\)</span> (for European options).
+</li></ol></p><p><h3 id="payoff-and-gain">Payoff and Gain</h3></p><p>We begin by defining the payoff.</p><p><div class="definition" id="payoff.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Payoff</b>]</p><p>A call option is said to be
+<ol class="latex-enumerate">
+<li><b>in-the-money</b> if <span class="math">\(K < S_t\)</span>;
+</li><li><b>at-the-money</b> if <span class="math">\(K=S_t\)</span>; and
+</li><li><b>out-of-the-money</b> if <span class="math">\(K > S_t\)</span>,
+</li></ol>
+at any time <span class="math">\(t\in [0,T]\)</span>.  The <b>payoff</b> of a call option at the expiration <span class="math">\(T\)</span> is defined as
+</p><div class="math">\[
+C_T =\left\{\begin{array}{ll}
+ 		\max\big(0,S_T-K\big),&amp;\text{ for buyer (long position)}\\
+		 \min\big(0,K-S_T\big),&amp;\text{ for seller (short position)}
+	 \end{array}\right.
+\]</div><p>
+A put option is said to be
+<ol class="latex-enumerate">
+<li><b>in-the-money</b> if <span class="math">\(K>S_t\)</span>;
+</li><li><b>at-the-money</b> if <span class="math">\(K=S_t\)</span>; and
+</li><li><b>out-of-the-money</b> if <span class="math">\(K < S_t\)</span>,
+</li></ol>
+at any time <span class="math">\(t\in [0,T]\)</span>. The <b>payoff</b> of a put option at the expiration <span class="math">\(T\)</span> is defined as
+</p><div class="math">\[
+P_T = \left\{\begin{array}{ll}
+			\max\big(0,K-S_T\big),&amp;\text{ for buyer (long position)}\\
+			\min\big(0,S_T-K\big),&amp;\text{ for seller (short position)}
+	     \end{array}\right.
+\]</div><p>
+</div></p><p>Graphical illustrations of the buyer's payoff s are shown in the following figures.</p><p><div class="figure">
+
+<img src="Figures/CallPutPayoff.png" class="standalone-figure">
+<div style="text-align: center; font-weight: bold;">Buyer's payoff graphs.</div>
+
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Investor-C bought a 50-strike call option on a stock, and Investor-P bought a 112-strike put option on the same stock with the same expiration. Let both the options be European, and there are no transaction costs (frictionless). If the investor-C's payoff is 10, then find the payoff of Investor-P.<div style="text-align:right;"><b> Answer:</b> 52 </div>
+</div></p><p><div class="remark" id="payoff.t.rm">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+
+The payoff of an option is the value of the option at the expiration date. We can also define the value of an option at any time <span class="math">\(t\in [0,T]\)</span>.</p><p>The <b>intrinsic value</b> of a call option is defined as
+</p><div class="math">\[
+V_c(t) = \max\big(0,S(t)-K\big),~~t\in [0,T]
+\]</div><p>
+and the <b>intrinsic value</b> of a put option is defined as
+</p><div class="math">\[
+V_p(t) = \max\big(0,K-S(t)\big),~~t\in [0,T].
+\]</div><p>
+</div></p><p>Observe that we have not incorporated the option premium while defining the payoff in the above definition. The gain (or loss) of an option comprises the payoff in addition to the future value of the premium.</p><p>Let <span class="math">\(X\)</span> be the premium paid for an option contract, and <span class="math">\(r\)</span> be the prevailing interest rate continuously compounded. Then the gain (or loss) in a call option is defined as</p><div class="math">\[
+G_T = \left\{\begin{array}{rl}
+C_T - Xe^{rT},&amp;\text{for long call}\\
+Xe^{rT}-C_T,&amp;\text{for short call}\\
+\end{array}\right.
+\]</div><p>
+Similarly, we can define the gain (or loss) in a put option. Illustrations of the gain (depicted by dashed lines) along with the payoff (represented by solid lines) in four possible scenarios are depicted in the following figures. </p><p><div class="figure">
+
+<img src="Figures/GainLongShortCallPut.png" class="standalone-figure">
+<div style="text-align: center; font-weight: bold;">Gain (dashed lines) and Payoff (solid lines) graphs.</div>
+
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+An investor buys a 14900-strike put on Nifty when the Nifty is trading in the spot market at 14875 points. The premium for the put is ₹ 27. Assume that the lot size is 100 units and the expiration is 91 days.
+Considering the prevailing interest rate as 6%, calculate the investor’s gain if the index declines by 75 points from the strike price at expiration.
+<span class="math">\(~\)</span><div style="text-align:right;"><b> Answer:</b> 4759.31 </div>
+</div></p><p><div class="hint">
+<div class="heading-container">
+<b class="heading">Hint:</b>
+</div>
+Since the interest rate scheme is not specified, one has to take it as continuous compounding. Also, consider 365 days a year. Note that if the interest rate itself is not given, then take it as zero.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Consider a European call option with a 90-strike and 6 months expiration. Given that the underlying stock takes the price ₹ 87, ₹ 92, or ₹ 97 with probability 1/3 each on the expiration date. If the option is bought for ₹ 8 and the prevailing interest rate is 9% continuously compounded, then find the expected gain (or loss) for the long call.
+<span class="math">\(~\)</span><div style="text-align:right;"><b> Answer:</b> <span class="math">\(-5.3682\)</span> </div>
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+Let us give the formula for the gain in an option using the discrete compounding scheme with frequency <span class="math">\(m\)</span>.  </p><p>The future value of the premium <span class="math">\(X\)</span> at time <span class="math">\(T\)</span> with discrete compounding scheme with frequency <span class="math">\(m\)</span> is given by
+</p><div class="math">\[
+\text{FV}(X) = X\left(1+\frac{r}{m}\right)^{mT}.
+\]</div><p>
+Therefore, the required gain is given by
+</p><div class="math">\[
+G_T =  \left\{\begin{array}{rl}
+C_T - X\left(1+\dfrac{r}{m}\right)^{mT},&amp;\text{for long call}\\
+X\left(1+\dfrac{r}{m}\right)^{mT}-C_T,&amp;\text{for short call}\\
+P_T - X\left(1+\dfrac{r}{m}\right)^{mT},&amp;\text{for long put}\\
+X\left(1+\dfrac{r}{m}\right)^{mT}-P_T,&amp;\text{for short put}.
+\end{array}\right.
+\]</div><p>
+</div></p><p><h3 id="time-value-in-an-option-price">Time Value in an Option Price</h3></p><p>One may argue for considering the intrinsic value of an option as the price of the option. However, the option price is positive at any time <span class="math">\(t\in [0,T)\)</span>, whereas the option value, can be zero if the option is out-of-the-money. This shows that an option price includes more than just the intrinsic value.</p><p>The option price can be decomposed into (at least) two parts, namely, the intrinsic value and the time value, and is written as
+
+Option Price = Intrinsic Value + Time Value.
+
+We use the notations <span class="math">\(C^e(t)\)</span> (or <span class="math">\(C^e_t\)</span>) and <span class="math">\(C^a(t)\)</span> (or <span class="math">\(C^a_t\)</span>), <span class="math">\(t\in [0,T]\)</span>, to represent European and American call option prices, respectively, and similar notations for other cases.</p><p>From the above decomposition, the <b>time value</b> can be written as
+</p><div class="math" >\begin{eqnarray}
+\text{TV}(t)&amp;=&amp;
+\left\{\begin{array}{ll}
+C^e(t) - \max\big(0,S(t)-K\big),&amp;\text{for European call}\\
+P^e(t) - \max\big(0,K-S(t)\big),&amp;\text{for European put}\\
+C^a(t) - \max\big(0,S(t)-K\big),&amp;\text{for American call}\\
+P^a(t) - \max\big(0,K-S(t)\big),&amp;\text{for American put}.
+\end{array}\right.
+\end{eqnarray}<div style="text-align:right;">(4.1)</div></div><p><img src="Figures/OptionData.png" class="standalone-figure">
+<div style="text-align: center; font-weight: bold;">Option data of a stock as of January 1-st, 2021, for various expirations when the spot price of the stock was ₹ 1260.45 per share.</div>
+</p><p><div class="example">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+Consider a stock on 1<span class="math">\(^{\rm st}\)</span> January 2021 (taken as <span class="math">\(t=0\)</span>) which was trading at ₹ 1260.45 per share.
+The above table shows the option price for different expirations and different strike prices.</p><p>Our interest is to obtain the time value of all the options at <span class="math">\(t=0\)</span> for all the data shown in this table.  </p><p>Let us take the 1240-strike call option with Jan<span class="math">\(^\prime\)</span>21 expiration, where the option price was <span class="math">\(C^a(0) = 63.6\)</span> and the intrinsic value of the option was</p><div class="math">\[
+\max\big(0,S(0)-K\big) = \max\big(0,1260.45-1240\big) = 20.45.
+\]</div><p>
+Therefore, the time value of the option is</p><div class="math">\[
+\text{TV}^{a}_c(0) = 63.6 - 20.45 = 43.15.
+\]</div><p>
+The same 1240-strike put option was out-of-the-money and therefore, the intrinsic value is given by</p><div class="math">\[
+\max\big(0,K-S(t)\big) = \max\big(0,1240-1260.45\big) = 0.
+\]</div><p>
+Hence, the time value of the option as on 1<span class="math">\(^{\rm st}\)</span> January is</p><div class="math">\[
+\text{TV}^{a}_p(0) = 40.75.
+\]</div><p> 
+Similarly, we can find the time value for other strike prices and for other expirations.
+</div></p><p><h2 id="Bounds.EuropeanOption.sec">Premium Bounds and Arbitrage Opportunities</h2></p><p>The primary focus of options theory is to determine an appropriate price (premium) for a given option.  As we progress into the theory, we will see that this is a difficult task.  However, obtaining bounds for the price of an option in a no-arbitrage market is relatively straightforward. Throughout this section, we assume that the market allows short selling and that lending and borrowing occur at the same prevailing interest rate <span class="math">\(r\)</span>, with continuous compounding.</p><p><h3 id="european-options">European Options</h3></p><p>Let us first explore the simplest case of a European option, where the underlying stock does not pay dividends during the option period.</p><p><div class="theorem" id="European.call.NonDiv.thm">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>European Call on Non-Dividend-Paying Stock</b>]</p><p>Consider a European call option with
+<ol class="latex-enumerate">
+<li><span class="math">\(K\)</span>-strike;
+</li><li>period <span class="math">\([0,T]\)</span>; and
+</li><li><span class="math">\(t\in [0,T]\)</span> is the present time with premium <span class="math">\(C^e_t\)</span>,
+</li></ol>
+where the underlying stock with spot price <span class="math">\(S_t\)</span> pays no dividend during the option period.  If the market does not allow arbitrage, then
+</p><div class="math">\[
+\max\big(0,S_t - Ke^{-r(T-t)}\big) \le C^e_t \le S_t.
+\]</div><p>where <span class="math">\(r\)</span> is the prevailing annual interest rate continuously compounded.
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+Without loss of generality, we take <span class="math">\(t=0\)</span> and prove the estimate
+</p><div class="math">\[
+\max\big(0,S_0 - Ke^{-rT}\big) \le C^e_0 \le S_0.
+\]</div><p><b>Upper bound:</b> First, let us prove the upper bound.</p><p>Assume the contrary that there is a <span class="math">\(K\)</span>-strike call option with premium <span class="math">\(C^e_0> S_0.\)</span> Then, construct a portfolio using the following trades:
+<ol class="latex-enumerate">
+<li>short <span class="math">\(K\)</span>-strike call option;
+</li><li>buy the stock in the spot market;
+</li><li>invest <span class="math">\(C^e_0-S_0\)</span> in a risk-free interest rate instrument up to the expiration date of the call option.
+</li></ol>
+The portfolio is given by</p><div class="math">\[
+\Pi_1 = (\phi,\theta,c);~~\phi=1, \theta=1, c=-1.
+\]</div><p>
+Here, we assumed that one unit of the risk-free instrument costs <span class="math">\(C^e_0-S_0\)</span> (one may simply assume the risk-free instrument as the savings bank account).
+The value of the portfolio at <span class="math">\(t=0\)</span> is</p><div class="math">\[
+V(\Pi_1)(0) = 1\times(C^e_0 - S_0) +1 \times S_0 + (-1)\times C^e_0 = 0.
+\]</div><p>
+At time <span class="math">\(t=T\)</span>, the value of the portfolio <span class="math">\(\Pi_1\)</span> is given by
+</p><div class="math">\[
+V(\Pi_1)(T) = (C^e_0 - S_0)e^{rT} + \min\big\{K, S_T\big\}.
+\]</div><p>
+Since <span class="math">\(K>0\)</span>, <span class="math">\(S_T>0\)</span>, and by our assumption <span class="math">\(C^e_0>S_0\)</span>, we see that <span class="math">\(V(\Pi_1)(T)>0\)</span> and this happens with probability 1.  </p><p>This shows that <span class="math">\(\Pi_1\)</span> is an arbitrage portfolio. This contradicts the no-arbitrage market assumption.  </p><p><b>Lower bound:</b> Let us now prove the lower bound.  </p><p>It is clear that <span class="math">\(C^e_0\ge 0\)</span>.  Therefore, we assume that <span class="math">\(S_0 - Ke^{-rT}>0\)</span> and prove that <span class="math">\(S_0 - Ke^{-rT}\le C^e_0\)</span>.</p><p>Assume the contrary <span class="math">\(S_0 - Ke^{-rT} > C^e_0.\)</span> </p><p>Then, we construct a portfolio by making the following trades:
+<ol class="latex-enumerate">
+<li>short a stock in the spot market at the price of <span class="math">\(S_0\)</span> per share;
+</li><li>buy one <span class="math">\(K\)</span>-strike call option by paying the premium <span class="math">\(C^e_0\)</span>; and
+</li><li>invest <span class="math">\(S_0-C^e_0\)</span> in a risk-free interest rate instrument up to the expiration date of the call option.
+</li></ol>
+The portfolio is given by
+</p><div class="math">\[
+\Pi_1 =(\phi,\theta,c);~~\phi=1, \theta=-1, c=1,
+\]</div><p>
+where we have assumed that one unit of the risk-free asset is <span class="math">\(S_0-C^e_0\)</span>.
+The value of the portfolio at <span class="math">\(t=0\)</span> is
+</p><div class="math">\[
+V(\Pi_1)(0) = 1\times(S_0 - C^e_0) + (-1) \times S_0 + 1\times C^e_0 = 0.
+\]</div><p>
+At time <span class="math">\(t=T\)</span>, make the following trades:
+<ol class="latex-enumerate">
+<li>close the risk-free investment;
+</li><li>if <span class="math">\(S_T>K\)</span>, then exercise the call option;\\
+otherwise, buy one stock at the spot market; and
+</li><li>close the short position at the spot market.
+</li></ol>
+The payoff of <span class="math">\(\Pi_1\)</span> is
+</p><div class="math">\[
+V(\Pi_1)(T) = (S_0-C^e_0)e^{rT} - \min\big\{K, S_T\big\}.
+\]</div><p>
+By our assumption, we get (how?)
+</p><div class="math">\[
+V(\Pi_1)(T) >0
+\]</div><p>
+with probability 1.  Thus, <span class="math">\(\Pi_1\)</span> is an arbitrage portfolio.
+</div></p><p><div class="theorem" id="Bound.Europe.Put.Nodiv.thm">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>European Put on Non-Dividend-Paying Stock</b>]</p><p>Consider the European put option
+<ol class="latex-enumerate">
+<li><span class="math">\(K\)</span>-strike;
+</li><li>period <span class="math">\([0,T]\)</span>;
+</li><li><span class="math">\(t\in [0,T]\)</span> is the present time with premium <span class="math">\(P^e_t\)</span>,
+</li></ol>
+where the underlying stock with spot price <span class="math">\(S_t\)</span> pays no dividend during the option period.  If the market does not allow arbitrage, then
+</p><div class="math">\[
+\max\big(0,Ke^{-r(T-t)}-S_t\big) \le P^e_t \le Ke^{-r(T-t)},
+\]</div><p>
+where <span class="math">\(r\)</span> is the prevailing annual interest rate continuously compounded.
+</div></p><p>Proof of this theorem is left as an exercise.</p><p>The bounds obtained in the above theorem are graphically illustrated in the figure below.</p><p><div class="figure">
+
+<img src="Figures/CallPutBound.png" class="standalone-figure">
+<div style="text-align: center; font-weight: bold;">An illustration of the bounds for European call (left) and put (right) options for no-dividend-paying stocks.</div>
+
+</div></p><p><div class="example" id="COBoundPracticalIllustration.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+[<b>A real-time illustration</b>]</p><p>Let us illustrate the bounds proved in <a href="Basic Concepts of Options.html#European.call.NonDiv.thm">Theorem &laquo;Click Here&raquo; </a> using real-time data. To this end, we have obtained the option chain data for NIFTY with an expiration date of February 24, 2022, from the NSE website </p><p>
+<a href="https://www.nseindia.com/option-chain" target="_blank">https://www.nseindia.com/option-chain</a></p><p>
+on February 18, 2022, after the market closed. On that day, NIFTY closed at approximately <span class="math">\(17,276\)</span> points. The  last traded price (LTP) of the call options with various strike prices were extracted from the downloaded option chain table. These premiums are depicted in the figure below by a solid blue line, where the roles of the strike price and spot price are interchanged. The dashed lines represent the corresponding bounds obtained from <a href="Basic Concepts of Options.html#European.call.NonDiv.thm">Theorem &laquo;Click Here&raquo; </a>, while the payoff graph is illustrated by a solid line.</p><p>The lower bound is calculated using <span class="math">\(K=17250\)</span> and <span class="math">\(r=0.0675\)</span>, which is approximately the 10-year government bond yield as of the last week of February 2022. In the (a) part of the following figure,  a zoomed view around <span class="math">\(K\)</span> is provided, representing the nearly at-the-money options.  </p><p>From this figure, it is evident that there are no arbitrage opportunities according to the considered interest rate <span class="math">\(r\)</span>. This can be attributed to the substantial liquidity present in these options. However, as we move away from the at-the-money option, liquidity diminishes, and sometimes visible arbitrage opportunities emerge, particularly at the market's closing time, due to speculators. This phenomenon is clearly observed in the (b)-part of the following figure around strikes greater than 18700, which correspond to far in-the-money options. It is worth noting that at the next day's market opening, such arbitrage gaps either cease to exist or are swiftly filled by arbitrageurs.
+</div></p><p><div class="figure">
+
+<img src="Figures/COPriceBound.png" class="standalone-figure">
+<div style="text-align: center; font-weight: bold;">A real-time illustration of the bounds of a European call option premium proved in <a href="Basic Concepts of Options.html#European.call.NonDiv.thm">Theorem &laquo;Click Here&raquo; </a>. Details are in <a href="Basic Concepts of Options.html#COBoundPracticalIllustration.ex">Example &laquo;Click Here&raquo; </a>.</div>
+
+</div></p><p><div class="problem" id="European-Call-Put-Dividend.pr">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>European Options on Dividend-Paying Stock</b>]
+</p><p>Consider the European (call or put) options with
+<ol class="latex-enumerate">
+<li><span class="math">\(K\)</span>-strike;
+</li><li>period <span class="math">\([0,T]\)</span>; 
+</li><li>premium <span class="math">\(C^e_t\)</span> for call and <span class="math">\(P^e_t\)</span> for put,
+</li></ol>
+where <span class="math">\(t\in [0,T)\)</span> is the present time with the spot price of the underlying asset <span class="math">\(S_t\)</span> that pays dividend <span class="math">\(D\)</span> at some known time <span class="math">\(t_1\in (t,T)\)</span>.  If the market does not allow arbitrage, then show that
+</p><div class="math" >\begin{eqnarray}
+\begin{array}{cl}
+\max\big(0,S_t - De^{-r(t_1-t)} - Ke^{-r(T-t)}\big) \le C^e_t \le S_t - De^{-r(t_1-t)},&amp;\text{ for call option;}\\
+\max\big(0,Ke^{-r(T-t)} -S_t+ De^{-r(t_1-t)}\big) \le P^e_t \le Ke^{-r(T-t)},&amp;\text{ for put option,}
+\end{array}
+\end{eqnarray}<div style="text-align:right;">(4.2)</div></div><p>
+where <span class="math">\(r\)</span> is the prevailing annual interest rate continuously compounded.
+</div></p><p><div class="project">
+<div class="heading-container">
+<b class="heading">Project:</b>
+</div>
+Write a Python code that takes the following inputs:
+<ol class="latex-enumerate">
+<li>The name of the CSV file containing an option chain for NIFTY (download the CSV file from the website provided in <a href="Basic Concepts of Options.html#COBoundPracticalIllustration.ex">Example &laquo;Click Here&raquo; </a>);
+</li><li>The spot market value of NIFTY corresponding to the option chain given in the CSV file;
+</li><li>The prevailing interest rate;
+</li><li>The expiration time <span class="math">\(T\)</span>.
+</li></ol>
+Furthermore, the Python code should perform the following:
+<ol class="latex-enumerate">
+<li>Read the CSV file;
+</li><li>Identify all arbitrage opportunities in the option chain based on the estimates provided in <a href="Basic Concepts of Options.html#European.call.NonDiv.thm">Theorem &laquo;Click Here&raquo; </a> and <a href="Basic Concepts of Options.html#Bound.Europe.Put.Nodiv.thm">Theorem &laquo;Click Here&raquo; </a>;
+</li><li>Display the identified opportunities along with the arbitrage gain.
+</li></ol></p><p>
+</div></p><p><h3 id="american-options">American Options</h3></p><p>We now turn our attention to obtaining bounds for an American option premium.</p><p>It is important to note that American options offer more flexibility than European options. Consequently, one might expect the premium of an American option to be higher than that of a European option with the same parameters. </p><p><div class="problem" id="American-European-General-NDP.pr">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+
+Consider two options (either both call or both put):
+<ol class="latex-enumerate">
+<li><span class="math">\(K\)</span>-strike, call option;
+</li><li>option period is <span class="math">\([0,T]\)</span>; and
+</li><li>premium of <span class="math">\(X^e\)</span> for the European option and <span class="math">\(X^a\)</span> for the American option.
+</li></ol>
+If the underlying stock does not pay dividend during the option period,  the market does not allow arbitrage, and the prevailing interest rate is <span class="math">\(r > 0\)</span>,  then prove that
+</p><div class="math">\[
+X^e \le X^a.
+\]</div><p>
+</div></p><p><div class="hint">
+<div class="heading-container">
+<b class="heading">Hint:</b>
+</div>
+Take a long position in one contract (European or American, as appropriate) and take a short position in the other contract. Hold the positions until expiration. At expiration, we must settle both options simultaneously. It is important to note that we must justify arbitrage. For this purpose, the settlement should be viewed as follows:
+<ol class="latex-enumerate">
+<li>Borrow the amount <span class="math">\(S_T\)</span>;
+</li><li>Settle the contract where we have to buy the asset;
+</li><li>Supply the asset in the other contract and receive <span class="math">\(S_T\)</span>;
+</li><li>Repay the borrowed money.
+</li></ol>
+This way, we do not need to pay any interest for the borrowing as the borrowing and repayment occur immediately.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+In the above result, the absence of a specified time component indicates that the result remains consistent irrespective of the time variable.
+</div></p><p>In particular, for call options, we always have <span class="math">\(C^e = C^a\)</span> when the underlying asset is a non-dividend-paying stock.</p><p><div class="problem" id="American-European-Call-NDP.pr">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+
+Consider two call options with
+<ol class="latex-enumerate">
+<li><span class="math">\(K\)</span>-strike;
+</li><li>option period <span class="math">\([0,T]\)</span>; and
+</li><li>premium of <span class="math">\(C^e\)</span> for the European option and <span class="math">\(C^a\)</span> for the American option.
+</li></ol>
+If the underlying stock does not pay dividend during the option period,  the market does not allow arbitrage, and the prevailing interest rate is <span class="math">\(r > 0\)</span>,  then prove that
+</p><div class="math">\[
+C^e = C^a.
+\]</div><p>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The above result does not hold if the underlying stock pays dividends sometime during the option period. Also, the result does not hold for American put options.
+</div></p><p>The following theorem is a direct consequence of <a href="Basic Concepts of Options.html#European.call.NonDiv.thm">Theorem &laquo;Click Here&raquo; </a> and <a href="Basic Concepts of Options.html#American-European-Call-NDP.pr">Problem &laquo;Click Here&raquo; </a></p><p><div class="theorem" id="American.call.NonDiv.thm">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>American Call on Non-Dividend-Paying Stock</b>]</p><p>Consider an American call option with</p><p><ol class="latex-enumerate">
+<li><span class="math">\(K\)</span>-strike;
+</li><li>period <span class="math">\([0,T]\)</span>; and
+</li><li><span class="math">\(t\in [0,T)\)</span> is the present time with premium <span class="math">\(C^a_t\)</span>,</p><p></li></ol>
+where the underlying stock with spot price <span class="math">\(S_t\)</span> pays no dividend during the option period.  If the market does not allow arbitrage, then 
+</p><div class="math">\[
+\max\big(0,S_t - Ke^{-r(T-t)}\big) \le C^a_t \le S_t,
+\]</div><p>
+where <span class="math">\(r\)</span> is the prevailing annual interest rate continuously compounded.
+</div></p><p>As noted above, in the case of put options, we have <span class="math">\(P^e \leq P^a\)</span> even if the underlying stock does not pay a dividend during the option period. Therefore, it is crucial to investigate the bounds for American put options. As usual, we begin by considering non-dividend paying stocks as the underlying asset.</p><p><div class="problem" id="Bound.American.Put.Nodiv.thm">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>American Put on Non-Dividend-Paying Stock</b>]</p><p>Consider the American put option with</p><p><ol class="latex-enumerate">
+<li><span class="math">\(K\)</span>-strike;
+</li><li>period <span class="math">\([0,T]\)</span>;
+</li><li><span class="math">\(t\in [0,T)\)</span> is the present time with premium <span class="math">\(P^a_t\)</span>,</p><p></li></ol>
+where the underlying stock has a spot price of <span class="math">\(S_t\)</span> per unit and pays no dividend during the option period. If the market does not allow arbitrage, then show that
+</p><div class="math">\[
+\max\big(0,K-S_t\big) \le P^a_t \le K.
+\]</div><p>
+</div></p><p>We can obtain the bounds for American options for dividend paying stocks by combining all the results stated so far.</p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>American Options on Dividend-Paying Stock</b>]</p><p>Consider the American (call or put) option with
+<ol class="latex-enumerate">
+<li><span class="math">\(K\)</span>-strike;
+</li><li>period <span class="math">\([0,T]\)</span>;
+</li><li>premium <span class="math">\(C^a_t\)</span> for call and <span class="math">\(P^a_t\)</span> for put,
+</li></ol>
+where the stock pays dividend <span class="math">\(D\)</span> at some known time <span class="math">\(t_1\in (t,T)\)</span> and <span class="math">\(t\in [0,t_1)\)</span> is the present time with the spot price <span class="math">\(S_t\)</span>.  If the market does not allow arbitrage and the exercise time <span class="math">\(\tau > t_1\)</span>, then show that
+</p><div class="math" >\begin{eqnarray}
+\begin{array}{cl}
+\max\big(0,S_t - De^{-r(t_1-t)} - Ke^{-r(T-t)}, S_t-K\big)  \le C^a_t \le S_t - De^{-r(t_1-t)},&amp;\hspace{-0.1in}\text{for call option;}\\
+\max\big(0,Ke^{-r(T-t)}+  De^{-r(t_1-t)} -S_t, K-S_t\big) \le P^a_t \le K,&amp;\hspace{-0.1in}\text{for put option,}
+\end{array}
+\end{eqnarray}<div style="text-align:right;">(4.3)</div></div><p>
+where <span class="math">\(r\)</span> is the prevailing annual interest rate continuously compounded.
+</div></p><p><h3 id="put-call-parity-estimates">Put-Call Parity Estimates</h3></p><p>So far, we have obtained the bounds for call and put options. Now, we will discuss the relationship between call and put options in both European and American types.</p><p>Let us begin by examining European options and establishing the relationship.</p><p><div class="theorem" id="put-call.parity.european.thm">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>Put-Call Parity for European Options</b>]</p><p>Consider two European options, one call and one put with
+<ol class="latex-enumerate">
+<li><span class="math">\(K\)</span>-strike;
+</li><li>period <span class="math">\([0,T]\)</span>; and
+</li><li>the premium <span class="math">\(C^e_t\)</span> for the call option and the premium <span class="math">\(P^e_t\)</span> for the put option are at the present time <span class="math">\(t\in [0,T)\)</span>.
+</li></ol>
+Let the underlying stock have the spot price of <span class="math">\(S_t\)</span> pays no dividends during the option period.  If the market does not allow arbitrage, then</p><div class="math">\[
+C^e_t - P^e_t = S_t - Ke^{-r(T-t)},
+\]</div><p>
+where <span class="math">\(r\)</span> is the prevailing annual interest rate continuously compounded.
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+We prove the theorem for <span class="math">\(t=0\)</span>.</p><p><b> Case 1:</b> Assume the contrary that <span class="math">\(C^e_0 - P^e_0 > S_0 - Ke^{-rT}.\)</span></p><p>Let us construct the portfolio <span class="math">\(\Pi_1\)</span> using the following trades:
+<ol class="latex-enumerate">
+<li>buy a share at the spot market for <span class="math">\(S_0\)</span> per share;
+</li><li>take a long position in one put option;
+</li><li>write one call option; and
+</li><li>invest (or borrow if negative) the sum <span class="math">\(C^e_0-P^e_0-S_0\)</span> in a risk-free interest rate investment.
+</li></ol>
+It can be seen that <span class="math">\(V(\Pi_1)(0) = 0.\)</span>
+At time <span class="math">\(t=T\)</span>, we have
+</p><div class="math">\[
+V(\Pi_1)(T) = (C^e_0-P^e_0-S_0)e^{rT} + K > 0,
+\]</div><p>
+by our assumption. Complete the proof.</p><p><b> Case 2:</b> Assume the contrary that <span class="math">\(C^e_0 - P^e_0 < S_0 - Ke^{-rT}.\)</span></p><p>Let us construct the portfolio <span class="math">\(\Pi_1\)</span> using the following trades:
+<ol class="latex-enumerate">
+<li>short a share at the spot market for <span class="math">\(S_0\)</span> per share;
+</li><li>write one put option;
+</li><li>go long in one call option; and
+</li><li>invest (or borrow if negative) the sum <span class="math">\(S_0-C^e_0+P_0^e\)</span> in a risk-free interest rate investment.
+</li></ol>
+Complete the proof.
+</div></p><p>We now obtain the put-call parity for American options.</p><p><div class="theorem">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>Put-Call Parity for American Options</b>]</p><p>Consider two American options, one call and one put with
+<ol class="latex-enumerate">
+<li><span class="math">\(K\)</span>-strike;
+</li><li>period <span class="math">\([0,T]\)</span>; and
+</li><li>premium <span class="math">\(C^a_t\)</span> for the call option and <span class="math">\(P^a_t\)</span> for the put option are at the present time <span class="math">\(t\in [0,T).\)</span>
+</li></ol>
+Let the underlying stock have the spot price of <span class="math">\(S_t\)</span> pays no dividends during the option period.  If the market does not allow arbitrage, then
+</p><div class="math">\[
+S_t-K \le C^a_t - P^a_t \le  S_t - Ke^{-r(T-t)},
+\]</div><p>
+where <span class="math">\(r\)</span> is the prevailing annual interest rate continuously compounded.
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+The upper bound is a direct consequence of <a href="Basic Concepts of Options.html#American-European-General-NDP.pr">Theorem &laquo;Click Here&raquo; </a> and <a href="Basic Concepts of Options.html#put-call.parity.european.thm">Theorem &laquo;Click Here&raquo; </a>. However, we give the arbitrage portfolio argument.</p><p>We prove the result for <span class="math">\(t=0\)</span>.</p><p>Let us first consider the upper bound.  </p><p>Assume the contrary that <span class="math">\(C^a_0-P^a_0-S_0+Ke^{-rT} > 0\)</span>.</p><p>Construct the portfolio <span class="math">\(\Pi_1\)</span> with the following trades:
+<ol class="latex-enumerate">
+<li>write one call option and get the premium <span class="math">\(C^a_0\)</span>;
+</li><li>buy one put option by paying the premium <span class="math">\(P^a_0\)</span>;
+</li><li>buy one share by paying <span class="math">\(S_0\)</span>; and
+</li><li>invest (borrow if negative) the remaining <span class="math">\(C^a_0-P^a_0-S_0\)</span> in a risk-free interest rate investment.
+</li></ol>
+The initial value of <span class="math">\(\Pi_1\)</span> is given by
+<span class="math">\(V(\Pi_1)(0) = 0.\)</span></p><p>Let <span class="math">\(t=\tau\in [0,T]\)</span> be the exercise time of the short call option.  
+The payoff of <span class="math">\(\Pi_1\)</span> at <span class="math">\(t=\tau\)</span> is
+</p><div class="math">\[
+V(\Pi_1)(\tau) = 
+(C^a_0-P^a_0-S_0)e^{r\tau} + K.
+\]</div><p>
+Using our assumption, we can see that <span class="math">\(V(\Pi_1)(\tau) > 0\)</span> (how?). From the above inequality, we can see that, although <span class="math">\(\tau\)</span> and <span class="math">\(S_\tau\)</span> are random, finally, the required positivity does not depend on these variables.  Thus, the positivity of the portfolio happens with probability 1, and therefore <span class="math">\(\Pi_1\)</span> is an arbitrage portfolio.</p><p>Let us now consider the lower bound.</p><p>Assume the contrary that <span class="math">\(C^a_0 - P^a_0 - S_0 + K < 0\)</span>.</p><p>Construct the portfolio <span class="math">\(\Pi_1\)</span> with the following trades:
+<ol class="latex-enumerate">
+<li>write one put option and get the premium <span class="math">\(P^a_0\)</span>;
+</li><li>buy one call option by paying the premium <span class="math">\(C^a_0\)</span>;
+</li><li>short one share and get <span class="math">\(S_0\)</span>; and
+</li><li>invest (borrow if negative) the remaining <span class="math">\(P_0^a-C_0^a+S_0\)</span> in a risk-free interest rate investment.
+</li></ol>
+The initial value of <span class="math">\(\Pi_1\)</span> is given by
+<span class="math">\(V(\Pi_1)(0) = 0.\)</span></p><p>Let <span class="math">\(t=\tau\in [0,T]\)</span> be the exercise time of the short put option. 
+The payoff of <span class="math">\(\Pi_1\)</span> at <span class="math">\(t=\tau\)</span> is
+</p><div class="math">\[
+V(\Pi_1)(\tau) = 
+(P^a_0-C^a_0+S_0)e^{r\tau} - K.
+\]</div><p>
+From our assumption, we see that <span class="math">\(V(\Pi_1)(\tau)>0\)</span> (how?). Complete the arbitrage arguement.
+</div></p><p><h3 id="premium-valuation">Premium Valuation</h3></p><p>So far, we have studied some important estimates of call and put options having the same strike price.  In this subsection, we study some basic properties of options prices depending on their strike prices. Let us include the strike price into the notation of option prices.</p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+For a given expiration <span class="math">\(T\)</span>, we use the following notations:</p><p>For any <span class="math">\(t\in [0,T]\)</span> and for a positive real number <span class="math">\(K\)</span>, 
+<ol class="latex-enumerate">
+<li><span class="math">\(C^e(t,K)\)</span> or <span class="math">\(C^e_t(K)\)</span> denotes the European call option price (or premium) at time <span class="math">\(t\)</span> whose strike price is <span class="math">\(K\)</span>.  For an American call option, we use the notation <span class="math">\(C^a(t,K)\)</span> or <span class="math">\(C^a_t(K)\)</span>.
+</li><li><span class="math">\(P^e(t,K)\)</span> or <span class="math">\(P^e_t(K)\)</span> denotes the European put option price  (or premium) at time <span class="math">\(t\)</span> whose strike price is <span class="math">\(K\)</span>.  For an American put option, we use the notation <span class="math">\(P^a(t, K)\)</span> or <span class="math">\(P^a_t(K)\)</span>.
+</li></ol>
+</div></p><p><div class="theorem">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>Dependency on strike price: European</b>]</p><p>If the underlying stock does not pay a dividend during the option period and the market does not allow arbitrage, then 
+</p><div class="math" >\begin{eqnarray}
+0\le C^e_t(K_1 ) - C^e_t(K_2 ) \le e^{-r(T-t)}\big(K_2 - K_1\big),\\
+0\le P^e_t(K_2 ) - P^e_t(K_1 ) \le e^{-r(T-t)}\big(K_2 - K_1\big),
+\end{eqnarray}<div style="text-align:right;">(4.4)</div></div><p>
+for any <span class="math">\(0\le K_1 \le K_2,\)</span> where <span class="math">\(r\)</span> is the prevailing interest rate continuously compounded, all the options have the same period <span class="math">\([0,T]\)</span> and <span class="math">\(t\in [0,T)\)</span> is the present time.
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+<span class="math">\(~\)</span>
+We prove the theorem with <span class="math">\(t=0\)</span>.</p><p>Let us first consider the lower bound.  
+<ol class="latex-enumerate">
+<li><b> Lower bound for call options:</b></p><p>Assume the contrary that <span class="math">\(C^e_0(K_1 ) < C^e_0(K_2 ).\)</span> </p><p>Construct a portfolio <span class="math">\(\Pi_1\)</span> using the following trades:
+<ol class="latex-enumerate">
+</li><li>write the <span class="math">\(K_2\)</span>-strike call option; 
+</li><li>buy the <span class="math">\(K_1\)</span>-strike call option; and
+</li><li>invest <span class="math">\(C^e_0(K_2 ) - C^e_0(K_1 )\)</span> in a risk-free interest rate investment.
+</li></ol>
+The initial value of <span class="math">\(\Pi_1\)</span> is
+<span class="math">\(V(\Pi_1)(0) 
+= 0.\)</span></p><p>At time <span class="math">\(t=T\)</span>, the value of <span class="math">\(\Pi_1\)</span> is
+</p><div class="math">\[
+V(\Pi_1)(T) = (C^e_0(K_2 ) - C^e_0(K_1 )) e^{rT} + x_0,
+\]</div><p>
+where
+</p><div class="math">\[
+x_0 = \left\{\begin{array}{ll}
+			K_2-K_1,	&amp;\text{if } K_2 < S_T\\
+			S_T-K_1,&amp;\text{if } K_1 < S_T\le K_2\\
+			0,&amp;\text{if } S_T \le K_1.
+			\end{array}\right.
+\]</div><p>
+Since <span class="math">\(K_1\le K_2\)</span> and by our assumption, we see that <span class="math">\(V(\Pi_1)(T) > 0\)</span>, leading to a contradiction to the no-arbitrage principle.</p><p><li><b> Lower bound for put option:</b>
+Left as an exercise.</p><p></li><li><b> Upper bound for both:</b>
+By put-call parity result from <a href="Basic Concepts of Options.html#put-call.parity.european.thm">Theorem &laquo;Click Here&raquo; </a>, we have
+</p><div class="math" >\begin{eqnarray}
+C^e_0(K_1 ) - P_0^e(K_1 ) = S_0 - K_1e^{-rT},\\
+C^e_0(K_2 ) - P_0^e(K_2 ) = S_0 - K_2e^{-rT}.
+\end{eqnarray}<div style="text-align:right;">(4.5)</div></div><p>
+Subtracting, we get
+</p><div class="math">\[
+\big(C^e_0(K_1 ) - C^e_0(K_2 )\big)  + \big(P^e_0(K_2 )  - P^e_0(K_1 )\big) = (K_2 - K_1)e^{-rT}.
+\]</div><p>
+Since both the terms in the brackets on the left-hand side are nonnegative as per the lower bounds, we see that each one is less than or equal to the right-hand side.
+</li></ol>
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Prove the upper bounds in the above theorem using arbitrage arguments.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+From the lower bound, we see that the call option price is a non-increasing function of <span class="math">\(K\)</span> and the put option price is a non-decreasing function of <span class="math">\(K\)</span>.  Also, we see from the upper bound that both the call option and the put option prices are Lipschitz functions.
+</div></p><p>In the next theorem, we show that <span class="math">\(C^e\)</span> and <span class="math">\(P^e\)</span> are convex functions of <span class="math">\(K\)</span>, a characteristic often observed in the market. However, the mathematical proof requires the assumption that the market allows trading fractional units.</p><p><div class="theorem">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>Convexity property: European</b>]</p><p>Assume that the market does not allow arbitrage, permits fractional unit trades, and allows short selling.
+For any <span class="math">\(\alpha\in [0,1]\)</span> and for any positive real numbers <span class="math">\(K_1\)</span> and <span class="math">\(K_2\)</span>, we have</p><div class="math" >\begin{eqnarray}
+C^e\big(\alpha K_1 + (1-\alpha)K_2 \big) \le \alpha C^e(K_1 ) + (1-\alpha)C^e(K_2 ),\\
+P^e\big(\alpha K_1 + (1-\alpha)K_2 \big) \le \alpha P^e(K_1 ) + (1-\alpha)P^e(K_2 ),
+\end{eqnarray}<div style="text-align:right;">(4.6)</div></div><p>
+where all the options have the same expiration.
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+Let us use the notation
+</p><div class="math">\[
+K = \alpha K_1 + (1-\alpha)K_2.
+\]</div><p><b> Call Option:</b>
+Assume the contrary that
+</p><div class="math">\[
+C^e\big(K \big)> \alpha C^e(K_1 ) + (1-\alpha)C^e(K_2 ).
+\]</div><p>
+Construct a portfolio <span class="math">\(\Pi_1\)</span> using the following strategies:
+<ol class="latex-enumerate">
+<li>write the <span class="math">\(K\)</span>-strike call option;
+</li><li>buy <span class="math">\(\alpha\)</span> units of <span class="math">\(K_1\)</span>-strike call options;
+</li><li>buy <span class="math">\(1-\alpha\)</span> units of <span class="math">\(K_2\)</span>-strike call options; and
+</li><li>invest <span class="math">\(C^e\big(K \big)-\big(\alpha C^e(K_1 ) + (1-\alpha)C^e(K_2 )\big)\)</span> in a risk-free interest rate instrument.
+</li></ol>
+We have
+<span class="math">\(V(\Pi_1)(0) = 0\)</span>,
+and at time <span class="math">\(t=T\)</span>, we have
+</p><div class="math" >\begin{eqnarray}
+V(\Pi_1)(T) &amp;=&amp;
+			\Big(C^e\big(K \big)-\big(\alpha C^e(K_1 ) + (1-\alpha)C^e(K_2 )\big)\Big)e^{rT} + x_0,
+\end{eqnarray}<div style="text-align:right;">(4.7)</div></div><p>
+where
+</p><div class="math">\[
+x_0 = \left\{\begin{array}{ll}
+		 \left\{\begin{array}{ll}
+			\alpha (S_T -K_1),&amp;\text{if } K_1 <  S_T \text{ and } K_2\ge S_T\\
+			(1-\alpha) (S_T -K_2),&amp;\text{if } K_1\ge S_T \text{ and } K_2 <  S_T\\
+			0,&amp;\text{if } K_1\ge S_T \text{ and } K_2\ge S_T\\
+			\end{array}\right. ,
+			&amp;\text{if } K\ge S_T,\\
+			K - \left\{\begin{array}{ll}
+				\alpha K_1 + (1-\alpha)K_2,&amp;\text{if } K_1 < S_T \text{ and } K_2 < S_T\\
+				\alpha K_1 + (1-\alpha)S_T,&amp;\text{if } K_1 < S_T \text{ and } K_2 \ge S_T\\
+				\alpha S_T + (1-\alpha)K_2,&amp;\text{if } K_1 \ge S_T \text{ and } K_2 < S_T
+			\end{array}\right. ,&amp; \text{if } K < S_T.
+		\end{array}\right.
+\]</div><p>
+It can be proved that <span class="math">\(x_0\ge 0\)</span>. </p><p><b> Put Option:</b>
+Convexity of the put option price can be proved in two ways, 
+<ol class="latex-enumerate">
+<li>by constructing an arbitrage portfolio; and
+</li><li>using convexity of call option price and the put-call parity result in <a href="Basic Concepts of Options.html#put-call.parity.european.thm">Theorem &laquo;Click Here&raquo; </a>.
+</li></ol>
+We leave the first method as an exercise and prove the result using the second method.</p><p>We prove the result for <span class="math">\(t=0\)</span>.</p><p>From <a href="Basic Concepts of Options.html#put-call.parity.european.thm">Theorem &laquo;Click Here&raquo; </a>, we have</p><div class="math" >\begin{eqnarray}
+C^e_0(K ) - P^e_0(K ) &amp;=&amp; S_0 - Ke^{-rT}
+\end{eqnarray}<div style="text-align:right;">(4.8)</div></div><p>This implies
+</p><div class="math" >\begin{eqnarray}
+P^e_0(K ) 
+&amp;\le &amp;\alpha C^e_0(K_1 ) + (1-\alpha)C^e_0(K_2 )+ Ke^{-rT} - S_0\\
+&amp;=&amp;\alpha \Big(C^e_0(K_1 ) +K_1e^{-rT}-S_0\Big) + (1-\alpha) \Big(C^e_0(K_2 ) +K_2e^{-rT}-S_0\Big)
+\end{eqnarray}<div style="text-align:right;">(4.9)</div></div><p>
+Again using <a href="Basic Concepts of Options.html#put-call.parity.european.thm">Theorem &laquo;Click Here&raquo; </a>, we get the desired result.  </p><p>
+</div></p><p>We now state the equivalent theorems in the case of American options.  The proofs are left as exercises.</p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>Dependency on strike price: American</b>]</p><p>If the underlying stock does not pay a dividend during the option period and the market does not allow arbitrage, then show that
+</p><div class="math" >\begin{eqnarray}
+0\le C^a_t(K_1 ) - C^a_t(K_2 ) \le e^{-r(T-t)}\big(K_2 - K_1\big),\\
+0\le P^a_t(K_2 ) - P^a_t(K_1 ) \le K_2 - K_1,
+\end{eqnarray}<div style="text-align:right;">(4.10)</div></div><p>
+for any <span class="math">\(0\le K_1 \le K_2,\)</span> where <span class="math">\(r\)</span> is the prevailing interest rate continuously compounded, all the options have the same period <span class="math">\([0,T]\)</span>, and <span class="math">\(t\in [0,T)\)</span> is the present time.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>Convexity property: American</b>]</p><p>For any <span class="math">\(\alpha\in [0,1]\)</span> and for any positive real numbers <span class="math">\(K_1\)</span> and <span class="math">\(K_2\)</span>, show that
+</p><div class="math" >\begin{eqnarray}
+C^a\big(\alpha K_1 + (1-\alpha)K_2 \big) \le \alpha C^a(K_1 ) + (1-\alpha)C^a(K_2 ),\\
+P^a\big(\alpha K_1 + (1-\alpha)K_2 \big) \le \alpha P^a(K_1 ) + (1-\alpha)P^a(K_2 ),
+\end{eqnarray}<div style="text-align:right;">(4.11)</div></div><p>
+where all the options have the same period <span class="math">\([0,T]\)</span>,  and the market does not allow arbitrage.
+</div></p>
+    </div>
+    
+    <script>
+    document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+    document.addEventListener("keydown", function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "s")) {
+            e.preventDefault();
+        }
+    });
+    </script>
+   <footer>
+  © S. Baskar, Department of Mathematics, IIT Bombay. 2026 (This material is licensed under CC BY-NC 4.0.) — Updated: 12-Feb-2026
+</footer>
+
+<style>
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #f8f8f8;
+  color: #888;
+  font-size: 0.75em;
+  text-align: center;
+  padding: 6px 0;
+  border-top: 1px solid #ddd;
+  z-index: 10;               /* low z-index */
+  pointer-events: none;      /* allows clicks to pass through */
+}
+
+/* Small screen adjustments */
+@media (max-width: 600px) {
+  footer {
+    font-size: 0.68em;
+    padding: 4px 0;
+  }
+}
+</style>  
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocButton = document.getElementById('toc-button');
+            const tocPanel = document.getElementById('toc-panel');
+            const closeToc = document.getElementById('close-toc');
+
+            if (localStorage.getItem('tocOpen') === 'true') {
+                tocPanel.classList.add('open');
+                localStorage.removeItem('tocOpen');
+            }
+
+            tocButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                tocPanel.classList.toggle('open');
+            });
+
+            function closeTocPanel() {
+                tocPanel.classList.remove('open');
+            }
+
+            closeToc.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeTocPanel();
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!tocPanel.contains(e.target) && e.target !== tocButton) {
+                    closeTocPanel();
+                }
+            });
+
+            tocPanel.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            document.querySelectorAll('#toc-panel a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (!this.getAttribute('href').startsWith('#')) {
+                        localStorage.setItem('tocOpen', 'true');
+                    }
+                    if (this.hash) {
+                        e.preventDefault();
+                        const target = document.getElementById(this.hash.substring(1));
+                        if (target) {
+                            window.scrollTo({
+                                top: target.offsetTop - 70,
+                                behavior: 'smooth'
+                            });
+                            history.pushState(null, null, this.hash);
+                            if (window.innerWidth < 768) {
+                                closeTocPanel();
+                            }
+                        }
+                    }
+                });
+            });
+
+            if (window.location.hash) {
+                const target = document.getElementById(window.location.hash.substring(1));
+                if (target) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: target.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

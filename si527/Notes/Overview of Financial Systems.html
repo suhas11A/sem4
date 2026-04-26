@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overview of Financial Systems</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML ">
+    </script>
+    <style>
+        body, p, li, div {
+        color: black !important;
+        line-height: 1.6;
+        }
+        ol.latex-enumerate, ol.latex-enumerate li {
+            line-height: 1.6 !important;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        /* Updated TOC styles */
+        #toc-panel {
+            font-size: 0.9em;
+        }
+        .toc-chapter, 
+        .toc-section, 
+        .toc-subsection {
+            color: black !important;
+        }
+        .toc-chapter a,
+        .toc-section a,
+        .toc-subsection a {
+            color: black !important;
+            text-decoration: none;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        #toc-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #1a73e8;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #toc-panel {
+            position: fixed;
+            top: 0;
+            left: -350px;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            padding: 20px;
+            overflow-y: auto;
+            transition: left 0.3s ease-out;
+            will-change: transform;
+        }
+        #toc-panel.open {
+            left: 0;
+        }
+        #close-toc {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #content {
+            padding: 20px;
+            padding-top: 60px;
+            max-width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
+        }
+        .toc-chapter {
+            margin-bottom: 10px;
+            border-left: 3px solid #1a73e8;
+            padding-left: 10px;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        .chapter-link {
+            font-weight: bold;
+            color: #1a73e8;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+        }
+        .toc-sections {
+            margin-left: 15px;
+            display: none;
+        }
+        .toc-sections.expanded {
+            display: block;
+        }
+        .toc-section {
+            padding: 3px 0;
+            margin-left: 10px;
+        }
+        .toc-subsection {
+            padding: 3px 0;
+            margin-left: 25px;
+            font-size: 0.95em;
+        }
+        .toc-subsubsection {
+            padding: 3px 0;
+            margin-left: 40px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        :target {
+            scroll-margin-top: 80px;
+            animation: highlight 1.5s ease;
+        }
+        @keyframes highlight {
+            0% { background-color: rgba(26, 115, 232, 0.1); }
+            100% { background-color: transparent; }
+        }
+        @media (max-width: 768px) {
+            #toc-panel {
+                width: 85%;
+                left: -90%;
+            }
+            #toc-panel.open {
+                left: 0;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            }
+            #content {
+                transition: transform 0.3s ease-out;
+            }
+            #toc-panel.open ~ #content {
+                transform: translateX(85%);
+            }
+        }
+        .note {
+  background-color: color-mix(in srgb, var(--primary) 7%, white);
+border: 5px solid var(--primary);
+  padding: 5px;
+  margin: 10px;
+}
+.problem {
+  background-color: color-mix(in srgb, var(--primary) 18%, white);
+border: 1px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.example {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 10px;
+  margin: 10px;
+}
+.remark {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 20px;
+  margin: 10px;
+}
+.definition {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px double var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.lemma {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.theorem {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.proofs {
+  background-color: var(--environmentBackground);
+border: 5px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.project {
+  background-color: var(--environmentBackground);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.hint {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.code {
+  background-color: color-mix(in srgb, var(--primary) 13%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.algorithm {
+  background-color: color-mix(in srgb, var(--primary) 5%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+    </style>
+</head>
+<body>
+    <button id="toc-button">☰ Table of Contents</button>
+    <div id="toc-panel">
+        <button id="close-toc">×</button>
+
+      <!-- Small Main Page Button -->
+<div style="text-align:right; margin-bottom: 10px;">
+  <a href="index.html" 
+     style="
+       background: var(--toc-primary, #2738F5);
+       color: white;
+       padding: 4px 10px;
+       border-radius: 16px;
+       font-size: 0.75em;
+       font-weight: 900;
+       text-decoration: none;
+       display: inline-block;
+       box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+     ">
+    Main Page
+  </a>
+</div>
+
+        <div class="full-toc">
+
+        <div class="toc-chapter current">
+            <a href="Overview of Financial Systems.html" class="chapter-link">
+                Chapter 1: Overview of Financial Systems
+            </a>
+            <div class="toc-sections expanded">
+
+                <div class="toc-item ">
+                    <a href="Overview of Financial Systems.html#FinancialSystem.ch">
+                        Financial System: An Overview
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#financialmarketframework.sec">
+                        Financial Market Framework
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#financial.instrument.ssec">
+                        Financial Instruments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#securities">
+                        Securities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-levels">
+                        Market Levels
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#market-segments">
+                        Market Segments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#trading-mechanism">
+                        Trading Mechanism
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#marketparticipants.sec">
+                        Market Participants
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-makers">
+                        Market Makers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#investors">
+                        Investors
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#speculators">
+                        Speculators
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#hedgers">
+                        Hedgers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#arbitrageurs">
+                        Arbitrageurs
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#overviewderivatives.sec">
+                        Overview of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#essential-market-terms">
+                        Essential Market Terms
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#purpose-of-derivatives">
+                        Purpose of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#need-for-pricing-models-and-analysis">
+                        Need for Pricing Models and Analysis
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#noncontingentclaims.sec">
+                        Non-Contingent Claims: Forwards, Futures, and Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#forwards-and-futures">
+                        Forwards and Futures
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#swaps">
+                        Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#options.sec">
+                        Contingent Claims: Options
+                    </a>
+                </div>
+</div></div>
+        <div class="toc-chapter ">
+            <a href="PriceDynamics.html" class="chapter-link">
+                Chapter 2: PriceDynamics
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="PriceDynamics.html#price.dynamics.ch">
+                        Price Dynamics
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="PriceDynamics.html#deterministic-interest-rate-models">
+                        Deterministic Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#discrete-time-models">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#continuous-time-model">
+                        Continuous Time Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#nonconstant.interest.rate.subs">
+                        Non-constant Interest Rate
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#present.value.subs">
+                        Present Value
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#cash-flow-stream">
+                        Cash Flow Stream
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="PriceDynamics.html#stochastic-models">
+                        Stochastic Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#stochastic-processes">
+                        Stochastic Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#stock-price-model">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#wiener-process">
+                        Wiener Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#ito">
+                        It\^{o
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#GBMParameterCalibration.sec">
+                        Parameter Calibration
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#interest-rate-models">
+                        Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#wiener-integral">
+                        Wiener Integral
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#numerical-simulation">
+                        Numerical Simulation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#distribution-of-the-stochastic-increment">
+                        Distribution of the stochastic increment
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#exact-simulation-scheme">
+                        Exact simulation scheme
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Portfolio And Arbitrage.html" class="chapter-link">
+                Chapter 3: Portfolio And Arbitrage
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Portfolio And Arbitrage.html#PortfolioNArbitrage.ch">
+                        Portfolio and Arbitrage
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#portfolioconcepts.ssec">
+                        Portfolio Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#value-and-gain-processes">
+                        Value and Gain Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#market-model">
+                        Market Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#predictable-strategy">
+                        Predictable Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#self-financing-strategy">
+                        Self-financing Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.opportunity.sec">
+                        Arbitrage Opportunity
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage-portfolio">
+                        Arbitrage Portfolio
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#application-forward-pricing">
+                        Application: Forward Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#law.of.one.price.subs">
+                        Law of One Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.strategy.ssec">
+                        Arbitrage Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#futures.sec">
+                        Application: Future Contracts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#marking-to-market">
+                        Marking to Market
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#pricing-model">
+                        Pricing Model
+                    </a>
+                </div>
+</div></div>
+        <div class="toc-chapter ">
+            <a href="Basic Concepts of Options.html" class="chapter-link">
+                Chapter 4: Basic Concepts of Options
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Basic Concepts of Options.html#BasicConceptsOptions.ch">
+                        Basic Concepts of Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#call.put.sec">
+                        Basic Terminology
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#defining-parameters">
+                        Defining Parameters
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#payoff-and-gain">
+                        Payoff and Gain
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#time-value-in-an-option-price">
+                        Time Value in an Option Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#Bounds.EuropeanOption.sec">
+                        Premium Bounds and Arbitrage Opportunities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#european-options">
+                        European Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#american-options">
+                        American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#put-call-parity-estimates">
+                        Put-Call Parity Estimates
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#premium-valuation">
+                        Premium Valuation
+                    </a>
+                </div>
+</div></div>
+	
+</div>
+    </div>
+    <div id="content">
+        <p>
+<h1 id="FinancialSystem.ch">Financial System: An Overview</h1></p><p>A <b>financial system</b> is an intermediary that facilitates the connection between lenders and borrowers to promote economic activity by facilitating the efficient allocation of resources and risk management through its various components, including markets, instruments, and institutions.  This chapter provides a foundational overview of these elements, emphasizing the role of financial markets and instruments in addressing the diverse needs of market participants such as hedgers, speculators, and arbitrageurs. The chapter also gives a quick overview of derivatives,  highlights the motivations behind derivatives and the critical need for accurate pricing models to support these activities.</p><p><a href="Overview of Financial Systems.html#financialmarketframework.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a> defines the key concepts related to financial instruments, and securities.  This section also introduces the general structure of financial markets and their trading mechanisms. <a href="Overview of Financial Systems.html#marketparticipants.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a> discusses the role of different market participants, namely, market makers, speculators, hedgers, and arbitrageurs.  The section also examine how their strategies and behaviors influence market dynamics.  Finally, in <a href="Overview of Financial Systems.html#overviewderivatives.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a>, we introduce the concept of derivatives, which is an integral component of modern financial markets.  We first discuss some key terminologies and define non-contingent and contingent claims. We then explore the primary purpose of derivatives through which we understand the different mindsets of traders, such as risk aversion and risk-seeking tendencies, that drive the market dynamics.  Through this complex trading structure, we highlight the need for pricing models and analysis. Finally, we clarify the distinction between non-contingent and contingent claims and elaborate on their key terminologies.</p><p>. In <a href="Overview of Financial Systems.html#noncontingentclaims.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a>, we discuss non-contingent claims, which are financial instruments whose value depends on the price of an underlying asset at a specific time. We begin by examining two widely used types of non-contingent claims, namely, forwards and futures, and then briefly cover swaps, another important category. Further, in <a href="Overview of Financial Systems.html#options.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a>, we discuss options, which will occupy a significant part of our course. These are contingent claims that give holders the right (but not the obligation) to buy or sell an asset at a specified price and at a specified time. This section covers the two primary types, <b>call</b> and <b>put options</b>, and introduces advanced concepts like <b>path-independent</b> and <b>path-dependent options</b>.</p><p><h2 id="financialmarketframework.sec">Financial Market Framework</h2></p><p>A <b>financial market</b> is a system that provides an environment (either virtual or physical) where participants meet to exchange their financial assets.  These markets facilitate the efficient allocation of capital, where investors (parties with surplus funds) lend funds to borrowers (parties who are in need of funds for productive uses) or buy assets from those who want to sell.</p><p>Financial markets serve three main purposes:</p><p><ol class="latex-enumerate">
+<li><b>Capital Formation:</b> Financial markets facilitate companies and governments in raising capital for expansion, investment, and other needs, enhancing economic growth and development.
+</li><li><b>Liquidity:</b> They provide a platform where assets can be bought or sold, helping asset owners convert assets into cash or allowing investors to convert cash into assets without significant loss in value or time.
+</li><li><b>Risk Management:</b> Financial markets are also used to manage financial risks through the issuance or purchase of futures contracts (called derivatives).
+</li></ol></p><p>Financial markets also help to efficiently discover the current market value of an asset.</p><p><h3 id="financial.instrument.ssec">Financial Instruments</h3></p><p><b>Financial instruments</b> are tools in the form of contracts to represent or manage financial assets and liabilities. These instruments can be broadly categorized into two types, namely, Cash instruments and Derivative instruments.</p><p><b>Cash instruments</b>
+ are financial instruments whose value is either directly determined by market forces, such as supply and demand, or established through contractual terms, as in the case of bank deposits and loans. These instruments are highly liquid and can often be exchanged, settled, or liquidated immediately in cash or cash equivalents.  Based on the nature of ownership and their underlying characteristics, cash instruments may be classified into two types, namely, <b>equity</b> and <b>debt</b>.</p><p>The following example provides a clear understanding of these two instruments and their fundamental differences.</p><p><div class="example" id="deptVSequity.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+</p><p>Assume that your friend, Mr. Megh, has been successfully running a business for several years. Now, as the demand for his business increases, he wants to expand it. Assume that he is short of funds to meet the expansion expenses, and he is looking for ways to borrow money from others.</p><p>Suppose he approaches you and asks for financial support of, say, ₹ 100. Naturally, you would want to know what you will gain in return for providing this financial support. Let us consider the following two offers made by Mr. Megh:</p><p>
+<li><b> Offer 1:</b> Every year, Mr. Megh will pay you ₹ 10 (10% <b>interest</b> per annum) for 10 years, say. At the end of the 10<span class="math">\(^{\rm th}\)</span> year, he will return your initial capital of ₹ 100, in addition to the interest for that year.</p><p></li><li><b> Offer 2:</b> Every year, Mr. Megh will give you the net profit that he earns from his business out of your hundred rupees (this payment is called a <b>dividend</b>). 
+</p><p>Let us examine these two offers closely|
+
+</li><li>According to <b>Offer 1</b>, regardless of whether Mr. Megh makes a profit or incurs a loss in his business, he agrees to pay you a fixed interest rate of 10% annually.  Assuming the honesty in the deal, you have no financial risk with Offer 1.  </p><p></li><li>On the other hand, in <b>Offer 2</b>, you may partially or fully lose your capital if Mr. Megh incurs losses after expanding his business. However, if his business performs better after expansion, you could potentially earn more than a 10% return per annum.
+
+Thus, if Mr. Megh has a business history of earning more than 10 % (say at least 15%) of his capital every year, then it might be a fair risk for you to consider Offer 2. </p><p>In financial terms, <b>Offer 1</b> is similar to debt instruments, such as corporate bonds, government bonds, loans, debentures, commercial paper, and mortgages. Whereas, <b>Offer 2</b> resembles equity investments, such as common stock (or shares), and preferred stock.
+</div></p><p><b>Derivatives</b> 
+are another important category of financial instruments. They are financial contracts whose value depends on the price of one or more underlying asset, such as stocks, bonds, commodities, or indices. Examples of derivatives include futures contracts, options, swaps, and forwards. In this course, futures and options are the main topics of our discussion.</p><p><h4 id="securities">Securities</h4></p><p><b>Securities</b> are financial instruments traded in financial markets. They are typically contracts that represent equity ownership, debt obligations, or derivative rights. Cash and bank deposits are financial assets, but they are not classified as securities.</p><p><h3 id="market-levels">Market Levels</h3></p><p>Financial markets operate at different levels based on the flow of funds and securities 
+between issuers and investors, as well as among investors themselves. Market activities can be  categorized into <b>primary markets</b> and <b>secondary markets</b>.</p><p>A <b>primary market</b> is a segment of the financial market where new securities are created and sold for the first time. Companies and governments raise capital directly from investors by issuing fresh securities such as stocks or bonds in the primary market.</p><p>Generally, the holding period of a bond (the time between the offer date and the maturity date) is very long, often ranging from 10 to even 100 years. This can pose a challenge for investors if they need access to their money before the bond matures. In the case of equity, there is no pre-defined maturity date, making it essential to have a way to access invested funds whenever needed.  The <b>secondary market</b> addresses these challenges by providing a platform where existing securities can be bought and sold among investors. This brings flexibility to the investors to  liquidate their holdings or acquire securities at prevailing market prices.</p><p><h4 id="market-segments">Market Segments</h4></p><p>Market can be further divided into three main segments depending on the type and duration of the securities:
+<ol class="latex-enumerate">
+</li><li><b>Money Markets:</b> The <b>money market</b> deals with short-term debt instruments, such as Treasury bills, certificates of deposit, and commercial paper. These instruments typically have maturities of one year or less.</p><p></li><li><b>Capital Markets:</b> <b>Capital markets</b> deal with long-term securities, such as stocks and bonds.
+</li></ol></p><p><h3 id="trading-mechanism">Trading Mechanism</h3>  </p><p>A <b>trade</b> is the exchange of goods, services, or financial instruments between parties, typically involving a buyer and a seller. In a market, buyers and sellers negotiate the price of an asset. The buyer proposes a price they are willing to pay, known as the <b>bid price</b>, while the seller sets the price they are willing to accept, referred to as the <b>ask price</b> (also known as <b>offer price</b>). When both parties agree on a price, the trade is executed, and the asset is exchanged for money.</p><p>A <b>financial market</b> is a platform where individuals, institutions, and organizations participate in the buying and selling of financial instruments, such as stocks, bonds, and derivatives. These markets facilitate the efficient allocation of resources, providing a mechanism for price discovery, liquidity, and risk management. Financial markets can be broadly categorized into two types based on their trading structure: <b>exchange markets</b> and <b>over-the-counter markets (OTC)</b> .</p><p>In an <b>exchange market</b>, trading takes place on a centralized platform, such as a stock exchange, where participants follow standardized rules and regulations. The exchange acts as an intermediary, ensuring transparency, fair pricing, and reduced counterparty risk. Exchange markets can be further categorized based on the type of asset being traded. For instance, a platform where bonds are bought and sold is called a  <b>bond market</b>. Similarly, there are <b>equity markets</b>,  <b>currency markets</b> (or <b>foreign exchange markets</b>/Forex), <b>commodity markets</b>, and <b>derivatives markets</b>. </p><p><div class="figure">
+
+<img src="Figures/ExchangeTable.png" class="standalone-figure"></p><p><div style="text-align: center; font-weight: bold;">Famous stock exchanges in some countries</div>
+
+
+</div></p><p>Every country has at least one exchange market. For instance, there are two popular exchange markets in India, namely, the National Stock Exchange (NSE) and the Bombay Stock Exchange (BSE).  \tabl{tab:stock-exchanges} provides a list of some famous exchange markets around the world. These platforms facilitate the trade of various assets, including securities such as bonds, stocks, and derivatives. Most exchange markets now operate primarily online, enabling traders (buyers and sellers) to meet virtually and execute trades without direct interaction or knowing each other.</p><p>Exchange markets are subject to regulatory oversight to ensure fair practices, transparency, and investor protection. Regulatory bodies, such as the Securities and Exchange Board of India (SEBI) and the Securities and Exchange Commission (SEC) in the United States, play a crucial role in maintaining market integrity in their respective countries.</p><p>In contrast to exchange markets, an <b>OTC market</b> is a decentralized system where trades occur directly between parties, without the oversight of a centralized exchange. OTC markets allow for greater customization of contracts and are commonly used for trading derivatives, bonds, and smaller company stocks. However, they often involve higher counterparty risk due to the absence of a central clearinghouse.</p><p><h2 id="marketparticipants.sec">Market Participants</h2></p><p>Financial markets are composed of a wide range of participants, each with distinct roles and objectives, all of whom act as both buyers and sellers. These participants are essential to ensuring the efficiency and liquidity of markets, as they bring different strategies and motivations to the trading process. The main types of market participants include market makers, investors, speculators, hedgers, and arbitrageurs. Each group plays a unique role in the market, based on their strategies, which can range from providing liquidity to hedging risk or seeking profit opportunities. In this section, we will explore the roles and functions of these participants, highlighting how their actions, as buyers and sellers, shape market dynamics and influence asset prices.</p><p><h3 id="market-makers">Market Makers</h3></p><p>Market makers are key participants in financial markets who provide liquidity by being ready to buy and sell securities at any time. They facilitate smooth market operations by ensuring that there is always a market for a particular security, which helps narrow the bid-ask spread<sup class="footnote-ref" id="fnref-1"><a href="#fn-1" onclick="return false;">1</a><span class="footnote-tooltip">The bid-ask spread refers to the difference between the bid price and the ask price of a financial instrument, such as a stock, bond, or commodity, in a market.</span></sup>. Market makers often deal with a high volume of trades and can influence the price of a security. By standing ready to transact at quoted prices, they help reduce the time and effort required for buyers and sellers to find each other.</p><p>These participants typically operate in both exchange markets and over-the-counter (OTC) markets. In exchange markets, market makers ensure there are buyers and sellers available for each listed security, while in OTC markets, they facilitate customized trades by directly negotiating with counterparties. In both cases, market makers take on the risk of holding inventory and may earn profits through price movements or the bid-ask spread.</p><p><h3 id="investors">Investors</h3></p><p>Investors are individuals or entities who invest capital into assets such as stocks, bonds, or real estate with the expectation of earning a return on their investment. Their investment decisions are typically based on long-term fundamentals, market trends, and economic forecasts, which play a crucial role in price discovery. Investors aim to generate income through dividends, interest, or capital appreciation over time.</p><p>Investors can be categorized into two main groups:</p><p><ol class="latex-enumerate">
+<li><b>Retail Investors:</b> Individual investors who invest their personal funds in securities, often through brokers or online platforms. Retail investors may have smaller capital bases and typically focus on long-term investment strategies.</p><p></li><li><b>Institutional Investors:</b> These are large organizations, such as mutual funds, pension funds, insurance companies, and hedge funds, that manage substantial amounts of capital. Institutional investors often have a more significant influence on the markets due to their larger trades and resources for research and analysis.
+</li></ol></p><p><h3 id="speculators">Speculators</h3></p><p>Speculators are market participants who seek to profit from price fluctuations in financial assets, such as stocks, bonds, currencies, or commodities. Unlike investors, whose primary goal is long-term capital appreciation or income generation, speculators engage in short-term trading with the expectation that they can buy low and sell high (or vice versa). Speculators often take on higher risks, as they are betting on future price movements without necessarily owning the underlying assets for the long term.</p><p>These participants may use various strategies, including technical analysis, market trends, and leverage, to predict short-term price changes. Speculators play a crucial role in increasing market liquidity and volatility<sup class="footnote-ref" id="fnref-2"><a href="#fn-2" onclick="return false;">2</a><span class="footnote-tooltip">In financial terms, volatility refers to how much the price of an asset, like a stock, moves up and down. A highly volatile stock has big price swings, while a stock with low volatility changes very little over time.</span></sup>.</p><p><h3 id="hedgers">Hedgers</h3></p><p>Hedging is a strategy to protect an asset or portfolio against potential financial losses, similar to buying insurance. For example, a farmer might use futures contracts to lock in the price of a crop before harvest, safeguarding against the risk of prices falling. Similarly, a multinational corporation could hedge its foreign exchange risk by using currency futures or options, ensuring that unfavorable currency movements don’t disrupt its profits.</p><p>Hedgers are participants who aim to reduce or eliminate the risk of adverse price movements in their investments or business operations. They typically use financial instruments such as futures, options, or swaps to protect their assets against price fluctuations that could negatively impact their portfolio or company. Hedging is commonly used in industries like agriculture, energy, and finance, where price volatility can significantly affect profitability.</p><p>While hedging is not aimed at generating profit, it provides stability by reducing uncertainty. By doing so, hedgers contribute to smoother functioning of financial markets, ensuring that businesses and investors can operate with greater confidence.</p><p><h3 id="arbitrageurs">Arbitrageurs</h3></p><p><b>Arbitrage</b> refers to the practice of taking advantage of price differences for the same or related assets across different markets or trading venues. It involves buying an asset in one market where it is undervalued and simultaneously selling it in another market where it is overvalued, earning a near risk-free profit.</p><p>Arbitrage opportunities arise due to inefficiencies in the market, such as delays in price adjustments, differences in market regulations, or even speculative activity that temporarily distorts asset prices. For example, crowded speculative trades can sometimes exaggerate price movements in one market compared to another, creating price gaps. While such opportunities are often short-lived, they are a critical indicator of market inefficiencies.</p><p><b>arbitrageurs</b> are participants who specialize in exploiting these price discrepancies. They employ advanced tools and strategies, such as high-frequency trading algorithms, to detect and act on arbitrage opportunities in real time. By buying undervalued assets and selling overvalued ones, arbitrageurs play a key role in correcting price differences and ensuring that prices across markets converge to reflect an asset's true value.</p><p>While their primary objective is profit, arbitrageurs contribute to overall market efficiency by reducing price disparities and enhancing liquidity. Their activity helps stabilize prices and fosters a more transparent and fair trading environment for all participants.</p><p><h2 id="overviewderivatives.sec">Overview of Derivatives</h2></p><p>Derivatives are financial instruments that are an essential part of modern finance. They are primarily designed as a hedging tool for risk management. However, they are also used for speculation and complex investment strategies.  Although derivatives can be complex to understand and trade, their principles are rooted in core financial concepts that enable market participants to manage risks and capitalize on favorable market conditions. In this section, we explore the fundamental principles of derivatives markets and provide a foundation for understanding how these instruments operate and why they are used. </p><p><h3 id="essential-market-terms">Essential Market Terms</h3></p><p>A <b>derivative</b> is a financial contract between two parties that obligates a trade in an asset, termed the <b>underlying asset</b>, at a future date known as the <b>delivery date</b> or <b>expiration date</b>, at a predetermined price.  The underlying asset could be a stock, bond, commodity, currency, or even an interest rate or market index. </p><p>The underlying asset can be a commodity, such as crude oil or gold, in which case the derivative is called a <b>commodity derivative</b>. Alternatively, it can be a financial instrument, like a bond or stock, in which case it is referred to as a <b>financial derivative</b>.  Additionally, the underlying asset can even be an interest rate or market index.  </p><p>A derivative itself has value and is therefore regarded as a financial instrument. As a financial instrument, a derivative can be traded in derivatives markets, which is why derivatives are considered securities. </p><p>The party who initiates (<i> i.e., </i>sells) a derivative contract is called the <b>seller</b> or <b>writer</b> of the derivative, and the party who buys it is called the <b>buyer</b> or <b>holder</b>. Among these two parties, the one who agrees to buy the asset is said to take a <b>long position</b>, and the other is said to take a <b>short position</b>. Derivatives can be categorized into two types, namely, <b>non-contingent claims</b> and <b>contingent claims</b>. </p><p><b>Non-contingent claims</b> are financial contracts in which both parties, the writer and the holder, are obligated to execute the contract on the expiry date regardless of any market conditions. Forwards, futures, and swaps are non-contingent claims.  </p><p>On the other hand,  <b>contingent claims</b> are financial contracts that are executed only if certain pre-defined market conditions are fulfilled on or before the expiry date. Options are contingent claims.</p><p><h3 id="purpose-of-derivatives">Purpose of Derivatives</h3></p><p>Before proceeding further into the theory of derivatives, let us first understand the basic purpose of the derivatives. Traders in a market can be classified into two types based on their risk attitude. One type exhibits a <b>risk-averse</b> nature, endeavoring to quantify the risks associated with their trades and then striving to balance them through alternative trading or investment strategies. For instance, they may diversify their investments, allocating funds into different assets. Conversely, traders with a <b>risk-seeking</b> nature willingly embrace higher levels of risk to maximize gains. An example of this is investing all their funds into a single stock whose price exhibits significant fluctuations in a short period.</p><p>Any strategy adopted to reduce the risk of price fluctuations in an asset is called <b>hedging</b>. A trader with a risk-averse nature may be referred to as a <b>hedger</b>. Trading in a risky security with the hope of making profits in a short span of time due to market fluctuations is known as <b>speculation</b>. Traders with a risk-seeking nature may be called <b>speculators</b>.</p><p>Derivatives markets were primarily developed to serve the purpose of hedging, providing risk management tools for various financial instruments. However, with their increasing popularity, these markets now exhibit high liquidity, attracting many active traders. As a result, securities traded in these markets experience significant price fluctuations, making them attractive to speculators. Thus, derivatives markets have become a dynamic blend of hedgers and speculators. Since derivatives are contracts based on underlying assets, and these assets are traded in the spot market, there exist two  parallel markets (the spot and derivative markets) where the same asset is traded under different conditions. The active participation of traders with diverse strategies often leads to price mismatches between these two markets, creating <b>arbitrage</b> opportunities. Consequently, <b>arbitrageurs</b> are naturally drawn to trade in order to exploit these discrepancies.</p><p><h3 id="need-for-pricing-models-and-analysis">Need for Pricing Models and Analysis</h3></p><p>Diverse market participants, including institutional investors, individual traders, and market makers, play pivotal roles in shaping the dynamics of derivatives markets. The positions taken in derivatives markets exert a profound influence on the corresponding dynamics of spot markets. Institutional investors, primarily acting as hedgers, utilize derivative instruments as a key tool to manage and mitigate risks. Moreover, they often engage in arbitrage strategies, capitalizing on fleeting opportunities that arise and vanish rapidly. Successfully identifying and exploiting such opportunities requires sophisticated machine learning and artificial intelligence techniques.</p><p>The development and efficient implementation of software powered by robust supercomputers enable the automatic identification and rapid execution of arbitrage opportunities within a brief time frame. The architects of these software solutions require a profound understanding of derivatives,  recognizing the intricate interdependence between derivatives and spot markets. In this context, mastering derivatives pricing models becomes essential, as they form the foundation for developing effective strategies in both hedging and arbitrage scenarios.</p><p>In our course, we focus on hedging strategies and derivative pricing models, which are derived under the assumption that the market is free from arbitrage opportunities.</p><p><h3 id="noncontingentclaims.sec">Non-Contingent Claims: Forwards, Futures, and Swaps</h3></p><p><b>Non-contingent claims</b> are derivatives that are settled (<i>i.e.,</i> the trade must necessarily occur) at expiration, regardless of the closing price of the underlying asset at that time. Consequently, both the seller (writer) and the buyer (holder) are obligated to execute the trade as specified in the contract at the expiration time. Forwards, futures, and swaps are non-contingent claims.</p><p><h4 id="forwards-and-futures">Forwards and Futures</h4></p><p><b>Forwards</b> and <b>futures</b> are the most common examples of non-contingent claims. Both are financial contracts where the buyer and seller agree to trade an underlying asset at a specified price on a future date.  There are two main differences between them:
+<ol class="latex-enumerate">
+<li><b>Trading Venue:</b> Forwards are traded in OTC market. For instance, a former making a contract with a bakery owner that he will supply 1000 kgs of wheat grains in 6 months from now at the cost of ₹ 30 per kg.
+Futures are traded on organized exchange markets like National Stock Exchange (NSE) in India and the Chicago Mercantile Exchange (CME) in USA.</p><p></li><li><b>Settlement:</b> Another important difference between the two contracts is the way the settlement happens between the two parties.  In the case of futures, the settlement happens on a daily basis known as the <b>marking-to-market</b> process where gains and losses are calculated and settled at the end of each trading day. Whereas in forward, there is no fixed settlement criteria.  Settlement in a forward can happen either by physically supplying the underlying or by cash as per the wish of the two parties involved in the contract.
+</li></ol>
+Forwards and futures have their own advantages and disadvantages:
+<ol class="latex-enumerate">
+<li><b>Customization:</b> Since there is no exchange involved in forward contracts, there are no standardized terms such as the underlying quantity and the expiration date. Instead, these details, including the asset price at expiration, are mutually agreed upon by the two parties and may not align with the market scenario.
+On the other hand, since futures are traded on organized exchanges, all the key parameters like quantity (referred to as <b>lot size</b>) and expiration date are standardized by the exchange. The price of the future (the price of the underlying asset at the expiration date) is determined by market forces through the bid-ask spread and must adhere to market values.</p><p></li><li><b>Default Risk:</b> Since trades happen at a personal level, forward contracts are exposed to counterparty default risk as no intermediary guarantees the contract. Whereas, this risk is minimized in futures contracts, because the exchange clearinghouse acts as the intermediary, guaranteeing contract performance.</p><p></li><li><b>Liquidity:</b> Since forward contracts are traded directly between two parties without a centralized exchange (on an OTC platform), they often lack sufficient potential counterparties, making them less liquid. This makes it difficult for one side party of the contract to exit the position before expiration, if they wish. 
+On the other hand, since  many traders are involved in futures contracts on the exchange platform, if one party of the contract wishes to exit the position, they can <b>square off</b> (<i>i.e.,</i> make an opposite trade with an equal quantity) to close their position at any market time before expiration.
+</li></ol></p><p><b>Pricing Model:</b> In trading futures or forward contracts, it is important to first obtain a fair price for the contract.  A fair price helps traders to make informed decisions that can lead to a potential gain in their trade, while also helps to maintain market stability.  </p><p>The price of a future (or forward) contract depends on the underlying asset and future market outlook. It is desirable to build a mathematical model to determine the future price.  Since the basic working mechanisms of  forward and future contracts are similar, the pricing model for both contracts should be the same.  This can also be justified mathematically using the <b>law of one price</b>, under the assumption of a no-arbitrage market (discussed later in a later chapter).  Henceforth, we will focus exclusively on futures, with an understanding that the results apply equally to forwards.</p><p>The fair price model for futures is derived mathematically in a later chapter under the no-arbitrage market assumption. For now, let us approach it through an intuitive discussion.</p><p>As a first step, let us formally define future price.</p><p><div class="definition" id="future.price.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Future Price</b>]</p><p><b>Future price</b> (or <b>forward price</b>) is the price quoted in the contract at which the underlying asset is agreed to be traded at the time of expiry.
+</div></p><p>Note that due to the wide variety of market participants, it is nearly impossible to model the market price of a future contract. However, under certain assumptions, we can derive a theoretical model that gives a `fair' price within the assumed scenario. In particular, the model under no-arbitrage assumption gives rise to the so-called <b>risk-neutral price</b>.  </p><p>Let us consider an idealized scenario where the seller of a future contract first buys the underlying asset (for the sake of simplicity, let us ignore other costs like storage cost and dividends) before initiating the contract.  In this situation, the seller's money is locked in the asset, say ₹ <span class="math">\(S_0\)</span>, which could otherwise have been invested in a bank deposit. In the later case, the initial amount could earn interest at an annual rate, say <span class="math">\(r\)</span>. Hence, at the expiration time, denoted by <span class="math">\(T\)</span>, the seller would have received <span class="math">\(S_0(1+rT)\)</span> (using simple interest and taking the present time as 0).  Thus, a fair deal from the future contract is that the seller should expect at least ₹ <span class="math">\(S_0(1+rT)\)</span> as the future price.  </p><p>Here, we demonstrated the model with simple interest scheme. However, it is theoretically more appropriate to use a continuous compounding interest scheme.  The details of this approach will be rigorously derived in <a href="Overview of Financial Systems.html#forward.contracts.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a>, where we present the futures pricing formula under the no-arbitrage assumption with continuous compounding. </p><p><h4 id="swaps">Swaps</h4></p><p>A <b>swap</b> is a type of non-contingent derivative contract where cash flow streams<sup class="footnote-ref" id="fnref-3"><a href="#fn-3" onclick="return false;">3</a><span class="footnote-tooltip"><b>Cash flow stream</b> is defined and discussed in detail in <a href="Overview of Financial Systems.html#present.future.value.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a>.</span></sup> are exchanged over a series of specified future dates between two parties, typically conducted over-the-counter (OTC) according to certain specified rules. These cash flows are often generated through an underlying financial instrument. Financial institutions and companies commonly use swaps to hedge interest rates and exchange rate risk over time. Popular types of swaps include interest rate swaps, currency swaps, commodity swaps, and credit default swaps.</p><p><h3 id="options.sec">Contingent Claims: Options</h3></p><p>In contrast to non-contingent claims, where the settlement must occur at expiration, derivatives in which settlement is subject to certain pre-defined conditions are termed <b>contingent claims</b>.  The immediate question is: What are the deciding conditions for settlement?  Naturally, one condition should involve the market price of the underlying asset at the time of settlement.</p><p>One way to specify the condition on the closing price is to first fix an agreed price in the contract  and then determine whether the closing price is greater than or less than the agreed price.  Let <span class="math">\(T\)</span> be the expiration time, <span class="math">\(S_T\)</span> the closing price of the underlying asset at <span class="math">\(T\)</span>, and <span class="math" > \(K\)</span> the agreed price in the contract, known as the <b>strike price</b>. Settlement can then be decided based on whether <span class="math">\(S_T > K\)</span> or <span class="math">\(S_T < K\)</span>.  However, in either case, the situation will be favorable to one of the two parties in the contract and the other will be at a disadvantage. For instance, if <span class="math">\(S_T > K\)</span> is set as the condition, the party on the long side benefits, whereas if <span class="math">\(S_T < K\)</span> is the condition, the short side gains the advantage.</p><p>Let us fix the favorable situation to always benefit the buyer (holder) of the contract. This will always keep the seller (writer) of the contract at a disadvantage.  To compensate for this, let us fix a price for the contract that the buyer should pay to the seller at the time of making the contract, called the <b>premium</b>. </p><p>There are two ways to make the contract:
+<ol class="latex-enumerate">
+<li>The writer can call on people to buy the asset at the strike price <span class="math">\(K\)</span> per unit of the asset at some future time <span class="math">\(T\)</span>.  Thus, the holder of the contract must buy the asset from the writer at expiration time <span class="math">\(T\)</span> if the market conditions are favorable to the holder.  Since the holder is on the long side of this contract, the favorable condition is <span class="math">\(S_T > K\)</span>.  Therefore, the contract is executed if <span class="math">\(S_T > K\)</span> at time <span class="math">\(T\)</span>.  Otherwise, the contract becomes worthless.  To hold such a right, the buyer must pay the premium, denoted by <span class="math">\(C_t\)</span>, to the writer at time <span class="math">\(t\)</span> when the contract is traded.  The net profit for the holder of this contract at expiration time <span class="math">\(T\)</span> is
+</p><div class="math">\[
+C_T = \max\big(0, S_T - K\big) - C_t.
+\]</div><p>
+Equivalently, the net profit for the writer is <span class="math">\(-C_T\)</span>. 
+Clearly, the contract rules described here represent a contingent claim and are known as a <b>call option</b>.</p><p></li><li>On the other hand, the writer can issue a contract allowing the holder to ``put" their asset to the writer (<i>i.e.,</i> sell the asset to the writer) at the expiry time <span class="math">\(T\)</span> for the strike price <span class="math">\(K\)</span> per unit of the asset. In this case, the holder will execute the contract (<i>i.e.,</i> sell the asset to the writer) at expiration time <span class="math">\(T\)</span> if and only if <span class="math">\(S_T < K\)</span>.  To hold this right, the holder must pay a premium, denoted by <span class="math">\(P_t\)</span>, to the writer at the trading time <span class="math">\(t\)</span>.  Thus, the net profit for the holder at time <span class="math">\(T\)</span> is
+</p><div class="math">\[
+P_T =  \max\big(0, K-S_T\big) - P_t,
+\]</div><p>
+and for the writer, it is <span class="math">\(-P_T\)</span>.  The contract rules described here define a contingent claim, known as a <b>put option</b>.
+</li></ol></p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Options</b>]</p><p>An <b>option</b> is a contingent claim where the holder has the right, but not the obligation, to execute (or exercise) the contract within or at the expiration time.
+</div></p><p>The challenging task is to obtain the `fair' value for the premium of an option. Under the no-arbitrage market condition discussed in a later chapter, we can obtain a <b>risk-neutral valuation</b> for the option premium.  This task is the main objective of our course.</p><p><div class="footnotes-section"><h2>Footnotes</h2><ol><li id="fn-1">The bid-ask spread refers to the difference between the bid price and the ask price of a financial instrument, such as a stock, bond, or commodity, in a market.</li><li id="fn-2">In financial terms, volatility refers to how much the price of an asset, like a stock, moves up and down. A highly volatile stock has big price swings, while a stock with low volatility changes very little over time.</li><li id="fn-3"><b>Cash flow stream</b> is defined and discussed in detail in <a href="Overview of Financial Systems.html#present.future.value.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a>.</li></ol></div></p>
+    </div>
+    
+    <script>
+    document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+    document.addEventListener("keydown", function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "s")) {
+            e.preventDefault();
+        }
+    });
+    </script>
+    
+       
+ <footer>
+  © S. Baskar, Department of Mathematics, IIT Bombay. 2026 (This material is licensed under CC BY-NC 4.0.) — Updated: 08-Jan-2026
+</footer>
+
+<style>
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #f8f8f8;
+  color: #888;
+  font-size: 0.75em;
+  text-align: center;
+  padding: 6px 0;
+  border-top: 1px solid #ddd;
+  z-index: 10;               /* low z-index */
+  pointer-events: none;      /* allows clicks to pass through */
+}
+
+/* Small screen adjustments */
+@media (max-width: 600px) {
+  footer {
+    font-size: 0.68em;
+    padding: 4px 0;
+  }
+}
+</style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocButton = document.getElementById('toc-button');
+            const tocPanel = document.getElementById('toc-panel');
+            const closeToc = document.getElementById('close-toc');
+
+            if (localStorage.getItem('tocOpen') === 'true') {
+                tocPanel.classList.add('open');
+                localStorage.removeItem('tocOpen');
+            }
+
+            tocButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                tocPanel.classList.toggle('open');
+            });
+
+            function closeTocPanel() {
+                tocPanel.classList.remove('open');
+            }
+
+            closeToc.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeTocPanel();
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!tocPanel.contains(e.target) && e.target !== tocButton) {
+                    closeTocPanel();
+                }
+            });
+
+            tocPanel.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            document.querySelectorAll('#toc-panel a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (!this.getAttribute('href').startsWith('#')) {
+                        localStorage.setItem('tocOpen', 'true');
+                    }
+                    if (this.hash) {
+                        e.preventDefault();
+                        const target = document.getElementById(this.hash.substring(1));
+                        if (target) {
+                            window.scrollTo({
+                                top: target.offsetTop - 70,
+                                behavior: 'smooth'
+                            });
+                            history.pushState(null, null, this.hash);
+                            if (window.innerWidth < 768) {
+                                closeTocPanel();
+                            }
+                        }
+                    }
+                });
+            });
+
+            if (window.location.hash) {
+                const target = document.getElementById(window.location.hash.substring(1));
+                if (target) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: target.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discrete Martingale Theory</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML ">
+    </script>
+    <style>
+        body, p, li, div {
+        color: black !important;
+        line-height: 1.6;
+        }
+        ol.latex-enumerate, ol.latex-enumerate li {
+            line-height: 1.6 !important;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        /* Updated TOC styles */
+        #toc-panel {
+            font-size: 0.9em;
+        }
+        .toc-chapter, 
+        .toc-section, 
+        .toc-subsection {
+            color: black !important;
+        }
+        .toc-chapter a,
+        .toc-section a,
+        .toc-subsection a {
+            color: black !important;
+            text-decoration: none;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        #toc-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #1a73e8;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #toc-panel {
+            position: fixed;
+            top: 0;
+            left: -350px;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            padding: 20px;
+            overflow-y: auto;
+            transition: left 0.3s ease-out;
+            will-change: transform;
+        }
+        #toc-panel.open {
+            left: 0;
+        }
+        #close-toc {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #content {
+            padding: 20px;
+            padding-top: 60px;
+            max-width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
+        }
+        .toc-chapter {
+            margin-bottom: 10px;
+            border-left: 3px solid #1a73e8;
+            padding-left: 10px;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        .chapter-link {
+            font-weight: bold;
+            color: #1a73e8;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+        }
+        .toc-sections {
+            margin-left: 15px;
+            display: none;
+        }
+        .toc-sections.expanded {
+            display: block;
+        }
+        .toc-section {
+            padding: 3px 0;
+            margin-left: 10px;
+        }
+        .toc-subsection {
+            padding: 3px 0;
+            margin-left: 25px;
+            font-size: 0.95em;
+        }
+        .toc-subsubsection {
+            padding: 3px 0;
+            margin-left: 40px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        :target {
+            scroll-margin-top: 80px;
+            animation: highlight 1.5s ease;
+        }
+        @keyframes highlight {
+            0% { background-color: rgba(26, 115, 232, 0.1); }
+            100% { background-color: transparent; }
+        }
+        @media (max-width: 768px) {
+            #toc-panel {
+                width: 85%;
+                left: -90%;
+            }
+            #toc-panel.open {
+                left: 0;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            }
+            #content {
+                transition: transform 0.3s ease-out;
+            }
+            #toc-panel.open ~ #content {
+                transform: translateX(85%);
+            }
+        }
+        .note {
+  background-color: color-mix(in srgb, var(--primary) 7%, white);
+border: 5px solid var(--primary);
+  padding: 5px;
+  margin: 10px;
+}
+.problem {
+  background-color: color-mix(in srgb, var(--primary) 18%, white);
+border: 1px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.example {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 10px;
+  margin: 10px;
+}
+.remark {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 20px;
+  margin: 10px;
+}
+.definition {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px double var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.lemma {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.theorem {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.proofs {
+  background-color: var(--environmentBackground);
+border: 5px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.project {
+  background-color: var(--environmentBackground);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.hint {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.code {
+  background-color: color-mix(in srgb, var(--primary) 13%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.algorithm {
+  background-color: color-mix(in srgb, var(--primary) 5%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+    </style>
+</head>
+<body>
+    <button id="toc-button">☰ Table of Contents</button>
+    <div id="toc-panel">
+        <button id="close-toc">×</button>
+        
+       <!-- Small Main Page Button -->
+<div style="text-align:right; margin-bottom: 10px;">
+  <a href="index.html" 
+     style="
+       background: var(--toc-primary, #2738F5);
+       color: white;
+       padding: 4px 10px;
+       border-radius: 16px;
+       font-size: 0.75em;
+       font-weight: 900;
+       text-decoration: none;
+       display: inline-block;
+       box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+     ">
+    Main Page
+  </a>
+</div>
+
+        <div class="full-toc">      
+
+        <div class="toc-chapter ">
+            <a href="Overview of Financial Systems.html" class="chapter-link">
+                Chapter 1: Overview of Financial Systems
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Overview of Financial Systems.html#FinancialSystem.ch">
+                        Financial System: An Overview
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#financialmarketframework.sec">
+                        Financial Market Framework
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#financial.instrument.ssec">
+                        Financial Instruments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#securities">
+                        Securities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-levels">
+                        Market Levels
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#market-segments">
+                        Market Segments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#trading-mechanism">
+                        Trading Mechanism
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#marketparticipants.sec">
+                        Market Participants
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-makers">
+                        Market Makers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#investors">
+                        Investors
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#speculators">
+                        Speculators
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#hedgers">
+                        Hedgers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#arbitrageurs">
+                        Arbitrageurs
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#overviewderivatives.sec">
+                        Overview of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#essential-market-terms">
+                        Essential Market Terms
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#purpose-of-derivatives">
+                        Purpose of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#need-for-pricing-models-and-analysis">
+                        Need for Pricing Models and Analysis
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#noncontingentclaims.sec">
+                        Non-Contingent Claims: Forwards, Futures, and Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#forwards-and-futures">
+                        Forwards and Futures
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#swaps">
+                        Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#options.sec">
+                        Contingent Claims: Options
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Price Dynamics.html" class="chapter-link">
+                Chapter 2: Price Dynamics
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Price Dynamics.html#price.dynamics.ch">
+                        Price Dynamics
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Price Dynamics.html#deterministic-interest-rate-models">
+                        Deterministic Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#discrete-time-models">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#continuous-time-model">
+                        Continuous Time Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#nonconstant.interest.rate.subs">
+                        Non-constant Interest Rate
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#present.value.subs">
+                        Present Value
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#cash-flow-stream">
+                        Cash Flow Stream
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Price Dynamics.html#stochastic-models">
+                        Stochastic Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#stochastic-processes">
+                        Stochastic Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#stock-price-model">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#wiener-process">
+                        Wiener Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#ito">
+                        It\^{o
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#GBMParameterCalibration.sec">
+                        Parameter Calibration
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#interest-rate-models">
+                        Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#wiener-integral">
+                        Wiener Integral
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#numerical-simulation">
+                        Numerical Simulation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#distribution-of-the-stochastic-increment">
+                        Distribution of the stochastic increment
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#exact-simulation-scheme">
+                        Exact simulation scheme
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Portfolio And Arbitrage.html" class="chapter-link">
+                Chapter 3: Portfolio And Arbitrage
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Portfolio And Arbitrage.html#PortfolioNArbitrage.ch">
+                        Portfolio and Arbitrage
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#portfolioconcepts.ssec">
+                        Portfolio Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#value-and-gain-processes">
+                        Value and Gain Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#market-model">
+                        Market Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#predictable-strategy">
+                        Predictable Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#self-financing-strategy">
+                        Self-financing Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.opportunity.sec">
+                        Arbitrage Opportunity
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage-portfolio">
+                        Arbitrage Portfolio
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#application-forward-pricing">
+                        Application: Forward Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#law.of.one.price.subs">
+                        Law of One Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.strategy.ssec">
+                        Arbitrage Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#futures.sec">
+                        Application: Future Contracts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#marking-to-market">
+                        Marking to Market
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#pricing-model">
+                        Pricing Model
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Basic Concepts of Options.html" class="chapter-link">
+                Chapter 4: Basic Concepts of Options
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Basic Concepts of Options.html#BasicConceptsOptions.ch">
+                        Basic Concepts of Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#call.put.sec">
+                        Basic Terminology
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#defining-parameters">
+                        Defining Parameters
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#payoff-and-gain">
+                        Payoff and Gain
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#time-value-in-an-option-price">
+                        Time Value in an Option Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#Bounds.EuropeanOption.sec">
+                        Premium Bounds and Arbitrage Opportunities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#european-options">
+                        European Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#american-options">
+                        American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#put-call-parity-estimates">
+                        Put-Call Parity Estimates
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#premium-valuation">
+                        Premium Valuation
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Discrete Time Models.html" class="chapter-link">
+                Chapter 5: Discrete Time Models
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Discrete Time Models.html#DiscreteTimeModels.ch">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Time Models.html#1step.BM.sec">
+                        Single-Step Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#underlying-model">
+                        Underlying Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#risk-neutral.probability.1sBM.ssec">
+                        Risk-neutral Probability
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#Eur.OPM.1S.ssec">
+                        European Option Pricing Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Time Models.html#MultiStep.BM.sec">
+                        Multi-step Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#Stock.Price.Model.ssec">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#Eur.OPM.nS.ssec">
+                        European Option Pricing Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Discrete Time Models.html#generalization-to-multi-step-method">
+                        Generalization to Multi-step Method
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#log.return.model.sec">
+                        Logarithmic Return Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Discrete Time Models.html#application-to-binomial-model">
+                        Application to Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#hedge-strategy">
+                        Hedge Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#pricing-for-american-options">
+                        Pricing for American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#exotic-options">
+                        Exotic Options
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter current">
+            <a href="Discrete Martingale Theory.html" class="chapter-link">
+                Chapter 6: Discrete Martingale Theory
+            </a>
+            <div class="toc-sections expanded">
+
+                <div class="toc-item ">
+                    <a href="Discrete Martingale Theory.html#discrete.martingale.ch">
+                        Discrete Martingale Theory
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Martingale Theory.html#basic-concepts">
+                        Basic Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#numeraire.rem">
+                        Normalized Market and Numéraire
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Discrete Martingale Theory.html#characterization-of-self-financing-condition">
+                        Characterization of Self-financing condition
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#conditional-expectation">
+                        Conditional Expectation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Martingale Theory.html#martingale-process-and-measure">
+                        Martingale Process and Measure
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#discrete-martingale-process">
+                        Discrete Martingale Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#fundamental-theorem-of-asset-pricing">
+                        Fundamental Theorem of Asset Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#general-pricing-model">
+                        General Pricing Model
+                    </a>
+                </div>
+</div></div>
+</div>
+    </div>
+    <div id="content">
+        <p>
+<h1 id="discrete.martingale.ch">Discrete Martingale Theory</h1></p><p>In the previous chapter, we introduced binomial model for option pricing where the price is determined by constructing a replicating portfolio consisting of the underlying asset and the risk-free asset.   As a consequence of this construction, the option price is expressed as the expected value of the discounted payoff under a risk-neutral probability measure.  The risk-neutral probability is uniquely determined by the no-arbitrage condition, and the existence of a replicating portfolio ensures that the derivative can be perfectly hedged.</p><p>In this chapter, we place these ideas in a more general mathematical framework for discrete-time financial markets.  In particular, we develop the martingale theory and introduce the concept of an equivalent martingale measure, which is exactly the risk-neutral probability measure in the binomial model. We further show that under such a measure, the discounted price processes of traded assets become martingales and the option prices can be expressed as discounted expectation of their future payoffs.</p><p>The martingale framework provides a general approach to pricing and hedging options in discrete time setup, and it also provides a natural extension of the pricing model to continuous-time framework.</p><p><h2 id="basic-concepts">Basic Concepts</h2></p><p>In this section, we introduce two concepts, namely, the normalized market and conditional expectation.</p><p><h3 id="numeraire.rem">Normalized Market and Numéraire</h3></p><p>Recall that binomial models express option prices in terms of discounted payoffs. This approach extends to any option pricing models, in general. Thus, it is convenient to work within a normalized market where price processes are discounted.</p><p>Generally, it is assumed that the value of the risk-free asset in a portfolio at any time is strictly positive, <i>i.e.,</i> <span class="math">\(B_t>0\)</span>. Often one considers the normalized price of the risky assets given by
+</p><div class="math">\[
+\widetilde{\boldsymbol{S}}_k = \frac{\boldsymbol{S}_k}{B_k}, k=0,1,2,\ldots, n.
+\]</div><p> 
+In the normalized form, the finance market is called the <b>normalized finance market</b> or <b>discounted market</b>, denoted by <span class="math">\((1,\widetilde{\boldsymbol{S}})\)</span>.  The process <span class="math">\(\{B_k\}\)</span> is called a <b>numéraire</b>.</p><p>In a discounted market, the value of a portfolio <span class="math">\(\Pi_k\)</span> at time <span class="math">\(t=t_k\)</span>, <span class="math">\(k=1,2,\ldots,n\)</span>, is given by
+</p><div class="math">\[
+\widetilde{V}_k = \phi_k + \boldsymbol{\theta}_k \cdot \widetilde{\boldsymbol{S}}_k
+\]</div><p>
+and is called the <b>discounted value</b>.  The corresponding value process <span class="math">\(\{\widetilde{V}_k\}\)</span> is called the <b>discounted value process</b>. </p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+Note that at every time level <span class="math">\(t_k\)</span>, since the value of the risk-free asset is normalized, we have <span class="math">\(\widetilde{B}_k = 1\)</span>.  This makes the value of this asset at time <span class="math">\(t_{k+1}\)</span> as <span class="math">\(B_{k+1} = \widetilde{B}_k I(\tilde{r})=I(\tilde{r})\)</span>. Further, the price in the normalized market becomes <span class="math">\(\widetilde{B}_{k+1}=1\)</span>.
+</div></p><p><h4 id="characterization-of-self-financing-condition">Characterization of Self-financing condition</h4></p><p>Our next task is to find a necessary and sufficient condition for a strategy to be self-financing. Let us first rewrite the self-financing condition in a normalized market.</p><p><div class="remark" id="self.finance.expression.rem">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+
+The self-financing condition in <a href="Discrete Martingale Theory.html#self-financing.strategy.def">Definition &laquo;Click Here&raquo; </a> is equivalent to the condition
+</p><div class="math">\[
+\Delta \phi_k B_k + \Delta \boldsymbol{\theta}_k \cdot \boldsymbol{S}_k =0,
+\]</div><p>
+where
+</p><div class="math">\[
+\Delta \phi_k = (\phi_{k+1}-\phi_k)~\text{and}~
+\Delta \boldsymbol{\theta}_k= (\boldsymbol{\theta}_{k+1}-\boldsymbol{\theta}_k),
+\]</div><p>
+for <span class="math">\(k=1,2,\ldots, n-1.\)</span></p><p>With respect to the discounted finance market, the self-finance condition can be re-written as
+</p><div class="math">\[
+\Delta \phi_k  + \Delta \boldsymbol{\theta}_k \cdot \widetilde{\boldsymbol{S}}_k =0,
+\]</div><p>
+for <span class="math">\(k=1,2,\ldots, n-1.\)</span>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+With a slight abuse of notation, we use <span class="math">\(V_0\)</span> to denote the initial value of a strategy, <i>i.e.</i>, <span class="math">\(V_0 = V_0(\Pi_1)\)</span>.  Accordingly, the discounted initial value is denoted by <span class="math">\(\widetilde{V}_0\)</span>.
+</div></p><p><div class="problem" id="self-finance.equivalent.lem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+
+Show that a strategy <span class="math">\(\{(\phi_k,\boldsymbol{\theta_k})~|~k=1,2,\ldots, n\}\)</span> is self-financing if and only if
+</p><div class="math">\[
+\phi_{k+1} = \widetilde{V}_0 - \sum_{j=0}^k \Delta \boldsymbol{\theta}_j \cdot \widetilde{\boldsymbol{S}}_j,
+~~k=0,1,\ldots,n-1,
+\]</div><p>
+where <span class="math">\(\boldsymbol{\theta}_0=\boldsymbol{0}\)</span>.
+</div></p><p><div class="lemma" id="Value.Gain.lem">
+<div class="heading-container">
+<b class="heading">Lemma:</b>
+</div>
+
+Show that a strategy <span class="math">\(\{(\phi_k,\boldsymbol{\theta_k})~|~k=1,2,\ldots, n\}\)</span> is self-financing if and only if, for every <span class="math">\(k=1,2,\ldots, n\)</span>,
+</p><div class="math">\[
+\widetilde{V}_k = \widetilde{V}_0 + \widetilde{G}_k,
+\]</div><p>
+where 
+</p><div class="math">\[
+\widetilde{G}_k = \sum_{j=1}^{k} \boldsymbol{\theta}_j \cdot \Delta \widetilde{\boldsymbol{S}}_{j-1}
+\]</div><p>
+is called the <b>discounted gain</b> for the predictable process <span class="math">\(\{\boldsymbol{\theta}_k\}\)</span>.
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+For <span class="math">\(k=1,\ldots,n,\)</span> 
+the normalized value process is given by
+</p><div class="math">\[
+\widetilde{V}_k = \phi_k + \boldsymbol{\theta}_k \cdot \widetilde{\boldsymbol{S}}_k.
+\]</div><p>
+Using <a href="Discrete Martingale Theory.html#self-finance.equivalent.lem">Problem &laquo;Click Here&raquo; </a> in the above expression, we see that the strategy is self-financing if and only if
+</p><div class="math">\[
+\widetilde{V}_k = \widetilde{V}_0 - \sum_{j=0}^{k-1} \Delta \boldsymbol{\theta}_j \cdot \widetilde{\boldsymbol{S}}_j + \boldsymbol{\theta}_k \cdot \widetilde{\boldsymbol{S}}_k.
+\]</div><p>
+Expanding the RHS sum, we see that the strategy is self-financing if and only if
+</p><div class="math" >\begin{eqnarray}
+\widetilde{V}_k &amp;=&amp; \widetilde{V}_0 
+	+ \Big(\boldsymbol{\theta}_1 \cdot (\widetilde{\boldsymbol{S}}_1 - \widetilde{\boldsymbol{S}}_0)
+		+\boldsymbol{\theta}_2\cdot (\widetilde{\boldsymbol{S}}_2 - \widetilde{\boldsymbol{S}}_1)
+		+\boldsymbol{\theta}_3\cdot (\widetilde{\boldsymbol{S}}_3 - \widetilde{\boldsymbol{S}}_2)\\
+		&amp;&amp;~~~~~~~~~~~~+ \ldots 
+		+\boldsymbol{\theta}_{k-1}\cdot (\widetilde{\boldsymbol{S}}_{k-1}-\widetilde{\boldsymbol{S}}_{k-2})
+		+\boldsymbol{\theta}_k\cdot (\widetilde{\boldsymbol{S}}_k - \widetilde{\boldsymbol{S}}_{k-1})\Big).
+\end{eqnarray}<div style="text-align:right;">(6.1)</div></div><p>
+Thus, we proved that the strategy is self-financing if and only if
+</p><div class="math" >\begin{eqnarray}
+\widetilde{V}_k 
+&amp;=&amp; \widetilde{V}_0 + \sum_{j=1}^k \boldsymbol{\theta}_j \cdot (\widetilde{\boldsymbol{S}}_j - \widetilde{\boldsymbol{S}}_{j-1})\\
+&amp;=&amp;\widetilde{V}_0 + \sum_{j=1}^k \boldsymbol{\theta}_j\cdot \Delta \widetilde{\boldsymbol{S}}_{j-1}
+=\widetilde{V}_0 + \widetilde{G}_k.
+\end{eqnarray}<div style="text-align:right;">(6.2)</div></div><p>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+We can choose <span class="math">\(B_0=1\)</span> so that the discounted initial value <span class="math">\(\widetilde{V}_0\)</span> coincides with the initial value <span class="math">\(V_0\)</span>. This choice leads to <span class="math">\(B_1 = I(\tilde{r})\)</span>  at time <span class="math">\(t_1\)</span>, and consequently the numéraire value <span class="math">\(\widetilde{{V}}_1\)</span> equals the discounted value of <span class="math">\(V_1\)</span> justifying the name mentioned in <a href="Discrete Martingale Theory.html#numeraire.rem">Remark &laquo;Click Here&raquo; </a>.
+</div></p><p><h3 id="conditional-expectation">Conditional Expectation</h3></p><p>In many financial applications, including option pricing models, it is essential to estimate the price of an asset based on the available information at a given time. As we have seen in our studies so far, the asset price at a fixed time <span class="math">\(t\)</span> is modeled by a random variable <span class="math">\(X_t\)</span> and the available information is captured by a <span class="math">\(\sigma\)</span>-field <span class="math">\(\mathcal{F}_t\)</span>.  The estimated price is then expressed as the expectation of <span class="math">\(X_t\)</span> given <span class="math">\(\mathcal{F}_t\)</span>, which is denoted by <span class="math">\(\mathbb{E}(X_t ~|~ \mathcal{F}_t)\)</span>.</p><p>While deriving a model to obtain a fair price of an option using binomial models (in <a href="Discrete Martingale Theory.html#cond.expt.rm">Remark &laquo;Click Here&raquo; </a>), we arrived at an explicit formula. We noted that this formula is precisely the conditional expectation of a random variable given a <span class="math">\(\sigma\)</span>-field.  We now give a rigorous definition of this concept, as it also plays a central role in martingale theory.</p><p><div class="definition" id="Cond.Exp.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Conditional Expectation</b>]</p><p>Let <span class="math">\(X\)</span> be  a random variable defined on a probability space <span class="math">\((\Omega,\mathcal{F},\mathbb{P})\)</span> with <span class="math">\(\mathbb{E}(|X|)<\infty\)</span> and let <span class="math">\(\mathcal{F}_1\subseteq \mathcal{F}\)</span> be a <span class="math">\(\sigma\)</span>-field.  A <span class="math">\(\mathcal{F}_1\)</span>-measurable random variable <span class="math">\(Y\)</span> defined on  <span class="math">\((\Omega,\mathcal{F}, \mathbb{P})\)</span> with <span class="math">\(\mathbb{E}(|Y|)<\infty\)</span> is said to be a <b>conditional expectation</b> of <span class="math">\(X\)</span> given <span class="math">\(\mathcal{F}_1\)</span>, denoted by <span class="math">\(Y=\mathbb{E}(X~|~\mathcal{F}_1)\)</span>, if
+</p><div class="math">\[
+\mathbb{E}(Y{1\hspace{-0.09in}1}_A) = \mathbb{E}(X{1\hspace{-0.09in}1}_A), \text{ for all }A\in \mathcal{F}_1,
+\]</div><p>
+where <span class="math">\({1\hspace{-0.09in}1}_A\)</span>  denotes the indicator function of the set <span class="math">\(A\)</span>.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+A random variable <span class="math">\(Y'\)</span> defined on <span class="math">\((\Omega,\mathcal{F}_1,\mathbb{P})\)</span>  that differs from <span class="math">\(Y\)</span> only on a set of probability zero is also a conditional expectation of <span class="math">\(X\)</span> given <span class="math">\(\mathcal{F}_1\)</span>.  Hence, conditional expectations are not unique. As a consequence, properties regarding conditional expectations generally hold only <i> almost surely</i>.  However, we omit to mention a.s. as it holds in all the results concerning conditional expectation.  This is an important technical detail that one has to keep in mind always.</p><p>In particular, if <span class="math">\(\mathcal{F}_1 = \sigma(Z)\)</span>, for some random variable <span class="math">\(Z\)</span> on  <span class="math">\((\Omega,\mathcal{F}_1,\mathbb{P})\)</span>, then we can also use the notation <span class="math">\(\mathbb{E}(X~|~Z)\)</span>.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+By the notation <span class="math">\(\mathbb{E}(X~|~X_1,X_2,\ldots, X_n)\)</span>, we mean <span class="math">\(\mathbb{E}(X~|~\mathcal{F}^{X}_n)\)</span>
+</div></p><p><div class="example" id="CondExp.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+</p><p>Consider the filtration probability space <span class="math">\((\Omega,\mathcal{F}^*,\mathbb{P},\{\mathcal{F}_k\})\)</span> defined on <span class="math">\(\mathbb{T}_n=\{t_0,t_1,\ldots,t_n\}\)</span>.  Here, we take the probability measure as
+</p><div class="math">\[
+\mathbb{P}(\boldsymbol{\omega}) = {p^*}^{U(\boldsymbol{\omega})}(1-p^*)^{D(\boldsymbol{\omega})}, ~ \boldsymbol{\omega}=(\omega_1,\omega_2,\ldots,\omega_n)\in \Omega = \Omega_1\times \Omega_2\times \ldots \times \Omega_n,
+\]</div><p>
+where for each <span class="math">\(k=1,2,\ldots n,\)</span> <span class="math">\(\Omega_k = \{\text{up},\text{down}\}\)</span>,  <span class="math">\(U(\boldsymbol{\omega})\)</span> is the number of upward movements and <span class="math">\(D(\boldsymbol{\omega})\)</span> is the number of downward movements of the stock.  Also, recall that each <span class="math">\(\mathcal{F}_k = \sigma(\texttt{P}_k)\)</span>, where <span class="math">\(\texttt{P}_k\)</span> is the collection of sets <span class="math">\(B_{\boldsymbol{\omega}_k}\)</span> given by
+</p><div class="math">\[
+B_{\boldsymbol{\omega}_k} = \{\boldsymbol{\omega}\in \Omega~|~ \text{the first } k \text{ components of }\boldsymbol{\omega} \text{ equal }\boldsymbol{\omega}_k\}.
+\]</div><p>
+The <span class="math">\(\sigma\)</span>-field <span class="math">\(\mathcal{F}_k\)</span> represents the information generated by the movement of the stock at the first <span class="math">\(k\)</span> time levels.  </p><p>For any given <span class="math">\(k\in \{1,2,\ldots,n\}\)</span> we use the notation 
+</p><div class="math">\[
+\Omega_k' = \Omega_1\times\ldots\times \Omega_k ~\text{and}~
+	\Omega_k'' = \Omega_{k+1}\times\ldots\times \Omega_n.
+\]</div><p>
+With these notations, we can write <span class="math">\(\Omega = \Omega_k'\times\Omega_k''\)</span>, for each <span class="math">\(k=1,2,\ldots,n\)</span>, and  therefore any <span class="math">\(\boldsymbol{\omega}\in \Omega\)</span> can be written <span class="math">\(\boldsymbol{\omega} = (\boldsymbol{\omega}_k',\boldsymbol{\omega}_k'')\)</span> with <span class="math">\(\boldsymbol{\omega}_k'\in \Omega_k'\)</span> and <span class="math">\(\boldsymbol{\omega}_k''\in \Omega_k''\)</span>. Thus we can write, for any given <span class="math">\(\boldsymbol{\omega}_k'\in \Omega_k'\)</span>,
+</p><div class="math">\[
+B_{\boldsymbol{\omega}_k'} = \{(\boldsymbol{\omega}_k',\boldsymbol{\omega}_k'')\in \Omega~|~ \boldsymbol{\omega}_k''\in \Omega_k''\}.
+\]</div><p>
+For a given <span class="math">\(k\in \{1,2,\ldots,n\}\)</span> and for any random variable <span class="math">\(X\)</span> defined on the filtered probability space <span class="math">\((\Omega,\mathcal{F}^*,\mathbb{P},\{\mathcal{F}_k\})\)</span>, we claim that  the conditional expectation is given by</p><div class="math" >\begin{eqnarray}
+\mathbb{E}(X~|~\mathcal{F}_k)(\boldsymbol{\omega}) = \sum_{\boldsymbol{\alpha}\in \Omega_k''} {p^*}^{U(\boldsymbol{\alpha})}(1-p^*)^{D(\boldsymbol{\alpha})}X(\boldsymbol{\omega}_k',\boldsymbol{\alpha}),
+\end{eqnarray}<div style="text-align:right;">(6.3)</div></div><p>
+for every <span class="math">\(\boldsymbol{\omega} = (\boldsymbol{\omega}_k',\boldsymbol{\omega}_k'')\in \Omega\)</span>.  The realistic interpretation of the above expression is that the best prediction of <span class="math">\(X\)</span> given the information provided by the first <span class="math">\(k\)</span> movements of the stock (``known") is the average of <span class="math">\(X\)</span> over the remaining outcomes <span class="math">\(\alpha\)</span> (``unknown").</p><p>Let us denote the right-hand side sum by <span class="math">\(Y(\boldsymbol{\omega})\)</span>.  Note that <span class="math">\(Y\)</span> is actually a function of <span class="math">\(\boldsymbol{\omega}_k'\)</span> only, <i> i.e.</i> <span class="math">\(Y(\boldsymbol{\omega})=Y(\boldsymbol{\omega}_k')\)</span>.  Hence, <span class="math">\(Y\)</span> is <span class="math">\(\mathcal{F}_k\)</span>-measurable. Thus, as per <a href="Discrete Martingale Theory.html#Cond.Exp.def">Definition &laquo;Click Here&raquo; </a>, we have to show that </p><div class="math">\[
+\mathbb{E}(Y{1\hspace{-0.09in}1}_A) = \mathbb{E}(X{1\hspace{-0.09in}1}_A),~\text{for all}~A\in \mathcal{F}_k.
+\]</div><p>
+In fact, it is enough to show the above equation for <span class="math">\(A=B_{\boldsymbol{\omega}_k'}\)</span>, for every <span class="math">\(\boldsymbol{\omega}_k'\in \Omega_k'.\)</span></p><p>We have</p><div class="math" >\begin{eqnarray}
+\mathbb{E}\left(Y{1\hspace{-0.09in}1}_{B_{\boldsymbol{\omega}_k'}}\right)
+&amp;=&amp;\sum_{\boldsymbol{\omega}\in B_{\boldsymbol{\omega}_k'}} Y(\boldsymbol{\omega})\mathbb{P}(\boldsymbol{\omega})\\
+\end{eqnarray}<div style="text-align:right;">(6.4)</div></div><p>
+Using the definition of <span class="math">\(\mathbb{P}\)</span> and substituting the right hand side of 
+<a href="#CE.expression.eq">(6.3)</a>
+in the place of <span class="math">\(Y\)</span>,
+we get
+\begin{multline*}
+\mathbb{E}\left(Y{1\hspace{-0.09in}1}_{B_{\boldsymbol{\omega}_k'}}\right)
+=\left({p^*}^{U(\boldsymbol{\omega}_k')}(1-p^*)^{D(\boldsymbol{\omega}_k')}\right)\\
+		\left(\sum_{\boldsymbol{\alpha}\in \Omega_k''}{p^*}^{U(\boldsymbol{\alpha})}(1-p^*)^{D(\boldsymbol{\alpha})}X(\boldsymbol{\omega}_k',\boldsymbol{\alpha})\right)\\
+		\left(\sum_{\boldsymbol{\alpha}\in \Omega_k''} 
+		{p^*}^{U(\boldsymbol{\alpha})}(1-p^*)^{D(\boldsymbol{\alpha})}\right).
+\end{multline*}
+Since
+</p><div class="math">\[
+\sum_{\boldsymbol{\alpha}\in \Omega_k''} 
+		{p^*}^{U(\boldsymbol{\alpha})}(1-p^*)^{D(\boldsymbol{\alpha})}=1,
+\]</div><p>
+we have the desired result.
+</div></p><p>The following problems provide some important properties of condition expectation.</p><p><div class="problem" id="linearity.property.conditional.expectation.prob">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>Linearity property</b>]</p><p>Let <span class="math">\(X_1\)</span> and <span class="math">\(X_2\)</span> be random variables on <span class="math">\((\Omega,\mathcal{F},\mathbb{P})\)</span>.  For any <span class="math">\(a,b\in \mathbb{R}\)</span>, show that
+</p><div class="math">\[
+\mathbb{E}(aX_1+bX_2~|~\mathcal{F_1}) = a\mathbb{E}(X_1~|~\mathcal{F}_1) + b\mathbb{E}(X_2~|~\mathcal{F}_1),
+\]</div><p>
+where <span class="math">\(\mathcal{F}_1\subseteq \mathcal{F}\)</span> is a <span class="math">\(\sigma\)</span>-field on <span class="math">\(\Omega\)</span>.
+</div></p><p><div class="problem" id="tower.property.prb">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>Tower property</b>]</p><p>Let <span class="math">\(X\)</span> be a random variable on <span class="math">\((\Omega,\mathcal{F},\mathbb{P})\)</span> and let <span class="math">\(\mathcal{F}_1\subseteq \mathcal{F}_2 \subseteq\mathcal{F}\)</span>. Show that
+</p><div class="math">\[
+\mathbb{E}\big(\mathbb{E}(X~|~\mathcal{F}_2)~|~\mathcal{F}_1\big)  = \mathbb{E}(X~|~\mathcal{F}_1).
+\]</div><p>
+</div></p><p><div class="lemma" id="factor.property.lem">
+<div class="heading-container">
+<b class="heading">Lemma:</b>
+</div>
+[<b>Factor Property</b>]</p><p>Let <span class="math">\(X\)</span> be a random variable on <span class="math">\((\Omega,\mathcal{G},\mathbb{P})\)</span> and <span class="math">\(Y\)</span> be a random variable on <span class="math">\((\Omega,\mathcal{F},\mathbb{P})\)</span>.  Then show that 
+</p><div class="math">\[
+\mathbb{E}(XY~|~\mathcal{G}) = X\mathbb{E}(Y~|~\mathcal{G}).
+\]</div><p>
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+Since <span class="math">\(\mathbb{E}(Y~|~\mathcal{G})\)</span> is a <span class="math">\(\mathcal{G}\)</span>-measurable random variable, <span class="math">\(X\mathbb{E}(Y~|~\mathcal{G})\)</span> is a <span class="math">\(\mathcal{G}\)</span>-measurable random variable.  So, it is enough to show that
+</p><div class="math">\[
+\mathbb{E}(X\mathbb{E}(Y~|~\mathcal{G}){1\hspace{-0.09in}1}_A) = \mathbb{E}(XY{1\hspace{-0.09in}1}_A),~~A\in \mathcal{G}.
+\]</div><p>
+We prove this for the special case that the range of <span class="math">\(X\)</span> is a finite set <span class="math">\(\{x_1,\ldots,x_n\}\)</span>.  </p><p>Set <span class="math">\(A_j=\{X=x_j\}\)</span>.  Then <span class="math">\(A_j\in \mathcal{G}\)</span> and
+</p><div class="math">\[
+{1\hspace{-0.09in}1}_AX = \sum_{j=1}^n x_j {1\hspace{-0.09in}1}_{AA_j}.
+\]</div><p>
+Multiplying this equation by <span class="math">\(\mathbb{E}(Y~|~\mathcal{G})\)</span> and using linearity of conditional expectation, we get the required result.
+</div></p><p><h2 id="martingale-process-and-measure">Martingale Process and Measure</h2></p><p>The aim of this section is to generalize the binomial model pricing idea to general discrete-time markets and connect it to the <b>Fundamental Theorem of Asset Pricing</b> (FTAP).  To formalize this idea in general market models we first need to introduce martingales and equivalent martingale measures.</p><p><h3 id="discrete-martingale-process">Discrete Martingale Process</h3></p><p>We now define the notion of <b>discrete martingale</b>.</p><p><div class="definition" id="discrete.martingale.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Discrete Martingale</b>]</p><p>A stochastic process <span class="math">\(\{M_k\}\)</span> defined on a probability space <span class="math">\((\Omega, \mathcal{F}^*,\mathbb{P})\)</span> is a <b>martingale</b> with respect to a filtration <span class="math">\(\{\mathcal{F}_k\}\)</span> if 
+<ol class="latex-enumerate">
+<li>the process <span class="math">\(\{M_k\}\)</span> is adapted to <span class="math">\(\{\mathcal{F}_k\}\)</span>, 
+</li><li>for each <span class="math">\(k=0,1,2,\ldots,n-1\)</span>, <span class="math">\(\mathbb{E}(|M_k|)<\infty\)</span>, and 
+</p><div class="math">\[
+\mathbb{E}(M_{k+1}~|~\mathcal{F}_{k}) = M_k, ~~~\text{a.s.}
+\]</div><p>
+</li></ol>
+We say that <span class="math">\(\{M_n\}\)</span> is a <span class="math">\(\mathcal{F}_k\)</span>-martingale. Further,
+<ol class="latex-enumerate">
+<li>If 
+</p><div class="math">\[
+\mathbb{E}(M_{k+1}~|~\mathcal{F}_{k}) \le M_k, ~~~\text{a.s.},~\text{for each } k=0,1,2,\ldots,n-1,
+\]</div><p>
+then the process <span class="math">\(\{M_k\}\)</span> is a <b>supermartingale</b>.</p><p></li><li>If 
+</p><div class="math">\[
+\mathbb{E}(M_{k+1}~|~\mathcal{F}_{k}) \ge M_k, ~~~\text{a.s.},~\text{for each } k=0,1,2,\ldots,n-1,
+\]</div><p>
+then the process <span class="math">\(\{M_k\}\)</span> is a <b>submartingale</b>.
+</li></ol>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The above definition can be extended to a multidimensional stochastic process, where each component process should be martingale. The above definition also holds if <span class="math">\(\{M_k\}\)</span> is an infinite sequence.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Let <span class="math">\(X\)</span> be a random variable on (<span class="math">\(\Omega, \mathcal{F}^*,\mathbb{P})\)</span> and let <span class="math">\(\{\mathcal{F}_k\}\)</span> be a filtration.  Define <span class="math">\(M_k=\mathbb{E}(X~|~\mathcal{F}_k)\)</span>, for <span class="math">\(k=0,1,2,\ldots\)</span>. Show that <span class="math">\(\{M_n\}\)</span> is a martingale with respect to <span class="math">\(\{\mathcal{F}_k\}\)</span>.
+</div></p><p><div class="remark" id="fair.game.interpretation.rem">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Fair Game Interpretation</b>]</p><p>The martingale conditions can be interpreted as gamblers' fair game condition.  We can see this through the following steps:
+<ol class="latex-enumerate">
+<li>Let us first interpret the process <span class="math">\(\{M_k\}\)</span> as the winning amount of a gambler at different time levels, hence <span class="math">\(M_{k+1}-M_k\)</span> denotes the gain accumulated during the period <span class="math">\((t_{k},t_{k+1}]\)</span>;
+</li><li>Since the process is adapted, <span class="math">\(M_k\)</span> is <span class="math">\(\mathcal{F}_k\)</span>-measurable.  This may be interpreted as the information about all possibilities of <span class="math">\(M_k\)</span> (and also <span class="math">\(M_j\)</span>, <span class="math">\(j=0,1,\ldots,k\)</span>) are included in <span class="math">\(\mathcal{F}_k\)</span>.
+</li><li>Assume that we are at time <span class="math">\(t=t_k\)</span> and a gambler would like to know the gain at time <span class="math">\(t=t_{k+1}\)</span>.  Intuitively, we may agree that a 'fair game' should not give any information (to the gambler) about the future gain at the present time.  Martingale condition represents this intuitive meaning of 'fair game' mathematically.  </p><p>Indeed, since <span class="math">\(M_k\)</span> is <span class="math">\(\mathcal{F}_k\)</span>-measurable, we always have
+</p><div class="math">\[
+\mathbb{E}(M_k~|~\mathcal{F}_{k}) = M_k.
+\]</div><p>
+In fact, this can be seen using factor property.  Indeed, 
+</p><div class="math">\[
+\mathbb{E}(M_k~|~\mathcal{F}_{k}) = M_k\mathbb{E}(1~|~\mathcal{F}_{k}) =M_k.
+\]</div><p>
+By linearity of conditional expectation, we have
+</p><div class="math">\[
+\mathbb{E}(M_{k+1} - M_k ~|~\mathcal{F}_{k}) = \mathbb{E}(M_{k+1}~|~\mathcal{F}_{k}) - \mathbb{E}(M_k~|~\mathcal{F}_{k}).
+\]</div><p>
+Using martingale condition (2) in the first term and the predicted process condition on the second term, we get
+</p><div class="math">\[
+\mathbb{E}(M_{k+1} - M_k ~|~\mathcal{F}_{k}) = M_k - M_k = 0.
+\]</div><p>
+Thus, the expectation of the gain given all the relevant information (<i> i.e.</i> given <span class="math">\(\mathcal{F}_k\)</span> at time <span class="math">\(t=t_k\)</span>) is zero.  That means, the gambler has no significant information (based on the past <span class="math">\(k\)</span> games) about the gain of the next game that needs to be initiated at time <span class="math">\(t=t_k\)</span> and goes till <span class="math">\(t=t_{k+1}\)</span>.
+</li></ol>
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+[<b>Linearity</b>]</p><p>Let <span class="math">\(\{M_k\}\)</span> and <span class="math">\(\{M_k'\}\)</span> be  <span class="math">\(\mathcal{F}_k\)</span>-martingales.   Show that <span class="math">\(\{aM_k + bM_k'\}\)</span> is a <span class="math">\(\mathcal{F}_k\)</span>-martingale, for any <span class="math">\(a,b\in \mathbb{R}\)</span>.
+</div></p><p><div class="problem" id="Backward.martingale.prob">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+
+Let <span class="math">\(\{M_k\}\)</span> be  a <span class="math">\(\mathcal{F}_k\)</span>-martingale.  For any <span class="math">\(j < k\)</span>, show that
+</p><div class="math">\[
+\mathbb{E}(M_k~|~\mathcal{F}_j) = M_j.
+\]</div><p>
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Show that any predictable martingale is almost surely constant.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The above result says that if we know the future value, then the best prediction of it is the known value itself.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Consider the discounted stock price process <span class="math">\(\{\widetilde{S}_k\}\)</span> obtained from a multi-step binomial model with the risk-neutral probability. Let <span class="math">\(\{\widetilde{S}_k\}\)</span> be adapted to a  filtration <span class="math">\(\{\mathcal{F}_k\}\)</span>. Show that in an arbitrage free market, <span class="math">\(\{\widetilde{S}_k\}\)</span> is an <span class="math">\(\mathcal{F}_k\)</span>-martingale.
+</div></p><p>If we interpret a stock investment as a game between buyer and seller, then the above result shows that the game is a fair game under the risk-neutral probability measure.</p><p><div class="problem" id="ValueProcess.Martingale.lem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+
+Let <span class="math">\(\{\Pi_k\}\)</span> be a self-financing strategy predictable with respect to a filtration <span class="math">\(\{\mathcal{F}_k\}\)</span>, and let <span class="math">\(\{\widetilde{S}_k\}\)</span> be a discounted price process obtained from a multi-step binomial model with the  risk-neutral probability. If <span class="math">\(\{\widetilde{V}_k\}\)</span> is the corresponding discounted value process,  then show that <span class="math">\(\{\widetilde{V}_k\}\)</span> is a  <span class="math">\(\mathcal{F}_k\)</span>-martingale.
+</div></p><p><h3 id="fundamental-theorem-of-asset-pricing">Fundamental Theorem of Asset Pricing</h3></p><p>The mathematical concepts we developed in this section so far justify our earlier heuristic arguments and they also unlock two important theorems of quantitative finance, the Fundamental Theorems of Asset Pricing (FTAP), which connects no-arbitrage principles to the existence of risk-neutral measures. </p><p>Our aim in this subsection is to discuss the two fundamental theorems of asset pricing which ensures the existence of the risk-neutral probability in a market where there is more than one risky asset, but only finitely many (called <b>finite market model</b>). </p><p>Let a finite market <span class="math">\((B,\boldsymbol{S})\)</span>, where <span class="math">\(\boldsymbol{S}=(S^1,S^2,\ldots,S^m)\)</span>, be defined on a filtered probability space <span class="math">\((\Omega,\mathcal{F}^*,\mathbb{P}, \{\mathcal{F}_k\})\)</span>. </p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+Two probability measures <span class="math">\(\mathbb{P}_1\)</span> and <span class="math">\(\mathbb{P}_2\)</span> on <span class="math">\((\Omega,\mathcal{F})\)</span> are <b>equivalent</b> (or <b>mutually absolutely continuous</b>) if for each <span class="math">\(A\in \mathcal{F}\)</span>, 
+</p><div class="math">\[
+\mathbb{P}_1(A) = 0 ~\text{ if and only if }~ \mathbb{P}_2(A) = 0.
+\]</div><p>
+</div></p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Equivalent Martingale Measure</b>]</p><p>Given a market <span class="math">\((B,\boldsymbol{S})\)</span> and a market model <span class="math">\((\Omega, \mathcal{F},\mathbb{P},\{\mathcal{F}_k\})\)</span>.</p><p>An <b>equivalent martingale measure</b> (EMM) is a probability measure <span class="math">\(\mathbb{P}^*\)</span> defined on <span class="math">\((\Omega,\mathcal{F})\)</span> such that 
+<ol class="latex-enumerate">
+<li><span class="math">\(\mathbb{P}^*\)</span> is equivalent to <span class="math">\(\mathbb{P}\)</span> and
+</li><li><span class="math">\(\{\widetilde{\boldsymbol{S}}_k\}\)</span> is <span class="math">\(\mathcal{F}_k\)</span>-martingale with respect to <span class="math">\(\mathbb{P}^*\)</span>, <i>i.e.</i>, for each <span class="math">\(k=0,1,\ldots\)</span>, we have <span class="math">\(\mathbb{E}^*(\widetilde{\boldsymbol{S}}_{k+1}~|~\mathcal{F}_k) = \widetilde{\boldsymbol{S}}_k,\)</span> where <span class="math">\(\mathbb{E}^*\)</span> denotes the expectation under the probability measure <span class="math">\(\mathbb{P}^*\)</span>.
+</li></ol>
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+Recall that in the finite market model, <span class="math">\(\mathbb{P}\)</span> gives positive probability to every <span class="math">\(\boldsymbol{\omega}\in \Omega\)</span>. Thus, for the probability measure <span class="math">\(\mathbb{P}^*\)</span> to be equivalent to <span class="math">\(\mathbb{P}\)</span>, we need <span class="math">\(\mathbb{P}^*(\{\boldsymbol{\omega}\})>0\)</span>, for all <span class="math">\(\boldsymbol{\omega}\in \Omega\)</span>.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+An EMM is often called a <b>risk-neutral probability</b>.
+</div></p><p>The following result is a general form of <a href="Discrete Martingale Theory.html#ValueProcess.Martingale.lem">Problem &laquo;Click Here&raquo; </a>.</p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Let <span class="math">\(\mathbb{P}^*\)</span> be an EMM and <span class="math">\(\{\Pi_k\}\)</span> be a self-financing strategy in the finite market model.  Then show that the discounted value process <span class="math">\(\{\widetilde{V}_k\}\)</span> is a <span class="math">\(\mathcal{F}_k\)</span>-martingale with respect to <span class="math">\(\mathbb{P}^*\)</span>.
+</div></p><p>The following theorem is very important in option pricing theory.  We only prove the 'if ' part of the theorem and omit the 'only if' part for the course.</p><p><div class="theorem">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>First Fundamental Theorem of Asset Pricing</b>]</p><p>A finite market is viable if and only if there exists an equivalent martingale measure <span class="math">\(\mathbb{P}^*\)</span>.
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+Assume that there exists an EMM <span class="math">\(\mathbb{P}^*\)</span>. We have to show that the market <span class="math">\((B,\boldsymbol{S})\)</span> is arbitrage free.  We assume the contrary that the market allow arbitrage.  That is, there exists an arbitrage portfolio.  Hence, we can construct a self-finance strategy <span class="math">\(\{\Pi_k\}\)</span> such that
+</p><div class="math">\[
+V_0 = 0,~~V_n \ge 0, \mathbb{P}\text{-a.s.} ~\text{and}~\mathbb{P}(\{V_n>0\})>0.
+\]</div><p>
+We can see that the corresponding discounted values also satisfy the same conditions.  Further, since <span class="math">\(\mathbb{P}^*\)</span> is equivalent to <span class="math">\(\mathbb{P}\)</span>, we get
+</p><div class="math">\[
+\mathbb{P}^*(\{\widetilde{V}_{n}>0\})>0.
+\]</div><p>
+However, since <span class="math">\(\{\widetilde{V}_{k}\}\)</span> is <span class="math">\(\mathcal{F}_k\)</span>-martingale with respect to <span class="math">\(\mathbb{P}^*\)</span>, by <a href="Discrete Martingale Theory.html#Backward.martingale.prob">Problem &laquo;Click Here&raquo; </a> we have
+</p><div class="math">\[
+\mathbb{E}^*(\widetilde{V}_{n}) = 0,
+\]</div><p>
+which is a contradiction.
+</div></p><p>The next theorem provides an equivalent condition for market completeness. Before stating the theorem, we first give the definition of a complete market.</p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Complete Market</b>]</p><p>A market is said to be <b>complete</b> if every contingent claim is replicable.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Show that the binomial model for European options is a complete market model.
+</div></p><p><div class="theorem" id="second.FTAP.th">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>Second Fundamental Theorem of Asset Pricing</b>]</p><p>A viable market <span class="math">\((B, \boldsymbol{S})\)</span> is complete if and only if there exists a unique EMM with numéraire <span class="math">\(B\)</span>.
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+</p><p>Assume that the market is viable and complete.  </p><p>Since the market is viable, by the first fundamental theorem, there is an EMM <span class="math">\(\mathbb{P}^*\)</span>.  Assume the contrary that there exists another EMM <span class="math">\(\mathbb{P}^{**}\)</span>.  Let <span class="math">\(H\)</span> be the payoff of a European option and let <span class="math">\(\{\Pi_k\}\)</span> be a self-financing  and replicative strategy with discounted value process <span class="math">\(\{\widetilde{V}_k\}\)</span>.  By <a href="Discrete Martingale Theory.html#Value.Gain.lem">Problem &laquo;Click Here&raquo; </a>, we have</p><div class="math">\[
+\widetilde{H}_n = \widetilde{V}_n = \widetilde{V}_0 + \sum_{j=1}^{n} \boldsymbol{\theta}_j \cdot \Delta \widetilde{\boldsymbol{S}}_{j-1},
+\]</div><p>
+Since the discounted stock price process is a <span class="math">\(\mathcal{F}_k\)</span>-martingale with respect to <span class="math">\(\mathbb{P}^*\)</span> and <span class="math">\(\{\boldsymbol{\theta}_k\}\)</span> is predictable, we have (using factor property)
+</p><div class="math">\[
+\mathbb{E}^*(\boldsymbol{\theta}_j\cdot\Delta\widetilde{\boldsymbol{S}}_{j-1}~|~\mathcal{F}_{j-1}) 
+	= \boldsymbol{\theta}_j\cdot \mathbb{E}^*(\Delta\widetilde{\boldsymbol{S}}_{j-1}~|~\mathcal{F}_{j-1}) =0.
+\]</div><p>
+Taking expectation on both sides, we get
+</p><div class="math">\[
+\mathbb{E}^*(\boldsymbol{\theta}_j\cdot\Delta\widetilde{\boldsymbol{S}}_{j-1})=0,~j=1,2,\ldots,n.
+\]</div><p>
+Therefore, we have
+</p><div class="math">\[
+\mathbb{E}^*(\widetilde{H}_n) = \widetilde{V}_0.
+\]</div><p>
+We now have
+</p><div class="math">\[
+\mathbb{E}^*(\widetilde{H}_n) = E^{**}(\widetilde{H}).
+\]</div><p>
+The above equality holds for any <span class="math">\(H\)</span>.  In particular, this holds for claims of the form <span class="math">\(H_n={1\hspace{-0.09in}1}_A\)</span>, <span class="math">\(A\in \mathcal{F}^*\)</span>.  Therefore, <span class="math">\(\mathbb{P}^*(A) = \mathbb{P}^{**}(A),\)</span> for all <span class="math">\(A\in \mathcal{F}^*\)</span>.  That is <span class="math">\(\mathbb{P}^* = \mathbb{P}^{**}\)</span>.  This proves the necessary part.</p><p>We omit the proof of the converse.
+</div></p><p><h3 id="general-pricing-model">General Pricing Model</h3></p><p>Having proved the fundamental theorems of asset pricing, we can now generalize the binomial model’s logic to arbitrary discrete-time markets, proving that arbitrage-free prices are expectations of discounted payoffs under an EMM.</p><p><div class="theorem">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+Suppose the finite market model is viable and complete, and <span class="math">\(\mathbb{P}^*\)</span> is the unique EMM.  Then for any European contingent claim with payoff <span class="math">\(H\)</span>, the process
+</p><div class="math">\[
+\{B_kE^*(H^*~|~\mathcal{F}_k) ~|~ k=0,1,\ldots,n\}
+\]</div><p>
+is the unique arbitrage free price process for the European contingent claim, where <span class="math">\(H^*=H/B_n\)</span> is the discounted payoff.
+</div></p><p>Any discussion on this theorem (including proof) is omitted for this course.
+</p>
+    </div>
+    
+    <script>
+    document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+    document.addEventListener("keydown", function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "s")) {
+            e.preventDefault();
+        }
+    });
+    </script>
+      
+ <footer>
+  © S. Baskar, Department of Mathematics, IIT Bombay. 2026 (This material is licensed under CC BY-NC 4.0.) — Updated: 22-Mar-2026
+</footer>
+
+<style>
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #f8f8f8;
+  color: #888;
+  font-size: 0.75em;
+  text-align: center;
+  padding: 6px 0;
+  border-top: 1px solid #ddd;
+  z-index: 10;               /* low z-index */
+  pointer-events: none;      /* allows clicks to pass through */
+}
+
+/* Small screen adjustments */
+@media (max-width: 600px) {
+  footer {
+    font-size: 0.68em;
+    padding: 4px 0;
+  }
+}
+</style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocButton = document.getElementById('toc-button');
+            const tocPanel = document.getElementById('toc-panel');
+            const closeToc = document.getElementById('close-toc');
+
+            if (localStorage.getItem('tocOpen') === 'true') {
+                tocPanel.classList.add('open');
+                localStorage.removeItem('tocOpen');
+            }
+
+            tocButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                tocPanel.classList.toggle('open');
+            });
+
+            function closeTocPanel() {
+                tocPanel.classList.remove('open');
+            }
+
+            closeToc.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeTocPanel();
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!tocPanel.contains(e.target) && e.target !== tocButton) {
+                    closeTocPanel();
+                }
+            });
+
+            tocPanel.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            document.querySelectorAll('#toc-panel a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (!this.getAttribute('href').startsWith('#')) {
+                        localStorage.setItem('tocOpen', 'true');
+                    }
+                    if (this.hash) {
+                        e.preventDefault();
+                        const target = document.getElementById(this.hash.substring(1));
+                        if (target) {
+                            window.scrollTo({
+                                top: target.offsetTop - 70,
+                                behavior: 'smooth'
+                            });
+                            history.pushState(null, null, this.hash);
+                            if (window.innerWidth < 768) {
+                                closeTocPanel();
+                            }
+                        }
+                    }
+                });
+            });
+
+            if (window.location.hash) {
+                const target = document.getElementById(window.location.hash.substring(1));
+                if (target) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: target.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

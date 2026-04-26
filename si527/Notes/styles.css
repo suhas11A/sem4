@@ -1,0 +1,362 @@
+:root {
+    --primary: #6b6ceb; /* Second Environment Color */
+    --environmentBackground: #e6e6e6; /* Main Environment Color */
+    --heading: #6b6ceb; /* Theme Color */
+}
+
+/* General Styling */
+body {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 24px;
+    background-color: #f4f4f4;
+    margin: 25px; /* Increased from 50px */
+    padding: 25px; /* Increased from 50px */
+}
+
+.container {
+    max-width: 800px;
+    margin: 100px auto; /* Increased from 50px auto */
+    background: white;
+    padding: 40px; /* Increased from 20px */
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading */
+h1 {
+    color: var(--primary);
+    text-align: center;
+}
+h2 {
+    color: var(--primary);
+}
+
+h3 {
+    color: var(--primary);
+}
+
+
+/* Text Formatting */
+p {
+    font-size: 24px;
+    color: #555;
+    line-height: 1.6;
+}
+
+/* Prevent text selection */
+body, p, h1, h2, h3, h4, h5, h6 {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Disable right-click context menu */
+body {
+    -webkit-touch-callout: none; /* Prevents long-press menu on mobile */
+}
+
+
+
+    .note{
+        background-color: var(--environmentBackground);
+        border: 5px solid var(--primary);
+        padding: 10px;
+        margin: 10px;
+    }
+
+    .problem{
+        background-color: var(--primary);
+        padding: 10px;
+        margin: 10px;
+    }
+
+    .example{
+            border-top: 5px double var(--primary);
+            border-bottom: 5px double var(--primary);
+            padding: 10px;
+            margin: 10px 0;
+        
+    }
+    .remark{
+        background-color: var(--primary);
+        border: 3px solid var(--primary);
+        padding: 10px;
+        margin: 10px;
+    }
+    .project{
+        background-color: var(--primary);
+        border: 3px solid var(--primary);
+        padding: 10px;
+        margin: 10px;
+        box-shadow: #333;
+    }
+    .definition{
+        background-color: var(--primary);
+        border: 3px solid var(--primary);
+        padding: 10px;
+        margin: 10px;
+        text-shadow: #333;
+    }
+    .lemma{
+        background-color: var(--primary);
+        border: 3px solid var(--primary);
+        padding: 10px;
+        margin: 10px;
+        box-shadow: #333;
+    }
+    .theorem{
+        background-color: var(--primary);
+        border: 3px solid var(--primary);
+        padding: 10px;
+        margin: 10px;
+        box-shadow: 10px 10px 5px rgb(207, 207, 207);
+    }
+    .proofs{
+        background-color: var(--environmentBackground);
+        border: 5px solid var(--primary);
+        padding: 10px;
+        margin: 10px;
+        box-shadow: 10px 10px 5px rgb(207, 207, 207);
+    }
+
+
+
+.heading-container {
+    display: flex;
+    background-color: var(--heading);
+    padding: 5px 0px; /* Adds vertical padding */
+    margin: -10px -10px 10px -10px; /* Extends background to match the container */
+}
+
+.heading {
+    margin: 0;
+    padding: 8px 16px;
+    font-size: larger;
+    font-family:Arial, Helvetica, sans-serif;
+}
+/* Add indentation to unordered lists */
+ul {
+    margin-left: 40px; /* Adjust this value as needed */
+    padding-left: 20px; /* Optional: Add additional padding */
+}
+
+/* Optionally, target list items directly */
+li {
+    margin-left: 20px; /* Fine-tune indentation for individual items */
+}
+
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+  
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+
+/* Footnote styles */
+.footnote-ref {
+    position: relative;
+    display: inline;
+    line-height: 1;
+    margin-left: 2px;
+}
+
+.footnote-ref a {
+    color: #0066cc;
+    text-decoration: none;
+    font-size: 0.8em;
+    vertical-align: super;
+    line-height: 0;
+    padding: 0 1px;
+}
+
+.footnote-tooltip {
+    visibility: hidden;
+    width: min(300px, 90vw);
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #fff;
+    color: #333;
+    text-align: left;
+    border-radius: 4px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.9em;
+    line-height: 1.4;
+    pointer-events: none;
+    word-wrap: break-word;
+}
+
+/* Adjust tooltip position if near viewport edges */
+.footnote-ref:hover .footnote-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Handle tooltip positioning */
+@media (hover: hover) {
+    .footnote-tooltip {
+        bottom: auto;
+        top: calc(100% + 5px);
+    }
+    
+    .footnote-ref:last-child .footnote-tooltip {
+        bottom: calc(100% + 5px);
+        top: auto;
+    }
+}
+
+.footnotes-section {
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    font-size: 0.9em;
+}
+
+.footnotes-section ol {
+    padding-left: 20px;
+}
+
+.highlight {
+    background-color: #fffde7;
+    padding: 0 2px;
+}
+
+
+/* Prevent text overflow */
+#content {
+    max-width: 100%;
+    overflow-x: hidden;
+    word-wrap: break-word;
+}
+
+/* Math content */
+.math {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+/* Add to your existing styles */
+:target {
+    scroll-margin-top: 70px; /* Prevent heading from being hidden under fixed elements */
+}
+
+#toc-panel {
+    transition: left 0.3s ease;
+}
+
+#content {
+    scroll-behavior: smooth;
+}
+
+@media (max-width: 768px) {
+    #toc-panel.open {
+        width: 80%;
+    }
+    
+    #toc-panel.open ~ #content {
+        margin-left: 80%;
+    }
+}
+
+
+/* Internal Link Styling */
+.internal-link {
+    color: #1a73e8;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.internal-link:hover {
+    color: #0d47a1;
+    text-decoration: underline;
+}
+
+/* Smooth scrolling target offset */
+:target {
+    scroll-margin-top: 80px;
+    animation: highlight 1.5s ease;
+}
+
+@keyframes highlight {
+    0% { background-color: rgba(26, 115, 232, 0.1); }
+    100% { background-color: transparent; }
+}
+
+/* Add these to your existing styles */
+#toc-panel {
+    transition: left 0.3s ease;
+    z-index: 1000; /* Ensure it's above content */
+}
+
+#content {
+    transition: margin-left 0.3s ease;
+}
+
+/* Overlay for mobile */
+.toc-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+@media (max-width: 768px) {
+    .toc-overlay {
+        display: block;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    
+    #toc-panel.open ~ .toc-overlay {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+.latex-figure {
+    margin: 20px 0;
+    padding: 10px;
+    text-align: center;
+}
+
+.latex-figure img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.figure-caption {
+    font-style: italic;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.standalone-figure {
+    max-width: 100%;
+    display: block;
+    margin: 10px auto;
+}

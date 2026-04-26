@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<!-- These three lines correctly disable browser caching -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Table of Contents — Mathematics of Deep Learning</title>
+
+<style>
+:root {
+  --primary: #2738F5;      /* Theme color (warm orange) */
+  --background: #EEEDF5;   /* Slightly off-white background */
+  --card-bg: #EBEBFA;      /* TOC background */
+  --text: #222;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Page layout */
+body {
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(180deg, #f9f4ef 0%, #ffffff 100%);
+  color: var(--text);
+  margin: 0;
+  padding: 40px 20px;
+}
+
+/* Header styling */
+header {
+  text-align: center;
+  margin-bottom: 40px;
+  animation: fadeIn 1s ease;
+}
+
+header h1 {
+  font-size: 2.2em;
+  color: var(--primary);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+header p {
+  color: #555;
+  font-size: 1em;
+}
+
+/* TOC container */
+.full-toc {
+  max-width: 850px;
+  margin: 0 auto 40px auto;
+  background: var(--card-bg);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  animation: fadeInUp 0.8s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top strip */
+.toc-strip {
+  background-color: var(--primary);
+  color: white;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toc-strip h2 {
+  margin: 0;
+  font-size: 1.1em;
+  letter-spacing: 0.5px;
+}
+
+/* Footer strip inside TOC */
+.toc-footer-strip {
+  background-color: var(--primary);
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Unified button style for both top and bottom strips */
+.toc-controls button,
+.toc-footer-strip button {
+  background-color: #fff;
+  border: none;
+  color: var(--primary);
+  font-size: 0.85em;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 6px;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.toc-controls button:hover,
+.toc-footer-strip button:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-1px);
+}
+
+.toc-controls button:active,
+.toc-footer-strip button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* TOC content */
+.toc-content {
+  padding: 30px 55px;
+  flex: 1;
+}
+
+/* Chapter block (compact layout) */
+.toc-chapter {
+  margin-bottom: 14px;
+  border-left: 4px solid transparent;
+  padding: 12px 15px 10px 15px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  background-color: #fff;
+}
+
+/* Hover highlight */
+.toc-chapter:hover {
+  border-left-color: var(--primary);
+  background: #DBEBFF;%rgba(166, 80, 10, 0.04);
+  box-shadow: 0 3px 8px rgba(166, 80, 10, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Chapter title */
+.toc-chapter a.chapter-link {
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  display: block;
+  font-size: 1.1em;
+  margin-bottom: 6px;
+  position: relative;
+  transition: color 0.25s ease;
+}
+
+.toc-chapter a.chapter-link::before {
+  content: "📖";
+  margin-right: 6px;
+  transition: transform 0.3s ease;
+}
+
+/* Slight icon movement on hover */
+.toc-chapter:hover a.chapter-link::before {
+  transform: rotate(-4deg) scale(1.05);
+}
+
+.toc-chapter a.chapter-link:hover {
+  color: #1F1F94;
+  text-decoration: underline;
+}
+
+/* TOC hierarchy */
+.toc-item a {
+  color: var(--text);
+  text-decoration: none;
+  display: block;
+  padding: 2px 0;
+  transition: color 0.2s ease;
+}
+
+.toc-item a:hover {
+  color: var(--primary);
+}
+
+.toc-section a {
+  font-weight: 600;
+  margin-left: 20px;
+}
+
+.toc-subsection a {
+  font-weight: 500;
+  margin-left: 40px;
+  color: #444;
+}
+
+.toc-subsubsection a {
+  font-size: 0.9em;
+  margin-left: 60px;
+  color: #666;
+}
+
+/* Collapsible sections */
+.toc-sections {
+  margin-left: 5px;
+  display: none;
+}
+.toc-chapter.expanded .toc-sections {
+  display: block;
+}
+
+/* Reference and Instruction sections */
+.info-card {
+  max-width: 850px;
+  margin: 0 auto 40px auto;
+  background: var(--card-bg);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 30px 50px;
+}
+
+.info-card h3 {
+  color: var(--primary);
+  margin-top: 0;
+  border-bottom: 2px solid rgba(166, 80, 10, 0.2);
+  padding-bottom: 6px;
+}
+
+.info-card ul {
+  list-style-type: disc;
+  margin-left: 25px;
+  color: #444;
+}
+
+.info-card li {
+  margin: 8px 0;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  margin-top: 30px;
+  color: #777;
+  font-size: 0.9em;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Introduction to Derivative Pricing</h1>
+  <p><strong>SI 527 (Spring 2026) Course Details</strong></p>
+</header>
+
+<!-- ================= TOC SECTION ================= -->
+<div class="full-toc">
+
+  <!-- Top strip -->
+  <div class="toc-strip">
+    <h2>Study Material</h2>
+    <div class="toc-controls">
+      <button id="expand-all" type="button">Expand All</button>
+    </div>
+  </div>
+
+  <div class="toc-content">
+<!-- ========================================================= -->
+<!--  📖 PASTE YOUR TABLE OF CONTENTS INSIDE THIS SECTION BELOW -->
+<!-- Example structure is given for reference -->
+<!-- ========================================================= -->
+
+        <div class="toc-chapter ">
+            <a href="Overview of Financial Systems.html" class="chapter-link">
+                Chapter 1: Overview of Financial Systems
+            </a> 
+            <span style="color:#6262D1; font-weight:500;">
+		  (Included in Quiz 1 and Midsem Exam)
+	   </span>
+            <div class="toc-sections ">
+
+                 <div class="toc-item ">
+                    <a href="Overview of Financial Systems.html#FinancialSystem.ch">
+                        Financial System: An Overview
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#financialmarketframework.sec">
+                        Financial Market Framework
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#financial.instrument.ssec">
+                        Financial Instruments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#securities">
+                        Securities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-levels">
+                        Market Levels
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#market-segments">
+                        Market Segments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#trading-mechanism">
+                        Trading Mechanism
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#marketparticipants.sec">
+                        Market Participants
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-makers">
+                        Market Makers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#investors">
+                        Investors
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#speculators">
+                        Speculators
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#hedgers">
+                        Hedgers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#arbitrageurs">
+                        Arbitrageurs
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#overviewderivatives.sec">
+                        Overview of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#essential-market-terms">
+                        Essential Market Terms
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#purpose-of-derivatives">
+                        Purpose of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#need-for-pricing-models-and-analysis">
+                        Need for Pricing Models and Analysis
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#noncontingentclaims.sec">
+                        Non-Contingent Claims: Forwards, Futures, and Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#forwards-and-futures">
+                        Forwards and Futures
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#swaps">
+                        Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#options.sec">
+                        Contingent Claims: Options
+                    </a>
+                </div>
+</div></div>
+
+   <div class="toc-chapter current">
+            <a href="Price Dynamics.html" class="chapter-link">
+                Chapter 2: Price Dynamics
+            </a>
+            <span style="color:#6262D1; font-weight:500;">
+		  (Included in Quiz 1 and Midsem Exam) (Section <a href="Price Dynamics.html#interest-rate-models">
+                        Interest-rate Models</a> is included in Quiz 2)
+	   </span>
+            <div class="toc-sections expanded">
+
+                 <div class="toc-item ">
+                    <a href="Price Dynamics.html#price.dynamics.ch">
+                        Price Dynamics
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Price Dynamics.html#deterministic-interest-rate-models">
+                        Deterministic Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#discrete-time-models">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#continuous-time-model">
+                        Continuous Time Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#nonconstant.interest.rate.subs">
+                        Non-constant Interest Rate
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#present.value.subs">
+                        Present Value
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#cash-flow-stream">
+                        Cash Flow Stream
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Price Dynamics.html#stochastic-models">
+                        Stochastic Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#stochastic-processes">
+                        Stochastic Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#stock-price-model">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#wiener-process">
+                        Wiener Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#ito-formula">
+                        Itô Formula
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#GBMParameterCalibration.sec">
+                        Parameter Calibration
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#interest-rate-models">
+                        Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#wiener-integral">
+                        Wiener Integral
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#numerical-simulation">
+                        Numerical Simulation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#distribution-of-the-stochastic-increment">
+                        Distribution of the stochastic increment
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#exact-simulation-scheme">
+                        Exact simulation scheme
+                    </a>
+                </div>
+</div></div>
+
+ <div class="toc-chapter current">
+            <a href="Portfolio And Arbitrage.html" class="chapter-link">
+                Chapter 3: Portfolio And Arbitrage
+            </a>
+            <span style="color:#6262D1; font-weight:500;">
+		  (Included in Quiz 2 and Midsem Exam)
+	   </span>
+            <div class="toc-sections expanded">
+
+                 <div class="toc-item ">
+                    <a href="Portfolio And Arbitrage.html#PortfolioNArbitrage.ch">
+                        Portfolio and Arbitrage
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#portfolioconcepts.ssec">
+                        Portfolio Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#value-and-gain-processes">
+                        Value and Gain Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#market-model">
+                        Market Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#predictable-strategy">
+                        Predictable Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#self-financing-strategy">
+                        Self-financing Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.opportunity.sec">
+                        Arbitrage Opportunity
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage-portfolio">
+                        Arbitrage Portfolio
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#application-forward-pricing">
+                        Application: Forward Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#law.of.one.price.subs">
+                        Law of One Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.strategy.ssec">
+                        Arbitrage Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#futures.sec">
+                        Application: Future Contracts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#marking-to-market">
+                        Marking to Market
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#pricing-model">
+                        Pricing Model
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter current">
+            <a href="Basic Concepts of Options.html" class="chapter-link">
+                Chapter 4: Basic Concepts of Options
+            </a>
+             <span style="color:#6262D1; font-weight:500;">
+		  (Included in Quiz 2 and Midsem Exam)
+	   </span>
+            <div class="toc-sections expanded">
+
+                <div class="toc-item ">
+                    <a href="Basic Concepts of Options.html#BasicConceptsOptions.ch">
+                        Basic Concepts of Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#call.put.sec">
+                        Basic Terminology
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#defining-parameters">
+                        Defining Parameters
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#payoff-and-gain">
+                        Payoff and Gain
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#time-value-in-an-option-price">
+                        Time Value in an Option Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#Bounds.EuropeanOption.sec">
+                        Premium Bounds and Arbitrage Opportunities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#european-options">
+                        European Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#american-options">
+                        American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#put-call-parity-estimates">
+                        Put-Call Parity Estimates
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#premium-valuation">
+                        Premium Valuation
+                    </a>
+                </div>
+</div></div>
+
+<div class="toc-chapter current">
+            <a href="Discrete Time Models.html" class="chapter-link">
+                Chapter 5: Discrete Time Models
+            </a>
+            <span style="color:#6262D1; font-weight:500;">
+		  (Included in Quiz 3 and Endsem Exam)
+	   </span>
+            <div class="toc-sections expanded">
+
+                <div class="toc-item ">
+                    <a href="Discrete Time Models.html#DiscreteTimeModels.ch">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Time Models.html#1step.BM.sec">
+                        Single-Step Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#underlying-model">
+                        Underlying Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#risk-neutral.probability.1sBM.ssec">
+                        Risk-neutral Probability
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#Eur.OPM.1S.ssec">
+                        European Option Pricing Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Time Models.html#MultiStep.BM.sec">
+                        Multi-step Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#Stock.Price.Model.ssec">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#Eur.OPM.nS.ssec">
+                        European Option Pricing Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Discrete Time Models.html#generalization-to-multi-step-method">
+                        Generalization to Multi-step Method
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#log.return.model.sec">
+                        Logarithmic Return Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Discrete Time Models.html#application-to-binomial-model">
+                        Application to Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#hedge-strategy">
+                        Hedge Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#pricing-for-american-options">
+                        Pricing for American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#exotic-options">
+                        Exotic Options
+                    </a>
+                </div>
+</div></div>
+        <div class="toc-chapter current">
+            <a href="Discrete Martingale Theory.html" class="chapter-link">
+                Chapter 6: Discrete Martingale Theory
+            </a>
+            <span style="color:#6262D1; font-weight:500;">
+		  (Included in Quiz 3 and Endsem Exam)
+	   </span>
+            <div class="toc-sections expanded">
+
+                <div class="toc-item ">
+                    <a href="Discrete Martingale Theory.html#discrete.martingale.ch">
+                        Discrete Martingale Theory
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Martingale Theory.html#basic-concepts">
+                        Basic Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#numeraire.rem">
+                        Normalized Market and Numéraire
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Discrete Martingale Theory.html#characterization-of-self-financing-condition">
+                        Characterization of Self-financing condition
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#conditional-expectation">
+                        Conditional Expectation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Martingale Theory.html#martingale-process-and-measure">
+                        Martingale Process and Measure
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#discrete-martingale-process">
+                        Discrete Martingale Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#fundamental-theorem-of-asset-pricing">
+                        Fundamental Theorem of Asset Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#general-pricing-model">
+                        General Pricing Model
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter current">
+            <a href="Continuous Time Model.html" class="chapter-link">
+                Chapter 7: Continuous Time Model
+            </a>
+            <span style="color:#6262D1; font-weight:500;">
+		  (Included in Quiz 4 and Endsem Exam)
+	   </span>
+            <div class="toc-sections expanded">
+
+                  <div class="toc-item ">
+                    <a href="Continuous Time Model.html#continuous-time-models">
+                        Continuous Time Models 
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Continuous Time Model.html#stock.price.models.sec">
+                        Stock Price Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#lognormal-model">
+                        Lognormal Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#brownian-motion">
+                        Brownian Motion
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Continuous Time Model.html#option.pricing.model.sec">
+                        Option Pricing Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#black-scholes-formula">
+                        Black-Scholes Formula
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#black-scholes-differential-equation">
+                        Black-Scholes Differential Equation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Continuous Time Model.html#continuous-time-martingale-pricing">
+                        Continuous-Time Martingale Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#martingale-representation-theorem">
+                        Martingale Representation Theorem
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#girsanovs-theorem">
+                        Girsanov's Theorem
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#feynman-kavc-formula">
+                        Feynman-Kac
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter current">
+            <a href="Hedging With Options.html" class="chapter-link">
+                Chapter 8: Hedging With Options
+            </a>
+            <span style="color:#6262D1; font-weight:500;">
+		  (Included in Quiz 4 and Endsem Exam)
+	   </span>
+            <div class="toc-sections expanded">
+
+                <div class="toc-item ">
+                    <a href="Hedging With Options.html#hedging.trading.strategies.ch">
+                        Hedging and Trading Strategies
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Hedging With Options.html#greeks.sec">
+                        Greeks and Hedging
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#delta">
+                        Delta
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Hedging With Options.html#delta-hedge">
+                        Delta Hedge
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#gamma">
+                        Gamma
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#theta">
+                        Theta
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#vega">
+                        Vega
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#rho">
+                        Rho
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Hedging With Options.html#option.trading.strategy.sec">
+                        Option Trading Strategies
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#spreads">
+                        Spreads
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Hedging With Options.html#bull-spread">
+                        Bull Spread
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Hedging With Options.html#bear-spread">
+                        Bear Spread
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Hedging With Options.html#butterfly-spread">
+                        Butterfly Spread
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Hedging With Options.html#volatility-speculation">
+                        Volatility Speculation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Hedging With Options.html#straddle">
+                        Straddle
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Hedging With Options.html#strangle">
+                        Strangle
+                    </a>
+                </div>
+</div></div>
+<!-- ========================================================= -->
+<!--  📖 PASTE YOUR TABLE OF CONTENTS INSIDE THE ABOVE SECTION -->
+<!-- ========================================================= -->
+
+  </div>
+
+  <!-- Footer strip (Collapse All) -->
+  <div class="toc-footer-strip">
+    <button id="collapse-all" type="button">Collapse All</button>
+  </div>
+</div>
+<!-- ========================================================= -->
+<!-- ================= REFERENCES SECTION ================= -->
+<!-- ===================================================== -->
+<div class="info-card">
+  <h3>References</h3>
+  <ul>
+    <li>
+      Hull, John C. <em>Options, Futures, and Other Derivatives.</em> Pearson, 2022.
+    </li>
+    <li>
+      Pascucci, Andrea. <em>PDE and Martingale Methods in Option Pricing.</em> Springer, 2011.
+    </li>
+    <li>
+      Calin, Ovidiu. <em>Deterministic and Stochastic Topics in Computational Finance.</em> World Scientific, 2017.
+    </li>
+    <li>
+      Mikosch, Thomas. <em>Elementary Stochastic Calculus with Finance in View.</em> World Scientific, 1998.
+    </li>
+  </ul>
+</div>
+<!-- ========================================================= -->
+<!-- ================= INSTRUCTIONS SECTION ================= -->
+<!-- ========================================================= -->
+<div class="info-card">
+  <h3>General Instructions</h3>
+  <ul>
+    <li>Read the chapters carefully, compare them with your class notes, refer to the textbooks mentioned above, and prepare your own fair notes. This will help you gain a deeper understanding of the concepts.</li>
+    <li>Quiz/exam coverage is indicated beside each chapter in the above table of content.</li>
+     <li>Often REFRESH your browser to see new updates (if any).</li>
+  </ul>
+</div>
+
+<footer>
+  © S. Baskar, Department of Mathematics, IIT Bombay. 2026 — Updated: 15-Apr-2026
+</footer>
+
+<style>
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #f8f8f8;
+  color: #888;
+  font-size: 0.95em;
+  text-align: center;
+  padding: 6px 0;
+  border-top: 1px solid #ddd;
+  z-index: 10;               /* low z-index */
+  pointer-events: none;      /* allows clicks to pass through */
+}
+
+/* Small screen adjustments */
+@media (max-width: 600px) {
+  footer {
+    font-size: 0.68em;
+    padding: 4px 0;
+  }
+}
+</style>
+
+
+
+<!-- =============== JavaScript =============== -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const chapters = document.querySelectorAll(".toc-chapter");
+  const expandAllBtn = document.getElementById("expand-all");
+  const collapseAllBtn = document.getElementById("collapse-all");
+
+  chapters.forEach(chapter => {
+    const link = chapter.querySelector(".chapter-link");
+    if (link) {
+      link.addEventListener("click", function(e) {
+        e.preventDefault();
+        chapter.classList.toggle("expanded");
+      });
+    }
+  });
+
+  if (expandAllBtn) {
+    expandAllBtn.addEventListener("click", () => {
+      chapters.forEach(ch => ch.classList.add("expanded"));
+    });
+  }
+
+  if (collapseAllBtn) {
+    collapseAllBtn.addEventListener("click", () => {
+      chapters.forEach(ch => ch.classList.remove("expanded"));
+    });
+  }
+});
+</script>
+
+</body>
+</html>

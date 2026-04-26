@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continuous Time Model</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML ">
+    </script>
+    <style>
+        body, p, li, div {
+        color: black !important;
+        line-height: 1.6;
+        }
+        ol.latex-enumerate, ol.latex-enumerate li {
+            line-height: 1.6 !important;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        /* Updated TOC styles */
+        #toc-panel {
+            font-size: 0.9em;
+        }
+        .toc-chapter, 
+        .toc-section, 
+        .toc-subsection {
+            color: black !important;
+        }
+        .toc-chapter a,
+        .toc-section a,
+        .toc-subsection a {
+            color: black !important;
+            text-decoration: none;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        #toc-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #1a73e8;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #toc-panel {
+            position: fixed;
+            top: 0;
+            left: -350px;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            padding: 20px;
+            overflow-y: auto;
+            transition: left 0.3s ease-out;
+            will-change: transform;
+        }
+        #toc-panel.open {
+            left: 0;
+        }
+        #close-toc {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #content {
+            padding: 20px;
+            padding-top: 60px;
+            max-width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
+        }
+        .toc-chapter {
+            margin-bottom: 10px;
+            border-left: 3px solid #1a73e8;
+            padding-left: 10px;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        .chapter-link {
+            font-weight: bold;
+            color: #1a73e8;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+        }
+        .toc-sections {
+            margin-left: 15px;
+            display: none;
+        }
+        .toc-sections.expanded {
+            display: block;
+        }
+        .toc-section {
+            padding: 3px 0;
+            margin-left: 10px;
+        }
+        .toc-subsection {
+            padding: 3px 0;
+            margin-left: 25px;
+            font-size: 0.95em;
+        }
+        .toc-subsubsection {
+            padding: 3px 0;
+            margin-left: 40px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        :target {
+            scroll-margin-top: 80px;
+            animation: highlight 1.5s ease;
+        }
+        @keyframes highlight {
+            0% { background-color: rgba(26, 115, 232, 0.1); }
+            100% { background-color: transparent; }
+        }
+        @media (max-width: 768px) {
+            #toc-panel {
+                width: 85%;
+                left: -90%;
+            }
+            #toc-panel.open {
+                left: 0;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            }
+            #content {
+                transition: transform 0.3s ease-out;
+            }
+            #toc-panel.open ~ #content {
+                transform: translateX(85%);
+            }
+        }
+        .note {
+  background-color: color-mix(in srgb, var(--primary) 7%, white);
+border: 5px solid var(--primary);
+  padding: 5px;
+  margin: 10px;
+}
+.problem {
+  background-color: color-mix(in srgb, var(--primary) 18%, white);
+border: 1px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.example {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 10px;
+  margin: 10px;
+}
+.remark {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 20px;
+  margin: 10px;
+}
+.definition {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px double var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.lemma {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.theorem {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.proofs {
+  background-color: var(--environmentBackground);
+border: 5px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.project {
+  background-color: var(--environmentBackground);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.hint {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.code {
+  background-color: color-mix(in srgb, var(--primary) 13%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.algorithm {
+  background-color: color-mix(in srgb, var(--primary) 5%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+    </style>
+</head>
+
+<body>
+    <button id="toc-button">☰ Table of Contents</button>
+    <div id="toc-panel">
+        <button id="close-toc">×</button>
+
+      <!-- Small Main Page Button -->
+<div style="text-align:right; margin-bottom: 10px;">
+  <a href="index.html" 
+     style="
+       background: var(--toc-primary, #2738F5);
+       color: white;
+       padding: 4px 10px;
+       border-radius: 16px;
+       font-size: 0.75em;
+       font-weight: 900;
+       text-decoration: none;
+       display: inline-block;
+       box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+     ">
+    Main Page
+  </a>
+</div>
+
+        <div class="full-toc">
+
+        <div class="toc-chapter ">
+            <a href="Overview of Financial Systems.html" class="chapter-link">
+                Chapter 1: Overview of Financial Systems
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Overview of Financial Systems.html#FinancialSystem.ch">
+                        Financial System: An Overview
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#financialmarketframework.sec">
+                        Financial Market Framework
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#financial.instrument.ssec">
+                        Financial Instruments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#securities">
+                        Securities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-levels">
+                        Market Levels
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#market-segments">
+                        Market Segments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#trading-mechanism">
+                        Trading Mechanism
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#marketparticipants.sec">
+                        Market Participants
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-makers">
+                        Market Makers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#investors">
+                        Investors
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#speculators">
+                        Speculators
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#hedgers">
+                        Hedgers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#arbitrageurs">
+                        Arbitrageurs
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#overviewderivatives.sec">
+                        Overview of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#essential-market-terms">
+                        Essential Market Terms
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#purpose-of-derivatives">
+                        Purpose of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#need-for-pricing-models-and-analysis">
+                        Need for Pricing Models and Analysis
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#noncontingentclaims.sec">
+                        Non-Contingent Claims: Forwards, Futures, and Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#forwards-and-futures">
+                        Forwards and Futures
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#swaps">
+                        Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#options.sec">
+                        Contingent Claims: Options
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Portfolio And Arbitrage.html" class="chapter-link">
+                Chapter 2: Portfolio And Arbitrage
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Portfolio And Arbitrage.html#PortfolioNArbitrage.ch">
+                        Portfolio and Arbitrage
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#portfolioconcepts.ssec">
+                        Portfolio Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#value-and-gain-processes">
+                        Value and Gain Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#market-model">
+                        Market Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#predictable-strategy">
+                        Predictable Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#self-financing-strategy">
+                        Self-financing Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.opportunity.sec">
+                        Arbitrage Opportunity
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage-portfolio">
+                        Arbitrage Portfolio
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#application-forward-pricing">
+                        Application: Forward Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#law.of.one.price.subs">
+                        Law of One Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.strategy.ssec">
+                        Arbitrage Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#futures.sec">
+                        Application: Future Contracts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#marking-to-market">
+                        Marking to Market
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#pricing-model">
+                        Pricing Model
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Price Dynamics.html" class="chapter-link">
+                Chapter 3: Price Dynamics
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Price Dynamics.html#price.dynamics.ch">
+                        Price Dynamics
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Price Dynamics.html#deterministic-interest-rate-models">
+                        Deterministic Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#discrete-time-models">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#continuous-time-model">
+                        Continuous Time Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#nonconstant.interest.rate.subs">
+                        Non-constant Interest Rate
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#present.value.subs">
+                        Present Value
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#cash-flow-stream">
+                        Cash Flow Stream
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Price Dynamics.html#stochastic-models">
+                        Stochastic Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#stochastic-processes">
+                        Stochastic Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#stock-price-model">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#wiener-process">
+                        Wiener Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#ito">
+                        It\^{o
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#GBMParameterCalibration.sec">
+                        Parameter Calibration
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Price Dynamics.html#interest-rate-models">
+                        Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#wiener-integral">
+                        Wiener Integral
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#numerical-simulation">
+                        Numerical Simulation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#distribution-of-the-stochastic-increment">
+                        Distribution of the stochastic increment
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Price Dynamics.html#exact-simulation-scheme">
+                        Exact simulation scheme
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Basic Concepts of Options.html" class="chapter-link">
+                Chapter 4: Basic Concepts of Options
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Basic Concepts of Options.html#BasicConceptsOptions.ch">
+                        Basic Concepts of Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#call.put.sec">
+                        Basic Terminology
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#defining-parameters">
+                        Defining Parameters
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#payoff-and-gain">
+                        Payoff and Gain
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#time-value-in-an-option-price">
+                        Time Value in an Option Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#Bounds.EuropeanOption.sec">
+                        Premium Bounds and Arbitrage Opportunities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#european-options">
+                        European Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#american-options">
+                        American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#put-call-parity-estimates">
+                        Put-Call Parity Estimates
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#premium-valuation">
+                        Premium Valuation
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Discrete Time Models.html" class="chapter-link">
+                Chapter 5: Discrete Time Models
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Discrete Time Models.html#DiscreteTimeModels.ch">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Time Models.html#1step.BM.sec">
+                        Single-Step Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#underlying-model">
+                        Underlying Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#risk-neutral.probability.1sBM.ssec">
+                        Risk-neutral Probability
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#Eur.OPM.1S.ssec">
+                        European Option Pricing Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Time Models.html#MultiStep.BM.sec">
+                        Multi-step Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#Stock.Price.Model.ssec">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#Eur.OPM.nS.ssec">
+                        European Option Pricing Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Discrete Time Models.html#generalization-to-multi-step-method">
+                        Generalization to Multi-step Method
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#log.return.model.sec">
+                        Logarithmic Return Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Discrete Time Models.html#application-to-binomial-model">
+                        Application to Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#hedge-strategy">
+                        Hedge Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#pricing-for-american-options">
+                        Pricing for American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Time Models.html#exotic-options">
+                        Exotic Options
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Discrete Martingale Theory.html" class="chapter-link">
+                Chapter 6: Discrete Martingale Theory
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Discrete Martingale Theory.html#discrete.martingale.ch">
+                        Discrete Martingale Theory
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Martingale Theory.html#basic-concepts">
+                        Basic Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#numeraire.rem">
+                        Normalized Market and Num\'eraire
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Discrete Martingale Theory.html#characterization-of-self-financing-condition">
+                        Characterization of Self-financing condition
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#conditional-expectation">
+                        Conditional Expectation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Discrete Martingale Theory.html#martingale-process-and-measure">
+                        Martingale Process and Measure
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#discrete-martingale-process">
+                        Discrete Martingale Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#fundamental-theorem-of-asset-pricing">
+                        Fundamental Theorem of Asset Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Discrete Martingale Theory.html#general-pricing-model">
+                        General Pricing Model
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter current">
+            <a href="Continuous Time Model.html" class="chapter-link">
+                Chapter 7: Continuous Time Model
+            </a>
+            <div class="toc-sections expanded">
+
+                <div class="toc-item ">
+                    <a href="Continuous Time Model.html#continuous-time-models">
+                        Continuous Time Models 
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Continuous Time Model.html#stock.price.models.sec">
+                        Stock Price Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#lognormal-model">
+                        Lognormal Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#brownian-motion">
+                        Brownian Motion
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Continuous Time Model.html#option.pricing.model.sec">
+                        Option Pricing Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#black-scholes-formula">
+                        Black-Scholes Formula
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#black-scholes-differential-equation">
+                        Black-Scholes Differential Equation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Continuous Time Model.html#continuous-time-martingale-pricing">
+                        Continuous-Time Martingale Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#martingale-representation-theorem">
+                        Martingale Representation Theorem
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#girsanovs-theorem">
+                        Girsanov's Theorem
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Continuous Time Model.html#feynman-kavc-formula">
+                        Feynman-Kac
+                    </a>
+                </div>
+</div></div>
+</div>
+    </div>
+    <div id="content">
+        <p>
+<h1 id="continuous-time-models-">Continuous Time Models </h1></p><p>In discrete-time option pricing models, we first partition the time horizon <span class="math">\([0,T]\)</span> into <span class="math">\(n\)</span> sub-periods with partition <span class="math">\(\mathbb{T}_n = \{0=t_0, t_1, \ldots, t_{n-1},t_n=T\}\)</span> where <span class="math">\(t_k = k \Delta t\)</span>, and <span class="math">\(\Delta t = T/n\)</span>.  We then constructed a model to determine the option price at time <span class="math">\(t=0\)</span>. The price obviously depends on <span class="math">\(n\)</span> (see, for instance, <a href="Continuous Time Model.html#multi-step.BM.thm">Theorem &laquo;Click Here&raquo; </a>). A fundamental question is: `how well does the pricing model behave as we increase <span class="math">\(n\)</span>, and what is the limiting behavior as <span class="math">\(n\rightarrow \infty\)</span>?'  In this limiting case, where <span class="math">\(n\rightarrow \infty\)</span> (equivalently <span class="math">\(\Delta t\rightarrow 0\)</span>), we aim to obtain a model that describes the evolution of option price continuously over time for all <span class="math">\(t\in [0,T]\)</span>.</p><p>In this chapter, we develop a continuous-time model considering the limit of the multi-step binomial model as the step size <span class="math">\(n\rightarrow \infty\)</span>. By appropriately scaling the binomial price movements, we show that the discrete pricing model converges to a continuous time stochastic process, namely, the geometric Brownian motion (GBM).  
+This leads to the celebrated <b>Black-Scholes</b> or <b>Black-Scholes-Merton</b> model.  </p><p>Furthermore, using a self-financing hedging argument along with the GBM model for the underlying asset, we derive the risk-neutral option pricing framework. By applying Itô lemma, we obtain a second order parabolic partial differential equation for the option price, known as the <b>Black-Scholes equation</b> (or <b>Black-Scholes-Merton equation</b>) whose solution can be obtained explicitly resulting in the <b>Black-Scholes formula</b> for option price.</p><p><h2 id="stock.price.models.sec">Stock Price Models</h2></p><p>In this section, we start with the logarithmic binomial model derived in <a href="Continuous Time Model.html#log.return.model.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a> and show that in the limiting case, it tends to a continuous time model, which is called the <b>lognormal model</b> that follows a geometric Brownian motion.</p><p><h3 id="lognormal-model">Lognormal Model</h3></p><p>For simplicity, consider the case <span class="math">\(T=1\)</span>. Using <a href="Discrete Time Models.html#Log.Rate.Notation.EQ">(5.28)</a> and <a href="Discrete Time Models.html#Log.Rate.Expression.EQ">(5.29)</a>, we get
+</p><div class="math">\[
+\mathbb{P}\left(\frac{\ln\left(\frac{S_n}{S_0}\right) - \mu}{\sigma}\le r\right)
+=
+\mathbb{P}\left(\frac{\ln\left(\frac{S_n}{S_0}\right) - n\tilde{\mu}}{\tilde{\sigma}\sqrt{n}}\le r\right).
+\]</div><p>
+Recall from <a href="Discrete Time Models.html#RateReturn.Sum.EQ">(5.27)</a>, we have <span class="math">\(\ln(S_n/S_0) = \sum_{k=1}^n R_k\)</span>. Since the random variables <span class="math">\(R_k\)</span> are iid with mean <span class="math">\(\tilde{\mu}\)</span> and variance <span class="math">\(\tilde{\sigma}^2\)</span>, by the central limit theorem we have
+</p><div class="math">\[
+\lim_{n\rightarrow \infty}\mathbb{P}\left(\frac{\sum\limits_{k=1}^n R_k - n\tilde{\mu}}{\tilde{\sigma}\sqrt{n}}\le r\right) = \Phi(r),
+\]</div><p>
+ where <span class="math">\(\Phi\)</span> is the distribution function of the standard normal random variable.
+Thus, for a sufficiently large  <span class="math">\(n\)</span>, the random variable 
+<span class="math">\(
+(\ln\left(\frac{S_n}{S_0}\right) - \mu)/\sigma
+\)</span>
+is approximately standard normally distributed.
+Consequently, we see that
+<span class="math">\(
+\ln\left(\frac{S_n}{S_0}\right)
+\)</span>
+is approximately normally distributed with mean <span class="math">\(\mu\)</span> and variance <span class="math">\(\sigma^2\)</span></p><p>Thus, for sufficiently large <span class="math">\(n\)</span>, the total return <span class="math">\(S_n/S_0\)</span> is approximately lognormally distributed. 
+The rate of return <span class="math">\((S_n - S_0)/S_0\)</span> is therefore approximately distributed as a shifted lognormal random variable.</p><p>More generally, for any <span class="math">\(T>0\)</span>, we can see that 
+<span class="math">\(
+\ln\left(\frac{S_T}{S_0}\right)
+\)</span>
+is approximately normally distributed with mean <span class="math">\(T\mu\)</span> and variance <span class="math">\(T\sigma^2\)</span> for sufficiently large <span class="math">\(n\)</span>, where <span class="math">\(T = t_n\)</span>.</p><p><h3 id="brownian-motion">Brownian Motion</h3></p><p>Define
+</p><div class="math" id="Weiner.EQ">\begin{eqnarray}
+W_t: = \frac{\ln\left(\frac{S_t}{S_0}\right) - t\mu}{\sigma}, ~~t\in [0,T],
+\end{eqnarray}<div style="text-align:right;">(7.1)</div></div><p>
+where <span class="math">\(\mu\)</span> and <span class="math">\(\sigma\)</span> are the parameters as defined in the above discussion.  </p><p>The preceding discrete-time analysis suggests that, in the limit as the time step tends to zero, the process <span class="math">\(\{W_t\}\)</span> should have approximately normally distributed increments with mean zero and variance proportional to time. This motivates modelling <span class="math">\(\{W_t\}\)</span> as a standard Brownian motion that is, a stochastic process with independent increments such that <span class="math">\(W_t - W_s \sim \mathcal{N}(0,t-s)\)</span> for <span class="math">\(0 \le s < t\)</span>.</p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+We emphasize that the above argument establishes approximate normality of the log-returns for large <span class="math">\(n\)</span>. A fully rigorous justification of the limiting process requires additional results from probability theory, which are beyond the scope of this text.
+</div></p><p><div class="problem" id="Geometric.Brownian.rem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+
+Show that if <span class="math">\(\{W_t\}_{t \ge 0}\)</span> is a standard Brownian motion, then the process
+</p><div class="math" >\begin{eqnarray}
+S_t = S_0 \exp(\mu t + \sigma W_t)
+\end{eqnarray}<div style="text-align:right;">(7.2)</div></div><p>
+satisfies
+</p><div class="math" >\begin{eqnarray}
+\ln\left(\frac{S_t}{S_0}\right) \sim \mathcal{N}(\mu t, \sigma^2 t).
+\end{eqnarray}<div style="text-align:right;">(7.3)</div></div><p>
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+Recall from <a href="Continuous Time Model.html#GBM.rem">Remark &laquo;Click Here&raquo; </a> that the stock process <span class="math">\(\{S_t\}\)</span> given above is the solution of the stochastic differential equation
+</p><div class="math">\[
+dS_t = \tilde{\mu} S_t dt + \sigma S_t dW_t,
+\]</div><p>
+where 
+</p><div class="math">\[
+\tilde{\mu} = \mu + \frac{\sigma^2}{2}.
+\]</div><p>
+The stock price process <span class="math">\(\{S_t\}\)</span> is called the <b>geometric Brownian motion</b> (GBM).
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Consider the stock price process <span class="math">\(\{S_t~|~ t\in [0,1]\}\)</span> governed by a geometric Brownian motion with drift <span class="math">\(\mu = 0.1\)</span>, volatility <span class="math">\(\sigma = 0.15\)</span>, and an initial price <span class="math">\(S_0=100\)</span>.
+<ol class="latex-enumerate">
+<li>Determine the probability that the stock price increases by at least 25% by one year.
+</li><li>Determine the probability that the stock price decreases by at least 15% by one year.
+</li></ol></p><p><b> Answer:</b> (1) {0.2061}, (2) {0.0401}
+</div></p><p> <div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Suppose that <span class="math">\(\ln\left(\frac{S_T}{S_0}\right)\sim \mathcal{N}(T\mu, T\sigma^2).\)</span>
+Show that  
+ </p><div class="math">\[
+\mathbb{E}(S_T) = S_0e^{\left(\mu  + \frac{\sigma^2}{2}\right)T}
+~~{ and }~~
+ {Var}(S_T) = S_0^2e^{(2\mu + \sigma^2)T}(e^{\sigma^2T}-1).
+\]</div><p>
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Let the total return per annum of a stock be governed by the lognormal distribution with parameters <span class="math">\(\mu=0.12\)</span> and <span class="math">\(\sigma=0.2\)</span>.
+<ol class="latex-enumerate">
+<li>Find the expectation of the stock price for 6 months.
+</li><li>Find the standard deviation of the stock price for 6 months.
+</li><li>If the current spot price of one share of the stock is ₹ 100 and the prevailing interest rate <span class="math">\(r=\mu + \frac{\sigma^2}{2}\)</span>, then find per-unit price at <span class="math">\(t=0\)</span> of the corresponding future contract with one month expiration.
+</li></ol>
+<b> Answer:</b> (1) 1.0725<span class="math">\(\,S_0\)</span>, (2) 0.1523<span class="math">\(\,S_0\)</span>, (3) <span class="math">\(f(0,T)=107.25\)</span>.
+</div></p><p><div class="hint">
+<div class="heading-container">
+<b class="heading">Hint:</b>
+</div>
+For the last part of the problem, since no other assumptions are provided, we should assume that  the market is arbitrage-free and allows short selling.
+</div></p><p><h2 id="option.pricing.model.sec">Option Pricing Model</h2></p><p>In previous sections, we have derived a continuous time model for the underlying asset. We now study the continuous time model for option premium.  </p><p>Recall, in <a href="Continuous Time Model.html#multi-step.BM.thm">Theorem &laquo;Click Here&raquo; </a>, we have obtained a formula for option premium using an <span class="math">\(n\)</span>-step binomial model.  
+Let us assign to each <span class="math">\(n\)</span>, the corresponding price as <span class="math">\(H^{(n)}_0\)</span>. Then we have a sequence of option prices <span class="math">\(\{H^{(n)}_0\}\)</span>, where the <span class="math">\(n^{\rm th}\)</span> term of the sequence corresponds to the price of the option at time <span class="math">\(t=0\)</span> computed using the partition <span class="math">\(\mathbb{T}_n\)</span> of <span class="math">\([0,T]\)</span> with <span class="math">\(\Delta t_n = T/n\)</span>, for <span class="math">\(n=1,2,\ldots\)</span>.  With this notation, we pose the following question: `does the price sequence converge as <span class="math">\(n\rightarrow \infty\)</span>?'.  This question is equivalent to asking, `does the discrete-time pricing model admit a well-defined continuous-time limit?'.  It can be shown that the binomial model is stable, <i> i.e.</i> the price sequence converges as <span class="math">\(n\rightarrow \infty\)</span>, and in the limiting case, we obtain the well-known <b>Black-Scholes model</b>.</p><p>For a given number of partitions <span class="math">\(n=1,2,\ldots\)</span>, let us denote the up and down movements of the stock as <span class="math">\(u_n\)</span>, and <span class="math">\(d_n\)</span>, respectively.  For the sake of simplicity, we consider the following parameter calibration:
+</p><div class="math" id="un.dn.formula.eq">\begin{eqnarray}
+\left.\begin{array}{rcl}
+u_n &amp;=&amp; \exp\left(\mu \Delta t_n +  \sigma \sqrt{\Delta t_n}\right)\\
+d_n &amp;=&amp;  \exp\left(\mu \Delta t_n -  \sigma \sqrt{\Delta t_n}\right)\\
+p_n &amp;=&amp;\frac{1}{2}.
+\end{array}\right\}
+\end{eqnarray}<div style="text-align:right;">(7.4)</div></div><p>Assume that the risk-free instrument is a continuous compounding scheme with interest rate <span class="math">\(r\)</span>.</p><p>Let us assume that the market is viable and complete.  Then, by <a href="Continuous Time Model.html#second.FTAP.th">Theorem &laquo;Click Here&raquo; </a>, there exists a unique EMM, 
+<span class="math">\(\mathbb{P}^{*}_n(\{u_n\}) = p_{n}^*\)</span>, which, in the binomial context, is the risk-neutral probability
+</p><div class="math">\[
+p^{*}_n =\frac{e^{r\Delta t_n} - d_n}{u_n-d_n}.
+\]</div><p>From the following lemma, we observe that although <span class="math">\(p_n^*\)</span> depends on <span class="math">\(\mu\)</span> for finite <span class="math">\(n\)</span>, its limit as <span class="math">\(n \to \infty\)</span> is independent of <span class="math">\(\mu\)</span>.</p><p><div class="lemma" id="pninf.lem">
+<div class="heading-container">
+<b class="heading">Lemma:</b>
+</div>
+
+If <span class="math">\(u_n\)</span> and <span class="math">\(d_n\)</span> are given by <a href="#un.dn.formula.eq">(7.4)</a>, then
+</p><div class="math">\[
+\lim_{n\rightarrow \infty} p^{*}_n =\frac{1}{2}.
+\]</div><p>
+</div></p><p><div class="proofs" id="2pm1.eq">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+By definition, we have
+</p><div class="math">\[
+p^{*}_n = \frac{e^{r\Delta t_n} -  e^{\left( -  \sigma \sqrt{\Delta t_n} + \mu \Delta t_n\right)}}{e^{\left(\sigma \sqrt{\Delta t_n} + \mu \Delta t_n\right)}-e^{\left( -  \sigma \sqrt{\Delta t_n} + \mu \Delta t_n\right)}}.
+\]</div><p>
+Therefore, we have
+</p><div class="math">\[
+2 p^{*}_n - 1
+=
+ \frac{2e^{r\Delta t_n} -e^{\left(\sigma \sqrt{\Delta t_n} + \mu \Delta t_n\right)} -  e^{\left( -  \sigma \sqrt{\Delta t_n} + \mu \Delta t_n\right)}}{e^{\left(\sigma \sqrt{\Delta t_n} + \mu \Delta t_n\right)}-e^{\left( -  \sigma \sqrt{\Delta t_n} + \mu \Delta t_n\right)}}.
+\]</div><p>
+ Using Taylor expansion for each exponential, we get
+</p><div class="math" >\begin{eqnarray}
+ 2 p^{*}_n - 1
+= \frac{\left(r-\frac{\sigma^2}{2}-\mu\right)\Delta t_n + o(\Delta t_n)}
+	{\sigma\sqrt{\Delta t_n}(1+o(1))}, ~{as}~n\rightarrow \infty.
+\end{eqnarray}<div style="text-align:right;">(7.5)</div></div><p>
+We can see that the RHS tends to zero as <span class="math">\(n\rightarrow \infty\)</span>.  Hence the result.
+</div></p><p><h3 id="black-scholes-formula">Black-Scholes Formula</h3></p><p>We consider a European option with strike <span class="math">\(K\)</span> and period <span class="math">\([0,T]\)</span>. From <a href="Continuous Time Model.html#multi-step.BM.thm">Theorem &laquo;Click Here&raquo; </a> we can see that for a given <span class="math">\(n=1,2,\ldots\)</span>, the price of the option is given by 
+</p><div class="math">\[
+H_{0}^{(n)} = \mathbb{E}_{n}^*(e^{-rT}H_{T}^{(n)}),
+\]</div><p>
+where <span class="math">\(H_{T}^{(n)}\)</span> is the payoff of the option.</p><p>Let us first consider a European put option, where the payoff is given by
+</p><div class="math" id="HnTPayoff.eq">\begin{eqnarray}
+P_{T}^{(n)} = \max(0,K-S_{T}^{(n)})
+\end{eqnarray}<div style="text-align:right;">(7.6)</div></div><p>
+where
+<span class="math">\(S_{T}^{(n)} = S_0e^{X_n},\)</span>
+with <span class="math">\(X_n\)</span> being the random variable on the sample space <span class="math">\((\Omega,\mathcal{F}^*)\)</span> defined by
+</p><div class="math" id="Xn.eq">\begin{eqnarray}
+X_n(\boldsymbol{\omega}) = \log \prod_{k=1}^n \overline{\omega}_k = \sum_{k=1}^n Y_{k}^{(n)}(\boldsymbol{\omega}),
+\end{eqnarray}<div style="text-align:right;">(7.7)</div></div><p>
+for each <span class="math">\(\boldsymbol{\omega}=(\omega_1,\omega_2,\ldots,\omega_n)\in \Omega\)</span>, and
+</p><div class="math">\[
+Y_{k}^{(n)}(\boldsymbol{\omega}) = \log \overline{\omega}_k~~{and}~~
+	\overline{\omega}_k = \left\{\begin{array}{ll}
+					u_n,&amp;{if}~\omega_k=U,\\
+					d_n,&amp;{if}~\omega_k=D,
+				\end{array}\right.~k=1,2,\ldots,n.
+\]</div><p>
+With the above notation, the initial option price can be written as
+</p><div class="math" id="H0n.def.eq">\begin{eqnarray}
+P_{0}^{(n)} =  \mathbb{E}_{n}^*\Big(e^{-rT}\max\left(0,K-S_0e^{X_n}\right)\Big).
+\end{eqnarray}<div style="text-align:right;">(7.8)</div></div><p>
+We assume that the stock movement during the time period <span class="math">\((t_k,t_{k+1}]\)</span> is independent of its movement in <span class="math">\((t_{k-1},t_k]\)</span>.  With this assumption, we can see that <span class="math">\(Y_k\)</span>'s are iid random variables and we have (for each <span class="math">\(k=1,2,\ldots,n\)</span>)
+</p><div class="math" id="pn.eq">\begin{eqnarray}
+\left.\begin{array}{rcl}
+\mathbb{P}_{n}^*\Big(\{Y_{k}^{(n)} = \sigma\sqrt{\Delta t_n} + \mu \Delta t_n\}\Big) &amp;=&amp; p_{n}^*,\\
+\mathbb{P}_{n}^*\Big(\{Y_{k}^{(n)} = -\sigma\sqrt{\Delta t_n} + \mu \Delta t_n\}\Big) &amp;=&amp; 1-p_{n}^*.
+\end{array}\right\}
+\end{eqnarray}<div style="text-align:right;">(7.9)</div></div><p>
+We now state two important properties of <span class="math">\(X_n\)</span>.</p><p><div class="lemma" id="EnXn.1.eq">
+<div class="heading-container">
+<b class="heading">Lemma:</b>
+</div>
+We have:</p><div class="math" >\begin{eqnarray}
+\lim_{n\rightarrow \infty} \mathbb{E}_{n}^*(X_n) &amp;=&amp; \left(r-\frac{\sigma^2}{2}\right)T,\\
+\lim_{n\rightarrow \infty} {Var}_{n}^*(X_n) &amp;=&amp; \sigma^2T.
+\end{eqnarray}<div style="text-align:right;">(7.10)</div></div><p>
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+First let us prove 
+</p><div class="math">\[
+\lim_{n\rightarrow \infty} \mathbb{E}_{n}^*(X_n) = \left(r-\frac{\sigma^2}{2}\right)T.
+\]</div><p>
+From <a href="#pn.eq">(7.9)</a> we see that, for each <span class="math">\(k=1,2,\ldots,n,\)</span>
+</p><div class="math" >\begin{eqnarray}
+\mathbb{E}_{n}^*(Y_{k}^{(n)})
+&amp;=&amp; p_{n}^*\left(\sigma\sqrt{\Delta t_n} + \mu \Delta t_n\right) 
+      + (1- p_{n}^*)\left(-\sigma\sqrt{\Delta t_n} + \mu \Delta t_n\right)\\
+&amp;=&amp;(2p_{n}^* - 1)\sigma\sqrt{\Delta t_n} 
+		+ \Delta t_n\big(\mu p_{n}^* + \mu(1- p_{n}^*)\big)
+\end{eqnarray}<div style="text-align:right;">(7.11)</div></div><p>
+Using <a href="Continuous Time Model.html#pninf.lem">Lemma &laquo;Click Here&raquo; </a> and <a href="#2pm1.eq">(7.6)</a>, we get
+</p><div class="math">\[
+\mathbb{E}_{n}^*(Y_{k}^{(n)}) 
+= \frac{\left(r-\frac{\sigma^2}{2}-\mu\right)\Delta t_n + o(\Delta t_n)}
+	{(1+o(1))} + \mu \Delta t_n, ~{as}~n\rightarrow \infty.
+\]</div><p>
+This can be written as
+</p><div class="math">\[
+\mathbb{E}_{n}^*(Y_{k}^{(n)}) 
+= \left(r-\frac{\sigma^2}{2}\right)\Delta t_n + o(\Delta t_n), ~{as}~n\rightarrow \infty.
+\]</div><p>
+Observe that the right hand side is independent of <span class="math">\(k\)</span> and therefore, we have</p><div class="math">\[
+\mathbb{E}_{n}^*(X_n) = n\mathbb{E}_{n}^*(Y_{1}^{(n)})  = n \left\{\left(r-\frac{\sigma^2}{2}\right)\Delta t_n + o(\Delta t_n)\right\},~{as}~n\rightarrow \infty.
+\]</div><p>
+Since <span class="math">\(\Delta t_n = T/n\)</span>, we get</p><div class="math">\[
+\mathbb{E}_{n}^*(X_n) = \left(r-\frac{\sigma^2}{2}\right)T + o(1),~{as}~n\rightarrow \infty,
+\]</div><p>
+which proves the desired result.</p><p>Let us now prove second result.  Since <span class="math">\(Y^{(n)}_k\)</span>'s are iid, we have</p><div class="math">\[
+{Var}_{n}^*(X_n)  = n {Var}_{n}^*(Y_{1}^{(n)}) 
+= n\left( \mathbb{E}_{n}^*({Y_{1}^{(n)}}^2) - {\mathbb{E}_{n}^*(Y_{1}^{(n)})}^2\right) .
+\]</div><p>
+But, we have
+</p><div class="math" >\begin{eqnarray}
+\mathbb{E}_{n}^*({Y_{1}^{(n)}}^2) 
+&amp;=&amp; (\log u_n + \log d_n)\mathbb{E}_{n}^*(Y_{1}^{(n)}) -\log u_n\log d_n\\
+&amp;=&amp; (\mu +\mu)\Delta t_n
+		\left( \left(r-\frac{\sigma^2}{2}\right)\Delta t_n + o(\Delta t_n)\right) \\
+&amp;&amp;~~~~~~~~~~~~~	-(\sigma\sqrt{\Delta t_n} + \mu \Delta t_n)(-\sigma\sqrt{\Delta t_n} + \mu \Delta t_n)\\
+&amp;=&amp;\sigma^2\Delta t_n  + o(\Delta t_n),~{as}~n\rightarrow \infty.
+\end{eqnarray}<div style="text-align:right;">(7.12)</div></div><p>
+Substituting this, we get
+</p><div class="math" >\begin{eqnarray}
+{Var}_{n}^*(X_n)  
+&amp;=&amp;n\left(\sigma^2\Delta t_n  + o(\Delta t_n) - \left( \left(r-\frac{\sigma^2}{2}\right)\Delta t_n + o(\Delta t_n)\right) ^2\right) \\
+&amp;=&amp;\sigma^2T + o(1),~{as}~n\rightarrow \infty.
+\end{eqnarray}<div style="text-align:right;">(7.13)</div></div><p>
+This completes the proof of the second result.
+</div></p><p>Since \(X_n = \sum_{k=1}^n Y_k^{(n)}\) is a sum of iid random variables whose mean and variance scale appropriately with \(n\), a central limit theorem applies and we have the following property whose proof is omitted.</p><p><div class="lemma">
+<div class="heading-container">
+<b class="heading">Lemma:</b>
+</div>
+The sequence of random variables <span class="math">\(\{X_n\}\)</span> defined by <a href="#Xn.eq">(7.7)</a> converges in distribution to a random variable 
+</p><div class="math">\[
+X\sim \mathcal{N}\left(\left(r-\frac{\sigma^2}{2}\right)T,\sigma^2T\right).
+\]</div><p>
+</div></p><p>The above two lemmas can be combined to get the following theorem defining the <b>Black-Scholes price</b> formula for a European put option.</p><p><div class="theorem" id="BSDPut.eq">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>Black-Scholes pricing model for Put</b>]</p><p>Let <span class="math">\(H_{0}^{(n)}\)</span> be the price of a European <span class="math">\(K\)</span>-strike put option (denoted by <span class="math">\(P_{0}^{(n)}\)</span>) with period <span class="math">\([0,T]\)</span> partitioned into <span class="math">\(n\)</span> sub-periods. Let the parameters
+<span class="math">\(u_n\)</span> and <span class="math">\(d_n\)</span> be given by <a href="#un.dn.formula.eq">(7.4)</a>.  Then the limit
+</p><div class="math" >\begin{eqnarray}
+\lim_{n\rightarrow \infty}P_{0}^{(n)} = P_0
+\end{eqnarray}<div style="text-align:right;">(7.14)</div></div><p>
+exists and is given by
+</p><div class="math" >\begin{eqnarray}
+P_0 = \mathbb{E}^*\left(e^{-rT} P_T\right),
+\end{eqnarray}<div style="text-align:right;">(7.15)</div></div><p>
+where <span class="math">\(\mathbb{E}^*\)</span> denotes expectation with respect to the probability measure (called <b>risk-neutral probability measure</b>) obtained as the limit the limit of the risk-neutral probabilities in the binomial model, 
+and
+</p><div class="math">\[
+P_T = \max(0,K-S_0e^X) \text{ with } X\sim \mathcal{N}\left(\left(r-\frac{\sigma^2}{2}\right)T,\sigma^2T\right).
+\]</div><p>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+We shall discuss the risk-neutral probability measure in detail in the continuous-time framework in the next chapter, where it will be identified with an equivalent martingale measure under which discounted asset prices are martingales.
+</div></p><p>The proof of the above theorem is advanced and we omit it for our course. However, we make the following remark about the proof of the theorem.</p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+</p><p>Recall that the convergence in distribution of random variables is defined only in terms of  convergence of the respective distributions. Consequently, it is not necessary that the random variables are defined on the same probability space.  If we denote by <span class="math">\((\Omega_n, \mathcal{F}_n,\mathbb{P}_n)\)</span> the probability space on which <span class="math">\(X_n\)</span> is defined and <span class="math">\((\Omega, \mathcal{F},\mathbb{P})\)</span> the probability space on which <span class="math">\(X\)</span> is defined, then <span class="math">\(\{X_n\}\)</span> converges in distribution to <span class="math">\(X\)</span> if and only if
+</p><div class="math">\[
+\lim_{n\rightarrow \infty} \mathbb{E}_n(\phi(X_n)) = \mathbb{E}(\phi(X)),
+\]</div><p>
+for all <span class="math">\(\phi\in C_b(\mathbb{R}^m)\)</span> (set of all bounded continuous functions), where <span class="math">\(E_n\)</span> and <span class="math">\(E\)</span> are the expectations taken with respect to the probability <span class="math">\(\mathbb{P}_n\)</span> and <span class="math">\(\mathbb{P}\)</span>, respectively.</p><p>We used the above property to conclude the convergence of the sequence <span class="math">\(\{P_{0}^{(n)}\}\)</span> given by <a href="#H0n.def.eq">(7.8)</a> to <span class="math">\(P_0\)</span>.  Note that to use the above property, we need <span class="math">\(P_{T}^{(n)}\)</span> given by <a href="#HnTPayoff.eq">(7.6)</a> to be a bounded continuous function and this is the reason why we restricted to put options.  We can extend the pricing formula to call options using put-call parity relation.
+</div></p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Black-Scholes Price for Put</b>]</p><p>The value <span class="math">\(P_0\)</span> defined by <a href="#BSDPut.eq">(7.15)</a> is called the <b>Black-Scholes price</b> of a European put option with strike <span class="math">\(K\)</span> and maturity <span class="math">\(T\)</span>.
+</div></p><p>Note that <a href="#BSDPut.eq">(7.15)</a> does not give an explicit formula for the price. However, it is possible to derive an explicit formula for <span class="math">\(P_0\)</span>, which is one of the advantages of the Black-Scholes' model.</p><p><div class="corollary" id="BSFormula.Put.cor">
+<div class="heading-container">
+<b class="heading">Corollary:</b>
+</div>
+[<b>Black-Scholes Formula for European Put</b>]</p><p>The Black-Scholes price <span class="math">\(P_0\)</span> can be written as
+</p><div class="math">\[
+P_0 = K e^{-rT}\Phi(-d_{-}) - S_0 \Phi(-d_{+}),
+\]</div><p>
+where <span class="math">\(\Phi\)</span> is the standard normal distribution function
+</p><div class="math">\[
+\Phi(x)= \frac{1}{\sqrt{2\pi}}\int\limits_{-\infty}^x e^{-\frac{s^2}{2}}ds,~x\in \mathbb{R},
+\]</div><p>
+and
+</p><div class="math" >\begin{eqnarray}
+d_{\pm} = \frac{\log\left(\frac{S_0}{K}\right)+\left(r\pm \frac{\sigma^2}{2}\right)T}
+			{\sigma \sqrt{T}},
+\end{eqnarray}<div style="text-align:right;">(7.16)</div></div><p>
+<span class="math">\(r\)</span> is the prevailing interest rate.
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+From <a href="#BSDPut.eq">(7.15)</a>, we see that
+</p><div class="math" >\begin{eqnarray}
+P_0 
+&amp;=&amp;e^{-rT}\mathbb{E}^*\Big( \max\left(0,K-S_0e^X\right)\Big).
+\end{eqnarray}<div style="text-align:right;">(7.17)</div></div><p>
+Since <span class="math">\(X\sim \mathcal{N}\left(\left(r-\frac{\sigma^2}{2}\right)T,\sigma^2T\right),\)</span>  we see that
+</p><div class="math">\[
+X=\left(r-\frac{\sigma^2}{2}\right)T + \sigma\sqrt{T}Z,
+\]</div><p>
+where <span class="math">\(Z\sim \mathcal{N}(0,1)\)</span> is the standard normal variable.  Therefore,
+</p><div class="math">\[
+S_0e^X < K 
+\iff Z < -d_{-}.
+\]</div><p>
+We have
+</p><div class="math">\[
+\mathbb{E}\Big( \max\left(0,K-S_0e^X\right)\Big) 
+= K\mathbb{E}({1\hspace{-0.09in}1}_{\{S_T < K\}}) - \mathbb{E}(S_T{1\hspace{-0.09in}1}_{\{S_T < K\}}).
+\]</div><p>
+Let us compute the two quantities on the right hand side.</p><p>For the first term, we have
+</p><div class="math" >\begin{eqnarray}
+\mathbb{E}({1\hspace{-0.09in}1}_{\{S_T < K\}})
+&amp;=&amp;\mathbb{E}({1\hspace{-0.09in}1}_{\{Z < -d_{-}\}})\\
+&amp;=&amp;\Phi(-d_{-}).
+\end{eqnarray}<div style="text-align:right;">(7.18)</div></div><p>
+The second term can be simplified to
+</p><div class="math" >\begin{eqnarray}
+\mathbb{E}(S_T{1\hspace{-0.09in}1}_{\{S_T < K\}})
+&amp;=&amp; \frac{e^{rT}S_0}{\sqrt{2\pi}}\int\limits_{-\infty}^{-d_{-}-\sigma\sqrt{T}} e^{-\frac{s^2}{2}} ds.
+\end{eqnarray}<div style="text-align:right;">(7.19)</div></div><p>
+Since <span class="math">\(d_+ = d_-+\sigma\sqrt{T},\)</span> we obtained the required formula.
+</div></p><p>The Black-Scholes put price for varying time is depicted in the following figure.</p><p><img src="Figures/PutBlackScholesVarT.png" class="standalone-figure">
+<div class="figure">
+
+<div style="text-align: center; font-weight: bold;">Put option premium at different times are plotted using the Black-Scholes formula given in <a href="Continuous Time Model.html#BSFormula.Put.cor">Corollary &laquo;Click Here&raquo; </a>.</div>
+
+</div></p><p>We can now obtain the price for a European call option.</p><p><div class="corollary" id="BSFormula.Call.cor">
+<div class="heading-container">
+<b class="heading">Corollary:</b>
+</div>
+[<b>Black-Scholes Formula for Call</b>]</p><p>The Black-Scholes price <span class="math">\(C_0\)</span> for a European call option can be written as
+</p><div class="math">\[
+C_0 = S_0 \Phi(d_{+}) - K e^{-rT}\Phi(d_{-}) ,
+\]</div><p>
+where <span class="math">\(\Phi\)</span> is the standard normal distribution function and <span class="math">\(d_{\pm}\)</span> are given by <a href="#Phiarguements.BSF.eq">(7.16)</a>.
+</div></p><p>Proof is left as an exercise.</p><p>The Black-Scholes put price for varying time is depicted in the following figure.</p><p><img src="Figures/CallBlackScholesVarT.png" class="standalone-figure">
+<div class="figure">
+
+<div style="text-align: center; font-weight: bold;">Call option premium at different times are plotted using the Black-Scholes formula given in <a href="Continuous Time Model.html#BSFormula.Call.cor">Corollary &laquo;Click Here&raquo; </a>.</div>
+
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Use Black-Scholes formula to find the price of the European call option with the following details:
+
+<li>1 contract consists of 100 units;
+</li><li>25-strike;
+</li><li>the underlying is trading at 20 per share;
+</li><li>3 months expiration;
+</li><li>the stock's volatility is 24%; and
+</li><li>the risk-less interest rate is 5% continuously compounded.
+
+<span class="math">\(~\)</span><div style="text-align:right;"><b> Answer:</b> 4.24 </div>
+</div></p><p><h3 id="black-scholes-differential-equation">Black-Scholes Differential Equation</h3></p><p>In this subsection, we derive a partial differential equation (PDE) known as the <b>Black-Scholes equation</b>, whose solution is the Black-Scholes formula obtained in the previous section. There are at least two approaches to derive this PDE: one is an asymptotic approach based on the binomial model, and the other uses delta hedging.  We omit the first and present the derivation of the Black-Scholes equation through delta hedging.</p><p>Let us first define the continuous-time analogue of the self-financing strategy.  A strategy is a measurable process <span class="math">\(\{\Pi_t\}\)</span>, where <span class="math">\(\Pi_t=(\phi_t, \boldsymbol{\theta}_t,\boldsymbol{h}_t)\)</span>, and the associated value process is defined as
+</p><div class="math">\[
+V_t = \phi_t B_t + \boldsymbol{\theta}_t \cdot \boldsymbol{S}_t + \boldsymbol{h}_t \cdot \boldsymbol{H}_t.
+\]</div><p>
+As before, <span class="math">\(\boldsymbol{\theta}\)</span> denotes the vector of units held in the risky assets and <span class="math">\(\boldsymbol{h}\)</span> denotes the vector of units held in the options.  We assume that the market allows short selling and trading in fractional units. Consequently, the components of the portfolio can take any real values.</p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Self-financing strategy</b>]</p><p>A strategy <span class="math">\(\{\Pi_t\}\)</span> is said to be <b>self-financing</b> if
+</p><div class="math">\[
+dV_t = \phi_t dB_t + \boldsymbol{\theta}_t \cdot dS_t + \boldsymbol{h}_t \cdot dH_t.
+\]</div><p>
+</div></p><p>Let <span class="math">\(\Pi=\{(\phi_t, \theta_t)\}_{0 \le t \le T}\)</span> be a self-financing trading strategy, where <span class="math">\(\phi_t\)</span> and <span class="math">\(\theta_t\)</span> denote the number of units invested in the stock and the risk-free asset, respectively. </p><p>Let <span class="math">\(H = H(S_T)\)</span> be the payoff of a European contingent claim at maturity <span class="math">\(T\)</span>. Suppose that the claim can be replicated by the  strategy <span class="math">\(\Pi\)</span>, so that the terminal value of the portfolio satisfies
+</p><div class="math">\[
+V_T = H(S_T).
+\]</div><p>
+We assume that <span class="math">\(V_t = V(t,S_t)\)</span> for some sufficiently smooth function <span class="math">\(V(t,s)\)</span>.</p><p>The value of the portfolio at time <span class="math">\(t\)</span> is given by
+</p><div class="math">\[
+V_t = \phi_t B_t + \theta_t S_t
+\]</div><p>
+and since the strategy <span class="math">\(\Pi\)</span> is self-financing, we have
+</p><div class="math">\[
+dV_t = \phi_t\, dB_t + \theta_t\, dS_t.
+\]</div><p>
+Assuming that the price process <span class="math">\(\{(B_t, S_t)\}\)</span> is Itô, we get
+</p><div class="math">\[
+dV_t = \big(\phi_t rB_t + \theta_t \mu S_t\big)dt + \big(\theta_t \sigma S_t\big)dW_t.
+\]</div><p>In a viable market, the replicating condition implies <span class="math">\(V_t = H_t\)</span>, for all <span class="math">\(0\le t\le T\)</span>, where <span class="math">\(H_t=H_t(S_t, t)\)</span> is the premium of the European contingent claim at time <span class="math">\(t\)</span>.  Then, we have
+</p><div class="math">\[
+dV_t = d H_t.
+\]</div><p>
+By Itô lemma, we have
+</p><div class="math">\[
+dH_t = \left(
+			\frac{\partial H_t}{\partial t} 
+			+ \mu S_t \frac{\partial H_t}{\partial S} 
+			+ \frac{\sigma^2S_t^2}{2} \frac{\partial^2 H_t}{\partial S^2} 
+		\right) dt + \sigma S_t \frac{\partial H_t}{\partial S} dW_t.
+\]</div><p>
+By comparing the above two equations, we get
+</p><div class="math">\[
+\theta_t = \frac{\partial H_t}{\partial S}
+\]</div><p>
+and 
+</p><div class="math">\[
+\left(
+			\frac{\partial H_t}{\partial t} 
+			+ \mu S_t \frac{\partial H_t}{\partial S} 
+			+ \frac{\sigma^2S_t^2}{2} \frac{\partial^2 H_t}{\partial S^2} 
+		\right)
+	=
+		\phi_t rB_t + \theta_t \mu S_t.
+\]</div><p>
+Since <span class="math">\(V_t = H_t\)</span>, we get
+</p><div class="math">\[
+\phi_t B_t + \theta_t S_t = H_t
+\]</div><p>
+Using the expression of <span class="math">\(\theta_t\)</span>, we get the expression for <span class="math">\(\phi_t\)</span> as
+</p><div class="math">\[
+\phi_t = \frac{1}{B_t}\left( H_t -  S_t \frac{\partial H_t}{\partial S} \right).
+\]</div><p>
+Substituting the expressions of <span class="math">\(\phi_t\)</span> and <span class="math">\(\theta_t\)</span> in the above equation, we get the well-known <b>Black-Scholes equation</b>
+</p><div class="math">\[
+\frac{\partial H_t}{\partial t} 
+			+ r S_t \frac{\partial H_t}{\partial S} 
+			+ \frac{\sigma^2S_t^2}{2} \frac{\partial^2 H_t}{\partial S^2} 
+= rH_t.
+\]</div><p>In the above equation we consider <span class="math">\(H\)</span> as the dependent variable and the <span class="math">\(t\)</span> and <span class="math">\(S\)</span> as independent variable.  Thus, the premium of a European option (for non-dividend paying stock S) using delta-hedge (replicating portfolio) can be obtained as the solution <span class="math">\(H=H(t,S)\)</span> of the <b>terminal value problem</b>
+</p><div class="math" id="PPDE.eq">\begin{eqnarray}
+\frac{\partial H}{\partial t} + rS\frac{\partial H}{\partial S} + \frac{\sigma^2S^2}{2}\frac{\partial^2 H}{\partial S^2}
+  &amp;=&amp; rH,~~\text{on}~t\in [0, T)\\
+H(T,S) &amp;=&amp; H_T(S),~~S\in (0,\infty),
+\end{eqnarray}<div style="text-align:right;">(7.20)</div></div><p>
+where the second condition is called the <b>terminal condition</b> with <span class="math">\(H_T\)</span> being the payoff of the European option. </p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Using the change of variable
+</p><div class="math">\[
+H(t,S) = u(\tau,x),
+\]</div><p>
+where <span class="math">\(\tau = T-t\)</span> and <span class="math">\(x=\log S\)</span>, and going through the classical calculus rules, we obtain the <b>initial value problem</b> (also known as the <b>Cauchy problem</b>)
+</p><div class="math">\[
+\begin{array}{cl}
+-\dfrac{\partial u}{\partial \tau} +\left(r-\dfrac{\sigma^2}{2}\right)\dfrac{\partial u}{\partial x} +  \dfrac{\sigma^2}{2}\dfrac{\partial^2 u}{\partial x^2} - ru=0,&amp;~(\tau,x) \in (0,T]\times \mathbb{R},\\
+u(0,x) = H_T(e^x),&amp;~x\in \mathbb{R}.
+\end{array}
+\]</div><p>
+equivalent to the above terminal value problem.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Let <span class="math">\(H(t,S)\)</span> be the European option premium that satisfies the Black-Scholes partial differential equation for all <span class="math">\((t,S)\in  [0,T] \times (0,\infty)\)</span>.  Consider the portfolio <span class="math">\(\Pi=(0,\theta,h)\)</span>, where <span class="math">\(\theta\)</span> and <span class="math">\(h\)</span> are the number of units held in the underlying stock and the option, respectively. Show that the value of the portfolio <span class="math">\(V\)</span> considered as a function of <span class="math">\((t,S)\)</span> (<i> i.e.</i> <span class="math">\(V(t,S)\)</span>) also satisfies the Black-Scholes partial differential equation for all <span class="math">\((t,S)\in  [0,T] \times (0,\infty)\)</span>.
+</div></p><p><h2 id="continuous-time-martingale-pricing">Continuous-Time Martingale Pricing</h2></p><p>In the discrete-time binomial model, we have shown that the absence of arbitrage is equivalent to the existence of a unique risk-neutral probability measure under which the discounted (underlying) asset prices are martingales.  In this section, we extend this principle to continuous time and connect it to the Black-Scholes model.</p><p>We first define martingale process in continuous time framework.</p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Martingale</b>]</p><p>A stochastic process <span class="math">\(\{M_t\}\)</span> adapted to a filtration <span class="math">\(\{\mathcal{F}_t\}\)</span> is called a <b>martingale</b> if 
+</p><div class="math">\[
+\mathbb{E}[M_t \mid \mathcal{F}_s] = M_s, ~~\text{for all}~~ s \le t.
+\]</div><p>
+</div></p><p>We can see that a martingale is a ``fair game'' in the sense that, given current information, the best prediction of the future value is the present value.</p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Brownian Martingale</b>]</p><p>If a filtration is generated by a Brownian motion, then it is called a <b>Brownian filtration</b>.  </p><p>If a stochastic process with continuous paths is a martingale with respect to a Brownian filtration, then it is called the <b>Brownian martingale</b>.
+</div></p><p>An important example of a Brownian martingale process involves Itô integral, which we will define now.</p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Itô Integral for Simple Processes</b>]</p><p>Let <span class="math">\(\{W_t\}_{t \ge 0}\)</span> be a Brownian motion adapted to a filtration <span class="math">\(\{\mathcal{F}_t\}\)</span>.</p><p>A process <span class="math">\(\{b_t\}\)</span> is called a simple adapted process if it is of the form
+</p><div class="math">\[
+b_t(\omega) = \sum_{i=0}^{n-1} b_i(\omega),\mathbf{1}_{(t_i, t_{i+1}]}(t),
+\]</div><p>
+where <span class="math">\(0 = t_0 < t_1 < \cdots < t_n = T\)</span>, and each <span class="math">\(b_i\)</span> is <span class="math">\(\mathcal{F}_{t_i}\)</span>-measurable.</p><p>The Itô integral of <span class="math">\(b\)</span> with respect to <span class="math">\(W\)</span> is defined by
+</p><div class="math">\[
+\int_0^T b_s \, dW_s := \sum_{i=0}^{n-1} b_i \left( W_{t_{i+1}} - W_{t_i} \right).
+\]</div><p>
+</div></p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Itô Integral</b>]</p><p>Let <span class="math">\(\{b_t\}\)</span> be an adapted process such that
+</p><div class="math">\[
+\mathbb{E}\left[\int_0^T |b_s|^2 \, ds \right] < \infty.
+\]</div><p>Let <span class="math">\(\{b_t^{(n)}\}\)</span> be a sequence of simple adapted processes such that
+</p><div class="math">\[
+\mathbb{E}\left[\int_0^T |b_s^{(n)} - b_s|^2 \, ds \right] \to 0.
+\]</div><p>Then the Itô integral of <span class="math">\(b\)</span> with respect to <span class="math">\(W\)</span> is defined as the <span class="math">\(L^2(\Omega)\)</span>-limit
+</p><div class="math">\[
+\int_0^T b_s \, dW_s := \lim_{n \to \infty} \int_0^T b_s^{(n)} \, dW_s,
+\]</div><p>
+where the limit is taken in mean-square sense, i.e., the sequence
+<span class="math">\(
+\int_0^T b_s^{(n)} \, dW_s
+\)</span>
+converges in <span class="math">\(L^2(\Omega)\)</span>.
+</div></p><p><h3 id="martingale-representation-theorem">Martingale Representation Theorem</h3></p><p>In this section, we work throughout with Brownian filtrations. In this setting, we restrict attention to square-integrable martingales adapted to this filtration. </p><p>A fundamental result in this framework is the <b>martingale representation theorem</b>, which characterizes martingales as stochastic integrals with respect to Brownian motion. We use this theorem to examine the martingale property of the discounted stock price process <span class="math">\(\tilde{S}_t\)</span>. </p><p>We begin by stating a fundamental property of stochastic integrals with respect to Brownian motion, which can be used in conjunction with the martingale representation theorem. The proof of this lemma is omitted.</p><p><div class="lemma">
+<div class="heading-container">
+<b class="heading">Lemma:</b>
+</div>
+Let <span class="math">\(\{W_t^{\mathbb{P}}\}\)</span> be a Brownian motion on the space <span class="math">\((\Omega, \mathcal{F}, \mathbb{P})\)</span>.  Let <span class="math">\(\{b_t\}\)</span> be an adapted process satisfying
+</p><div class="math" >\begin{eqnarray}
+\mathbb{E}\left[\int_0^T b_s^2 \, ds \right] < \infty.
+\end{eqnarray}<div style="text-align:right;">(7.21)</div></div><p>
+Then the process
+</p><div class="math" >\begin{eqnarray}
+M_t := M_0 + \int_0^t b_s \, dW_s
+\end{eqnarray}<div style="text-align:right;">(7.22)</div></div><p>
+is a Brownian martingale.
+</div></p><p>We may equivalently write the process <span class="math">\(\{M_t\}\)</span> in the Itô differential form as
+</p><div class="math">\[
+dM_t = b_t\, dW_t.
+\]</div><p>
+Thus, any process whose Itô differential is of the above form (i.e., with no drift term)  is a martingale, provided <span class="math">\(\{b_t\}\)</span> satisfies the integrability condition in the lemma.</p><p>In fact, the converse is also true and it is an important theorem for finance, whose proof is omitted for this course.</p><p>The converse is also true in the Brownian setting. That is, every square-integrable martingale admits a representation as a stochastic integral with respect to Brownian motion. This result is stated in the following theorem and its proof is omitted for this course.</p><p><div class="theorem">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>Martingale Representation Theorem</b>]</p><p>Let <span class="math">\(\{M_t\}\)</span> be a square integrable Brownian martingale with respect to the Brownian motion <span class="math">\(\{W^{\mathbb{P}}_t\}.\)</span>  Then, there exists a unique (upto <span class="math">\(\mathbb{P}\)</span>-equivalent) square-integrable process <span class="math">\(\{b_t\}\)</span> adapted to the Brownian filtration such that
+</p><div class="math">\[
+M_t = M_0 + \int\limits_0^t b_s dW_t, \text{ a.s. for all }~ t\in [0,T].
+\]</div><p>
+</div></p><p>Let <span class="math">\(\{S_t\}\)</span> denote the stock price satisfying the stochastic differential equation
+</p><div class="math" id="GBMSDE.eq">\begin{eqnarray}
+dS_t = \mu S_t dt + \sigma S_t dW_t^{\mathbb{P}},
+\end{eqnarray}<div style="text-align:right;">(7.23)</div></div><p>
+where <span class="math">\(\{W_t^{\mathbb{P}}\}\)</span> is a Brownian motion under the physical measure <span class="math">\(\mathbb{P}\)</span>.</p><p>For a prevailing interest rate <span class="math">\(r\)</span>, define the discounted stock price
+</p><div class="math">\[
+\tilde{S}_t = e^{-rt} S_t.
+\]</div><p>
+Using Itô formula, we obtain
+</p><div class="math">\[
+d\tilde{S}_t = (\mu-r) \tilde{S}_t dt + \sigma \tilde{S}_t dW_t^{\mathbb{P}}.
+\]</div><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Let <span class="math">\(\{S_t\}\)</span> satisfy <a href="#GBMSDE.eq">(7.23)</a>.  Show that <span class="math">\(\{\tilde{S}_t\}\)</span> is a martingale with respect to <span class="math">\(\{\mathcal{F}_t\}\)</span> under <span class="math">\(\mathbb{P}\)</span> if and only if <span class="math">\(\mu = r\)</span>.
+</div></p><p>The above result shows that, the discounted price process is not, in general, a martingale under the real-world probability <span class="math">\(\mathbb{P}\)</span>. Recall, in the discrete time framework, the discounted price process becomes a martingale under the risk-neutral probability measure.  This suggests that, in the continuous time setting, we must look for a suitable change of probability measure under which the discounted stock price process becomes a (Brownian) martingale.</p><p><h3 id="girsanovs-theorem">Girsanov's Theorem</h3></p><p>From the previous subsection, we understood the need for a change of probability measure in order to make the discounted stock price process a martingale. In the discrete-time setting, the delta-hedging within the binomial model led to the suitable risk-neutral probability. The natural question is whether an equivalent probability measure with a similar property exists in the continuous-time framework.  This question is answered affirmatively by Girsanov's theorem.  We state the result in a form suitable for our purposes and omit the proof.</p><p><div class="theorem">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>Girsanov's Theorem</b>]</p><p>Let <span class="math">\(\{W_t^{\mathbb{P}}\}\)</span> be a Brownian motion on a probability space
+<span class="math">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> with respect to the natural filtration <span class="math">\(\{\mathcal{F}_t\}.\)</span></p><p>Let <span class="math">\(\{\theta_t\}\)</span> be an adapted process satisfying
+</p><div class="math">\[
+\mathbb{E}^{\mathbb{P}}\left[\exp\left(\frac{1}{2}\int_0^T \theta_s^2 \, ds\right)\right] < \infty.
+\]</div><p>Define the process <span class="math">\(\{Z_t\}\)</span> by
+</p><div class="math">\[
+Z_t := \exp\left(
+ -\int_0^t \theta_s \, dW_{s}^{\mathbb{P}}
+ -\frac{1}{2} \int_0^t \theta_s^2 \, ds
+  \right).
+\]</div><p>
+Then <span class="math">\(\{Z_t\}\)</span> is a martingale under <span class="math">\(\mathbb{P}\)</span>. 
+Define a new probability measure <span class="math">\(\mathbb{Q}\)</span> on <span class="math">\(\mathcal{F}_T\)</span> by
+</p><div class="math">\[
+\frac{d\mathbb{Q}}{d\mathbb{P}} := Z_T.
+\]</div><p>
+Then the process <span class="math">\(\{W_t^{\mathbb{Q}}\}\)</span> defined by
+</p><div class="math">\[
+W_t^{\mathbb{Q}} := W_t^{\mathbb{P}} + \int_0^t \theta_s \, ds
+\]</div><p>
+is a Brownian motion on <span class="math">\((\Omega, \mathcal{F}, \mathbb{Q})\)</span> with respect to the same filtration <span class="math">\(\{\mathcal{F}_t\}\)</span>.
+</div></p><p>By taking <span class="math">\(\theta_t = \lambda\)</span>, a constant, Girsanov's theorem can be used to see that there exists a probability measure <span class="math">\(\mathbb{Q}\)</span> such that the process
+</p><div class="math">\[
+W_t^{\mathbb{Q}} := W_t^{\mathbb{P}} + \lambda t
+\]</div><p>
+is a Brownian motion under <span class="math">\(\mathbb{Q}\)</span>, where
+</p><div class="math">\[
+\lambda = \frac{\mu - r}{\sigma}.
+\]</div><p>
+This choice of <span class="math">\(\lambda\)</span> is made so that the drift of the stock price becomes equal to the risk-free rate under the new measure.</p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Assume that the stock price process <span class="math">\(\{S_t\}\)</span> satisfies 
+</p><div class="math">\[
+dS_t = \mu S_t \, dt + \sigma S_t \, dW_t^{\mathbb{P}}.
+\]</div><p>
+Under the new measure <span class="math">\(\mathbb{Q}\)</span> defined above, show that the stock price process satisfies the stochastic differential equation
+</p><div class="math">\[
+dS_t = r S_t \, dt + \sigma S_t \, dW_t^{\mathbb{Q}}.
+\]</div><p>
+</div></p><p>Consequently, the discounted stock price satisfies
+</p><div class="math">\[
+d\tilde{S}_t = \sigma \tilde{S}_t \, dW_t^{\mathbb{Q}},
+\]</div><p>
+and hence <span class="math">\(\{\tilde{S}_t\}\)</span> is a martingale under <span class="math">\(\mathbb{Q}\)</span>. We refer to the measure <span class="math">\(\mathbb{Q}\)</span> as the <b>risk-neutral measure</b>.</p><p><h3 id="feynman-kavc-formula">Feynman-Kač formula</h3></p><p>Let <span class="math">\(H(S_T)\)</span> denote the payoff of a European derivative at time <span class="math">\(T\)</span>. Under the risk-neutral measure <span class="math">\(\mathbb{Q}\)</span>, we define the price process by
+</p><div class="math">\[
+V_t := \mathbb{E}^{\mathbb{Q}}\left[ e^{-r(T-t)} H(S_T) \,\middle|\, \mathcal{F}_{t}^\mathbb{Q} \right],
+\]</div><p>
+where <span class="math">\(\{\mathcal{F}_{t}^\mathbb{Q}\}\)</span> is the filtration generated by the Brownian motion <span class="math">\(\{W_t^{\mathbb{Q}}\}\)</span>.</p><p>We state the theorem and omit the proof for this course.</p><p><div class="theorem">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>Feynman-Kač formula for the Black-Scholes equation</b>]</p><p>Let <span class="math">\((W_t^{\mathbb{Q}})_{t \ge 0}\)</span> be a Brownian motion under the risk-neutral measure <span class="math">\(\mathbb{Q}\)</span>, and let the stock price process <span class="math">\((S_t)_{t \ge 0}\)</span> satisfy
+</p><div class="math" >\begin{eqnarray}
+dS_t = r S_t \, dt + \sigma S_t \, dW_t^{\mathbb{Q}}, \quad S_t = s > 0.
+\end{eqnarray}<div style="text-align:right;">(7.24)</div></div><p>Let <span class="math">\(H_T : (0,\infty) \to \mathbb{R}\)</span> be a continuous payoff function satisfying a polynomial growth condition, i.e.,
+</p><div class="math" >\begin{eqnarray}
+|H_T(s)| \le C(1 + s^m) \quad \text{for some } C,m > 0.
+\end{eqnarray}<div style="text-align:right;">(7.25)</div></div><p>
+Define <span class="math">\(V_t = V(t,S)\)</span> given above.
+Then the following holds:
+<ol class="latex-enumerate">
+    </li><li><b>Existence:</b> The function <span class="math">\(V(t,s)\)</span> is a classical solution <span class="math">\(V \in C^{1,2}([0,T)\times (0,\infty))\)</span> of the Black-Scholes PDE:
+    </p><div class="math" >\begin{eqnarray}
+    \frac{\partial V}{\partial t}
+    + \frac{1}{2}\sigma^2 s^2 \frac{\partial^2 V}{\partial s^2}
+    + r s \frac{\partial V}{\partial s}
+    - r V = 0, \quad 0 \le t < T,
+    \end{eqnarray}<div style="text-align:right;">(7.26)</div></div><p>
+    with terminal condition
+    </p><div class="math" >\begin{eqnarray}
+    V(T,s) = H_T(s).
+    \end{eqnarray}<div style="text-align:right;">(7.27)</div></div><p>    </li><li><b>Uniqueness:</b> The function <span class="math">\(V(t,s)\)</span> is the unique solution in the class of functions with at most polynomial growth in <span class="math">\(s\)</span>.
+</li></ol>
+</div></p>
+    </div>
+    
+    <script>
+    document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+    document.addEventListener("keydown", function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "s")) {
+            e.preventDefault();
+        }
+    });
+    </script>
+ <footer>
+  © S. Baskar, Department of Mathematics, IIT Bombay. 2026 (This material is licensed under CC BY-NC 4.0.) — Updated: 11-April-2026
+</footer>
+
+<style>
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #f8f8f8;
+  color: #888;
+  font-size: 0.75em;
+  text-align: center;
+  padding: 6px 0;
+  border-top: 1px solid #ddd;
+  z-index: 10;               /* low z-index */
+  pointer-events: none;      /* allows clicks to pass through */
+}
+
+/* Small screen adjustments */
+@media (max-width: 600px) {
+  footer {
+    font-size: 0.68em;
+    padding: 4px 0;
+  }
+}
+</style> 
+ 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocButton = document.getElementById('toc-button');
+            const tocPanel = document.getElementById('toc-panel');
+            const closeToc = document.getElementById('close-toc');
+
+            if (localStorage.getItem('tocOpen') === 'true') {
+                tocPanel.classList.add('open');
+                localStorage.removeItem('tocOpen');
+            }
+
+            tocButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                tocPanel.classList.toggle('open');
+            });
+
+            function closeTocPanel() {
+                tocPanel.classList.remove('open');
+            }
+
+            closeToc.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeTocPanel();
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!tocPanel.contains(e.target) && e.target !== tocButton) {
+                    closeTocPanel();
+                }
+            });
+
+            tocPanel.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            document.querySelectorAll('#toc-panel a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (!this.getAttribute('href').startsWith('#')) {
+                        localStorage.setItem('tocOpen', 'true');
+                    }
+                    if (this.hash) {
+                        e.preventDefault();
+                        const target = document.getElementById(this.hash.substring(1));
+                        if (target) {
+                            window.scrollTo({
+                                top: target.offsetTop - 70,
+                                behavior: 'smooth'
+                            });
+                            history.pushState(null, null, this.hash);
+                            if (window.innerWidth < 768) {
+                                closeTocPanel();
+                            }
+                        }
+                    }
+                });
+            });
+
+            if (window.location.hash) {
+                const target = document.getElementById(window.location.hash.substring(1));
+                if (target) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: target.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

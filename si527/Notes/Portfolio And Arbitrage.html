@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio And Arbitrage</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML ">
+    </script>
+    <style>
+        body, p, li, div {
+        color: black !important;
+        line-height: 1.6;
+        }
+        ol.latex-enumerate, ol.latex-enumerate li {
+            line-height: 1.6 !important;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        /* Updated TOC styles */
+        #toc-panel {
+            font-size: 0.9em;
+        }
+        .toc-chapter, 
+        .toc-section, 
+        .toc-subsection {
+            color: black !important;
+        }
+        .toc-chapter a,
+        .toc-section a,
+        .toc-subsection a {
+            color: black !important;
+            text-decoration: none;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        #toc-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #1a73e8;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #toc-panel {
+            position: fixed;
+            top: 0;
+            left: -350px;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            padding: 20px;
+            overflow-y: auto;
+            transition: left 0.3s ease-out;
+            will-change: transform;
+        }
+        #toc-panel.open {
+            left: 0;
+        }
+        #close-toc {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #content {
+            padding: 20px;
+            padding-top: 60px;
+            max-width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
+        }
+        .toc-chapter {
+            margin-bottom: 10px;
+            border-left: 3px solid #1a73e8;
+            padding-left: 10px;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        .chapter-link {
+            font-weight: bold;
+            color: #1a73e8;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+        }
+        .toc-sections {
+            margin-left: 15px;
+            display: none;
+        }
+        .toc-sections.expanded {
+            display: block;
+        }
+        .toc-section {
+            padding: 3px 0;
+            margin-left: 10px;
+        }
+        .toc-subsection {
+            padding: 3px 0;
+            margin-left: 25px;
+            font-size: 0.95em;
+        }
+        .toc-subsubsection {
+            padding: 3px 0;
+            margin-left: 40px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        :target {
+            scroll-margin-top: 80px;
+            animation: highlight 1.5s ease;
+        }
+        @keyframes highlight {
+            0% { background-color: rgba(26, 115, 232, 0.1); }
+            100% { background-color: transparent; }
+        }
+        @media (max-width: 768px) {
+            #toc-panel {
+                width: 85%;
+                left: -90%;
+            }
+            #toc-panel.open {
+                left: 0;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            }
+            #content {
+                transition: transform 0.3s ease-out;
+            }
+            #toc-panel.open ~ #content {
+                transform: translateX(85%);
+            }
+        }
+        .note {
+  background-color: color-mix(in srgb, var(--primary) 7%, white);
+border: 5px solid var(--primary);
+  padding: 5px;
+  margin: 10px;
+}
+.problem {
+  background-color: color-mix(in srgb, var(--primary) 18%, white);
+border: 1px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.example {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 10px;
+  margin: 10px;
+}
+.remark {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 20px;
+  margin: 10px;
+}
+.definition {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px double var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.lemma {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.theorem {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.proofs {
+  background-color: var(--environmentBackground);
+border: 5px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.project {
+  background-color: var(--environmentBackground);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.hint {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.code {
+  background-color: color-mix(in srgb, var(--primary) 13%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.algorithm {
+  background-color: color-mix(in srgb, var(--primary) 5%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+</style>
+</head>
+<body>
+    <button id="toc-button">☰ Table of Contents</button>
+    <div id="toc-panel">
+        <button id="close-toc">×</button>
+
+      <!-- Small Main Page Button -->
+<div style="text-align:right; margin-bottom: 10px;">
+  <a href="index.html" 
+     style="
+       background: var(--toc-primary, #2738F5);
+       color: white;
+       padding: 4px 10px;
+       border-radius: 16px;
+       font-size: 0.75em;
+       font-weight: 900;
+       text-decoration: none;
+       display: inline-block;
+       box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+     ">
+    Main Page
+  </a>
+</div>
+        <div class="full-toc">
+        
+        <div class="toc-chapter ">
+            <a href="Overview of Financial Systems.html" class="chapter-link">
+                Chapter 1: Overview of Financial Systems
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Overview of Financial Systems.html#FinancialSystem.ch">
+                        Financial System: An Overview
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#financialmarketframework.sec">
+                        Financial Market Framework
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#financial.instrument.ssec">
+                        Financial Instruments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#securities">
+                        Securities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-levels">
+                        Market Levels
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#market-segments">
+                        Market Segments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#trading-mechanism">
+                        Trading Mechanism
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#marketparticipants.sec">
+                        Market Participants
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-makers">
+                        Market Makers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#investors">
+                        Investors
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#speculators">
+                        Speculators
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#hedgers">
+                        Hedgers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#arbitrageurs">
+                        Arbitrageurs
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#overviewderivatives.sec">
+                        Overview of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#essential-market-terms">
+                        Essential Market Terms
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#purpose-of-derivatives">
+                        Purpose of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#need-for-pricing-models-and-analysis">
+                        Need for Pricing Models and Analysis
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#noncontingentclaims.sec">
+                        Non-Contingent Claims: Forwards, Futures, and Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#forwards-and-futures">
+                        Forwards and Futures
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#swaps">
+                        Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#options.sec">
+                        Contingent Claims: Options
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="PriceDynamics.html" class="chapter-link">
+                Chapter 2: PriceDynamics
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="PriceDynamics.html#price.dynamics.ch">
+                        Price Dynamics
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="PriceDynamics.html#deterministic-interest-rate-models">
+                        Deterministic Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#discrete-time-models">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#continuous-time-model">
+                        Continuous Time Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#nonconstant.interest.rate.subs">
+                        Non-constant Interest Rate
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#present.value.subs">
+                        Present Value
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#cash-flow-stream">
+                        Cash Flow Stream
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="PriceDynamics.html#stochastic-models">
+                        Stochastic Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#stochastic-processes">
+                        Stochastic Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#stock-price-model">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#wiener-process">
+                        Wiener Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#ito">
+                        It\^{o
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#GBMParameterCalibration.sec">
+                        Parameter Calibration
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#interest-rate-models">
+                        Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#wiener-integral">
+                        Wiener Integral
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#numerical-simulation">
+                        Numerical Simulation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#distribution-of-the-stochastic-increment">
+                        Distribution of the stochastic increment
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#exact-simulation-scheme">
+                        Exact simulation scheme
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter current">
+            <a href="Portfolio And Arbitrage.html" class="chapter-link">
+                Chapter 3: Portfolio And Arbitrage
+            </a>
+            <div class="toc-sections expanded">
+
+                <div class="toc-item ">
+                    <a href="Portfolio And Arbitrage.html#PortfolioNArbitrage.ch">
+                        Portfolio and Arbitrage
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#portfolioconcepts.ssec">
+                        Portfolio Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#value-and-gain-processes">
+                        Value and Gain Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#market-model">
+                        Market Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#predictable-strategy">
+                        Predictable Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#self-financing-strategy">
+                        Self-financing Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.opportunity.sec">
+                        Arbitrage Opportunity
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage-portfolio">
+                        Arbitrage Portfolio
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#application-forward-pricing">
+                        Application: Forward Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#law.of.one.price.subs">
+                        Law of One Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.strategy.ssec">
+                        Arbitrage Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#futures.sec">
+                        Application: Future Contracts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#marking-to-market">
+                        Marking to Market
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#pricing-model">
+                        Pricing Model
+                    </a>
+                </div>
+</div></div>
+        <div class="toc-chapter ">
+            <a href="Basic Concepts of Options.html" class="chapter-link">
+                Chapter 4: Basic Concepts of Options
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Basic Concepts of Options.html#BasicConceptsOptions.ch">
+                        Basic Concepts of Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#call.put.sec">
+                        Basic Terminology
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#defining-parameters">
+                        Defining Parameters
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#payoff-and-gain">
+                        Payoff and Gain
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#time-value-in-an-option-price">
+                        Time Value in an Option Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#Bounds.EuropeanOption.sec">
+                        Premium Bounds and Arbitrage Opportunities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#european-options">
+                        European Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#american-options">
+                        American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#put-call-parity-estimates">
+                        Put-Call Parity Estimates
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#premium-valuation">
+                        Premium Valuation
+                    </a>
+                </div>
+</div></div>
+</div>
+    </div>
+    <div id="content">
+        <p>
+<h1 id="PortfolioNArbitrage.ch">Portfolio and Arbitrage</h1></p><p>The mathematical theory of financial markets often begins with single-step discrete models that capture the fundamental ideas to build more complex models at both discrete and continuous time levels.  It is also important to establish precise mathematical notations for familiar financial terms such as portfolio and arbitrage opportunity, which are essential for developing fair pricing or risk-neutral models.</p><p>In this chapter, we introduce the mathematical notions of <b>portfolios</b>, their values, and gains through which we establish a precise language for modelling market activities. We further give a general framework for building probability models that represent market uncertainty in a single time step that forms the foundation for more advanced multi-step models. An important concept explored in this chapter is <b>arbitrage</b>, which is a cornerstone of modern financial theory that ensures consistency in pricing and market equilibrium. As an application, we derive the forward pricing model and demonstrate how these concepts provide practical insights into real-world financial instruments. </p><p><a href="Portfolio And Arbitrage.html#portfolioconcepts.ssec" class="internal-link">Section  &laquo;Click Here&raquo;</a> establishes essential mathematical notations and defines, for a portfolio, its value and its gain.  Additionally, this section illustrates the idea of constructing a probabilistic model for a finance market. <a href="Portfolio And Arbitrage.html#arbitrage.opportunity.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a> introduces an important concept of derivative pricing, the arbitrage opportunity and its applications in developing forward and future pricing models. </p><p><h2 id="portfolioconcepts.ssec">Portfolio Concepts</h2></p><p>We denote  a collection of securities with deterministic cashflow (such as bonds and bank accounts) by
+</p><div class="math">\[
+\boldsymbol{B} = \big(B^{(1)},B^{(2)},\ldots,B^{(n_b)}\big)
+\]</div><p>
+ and a collection of risky securities (such as stocks) by
+</p><div class="math">\[
+\boldsymbol{S} =\big(S^{(1)},S^{(2)},\ldots,S^{(n_s)}\big).
+\]</div><p>
+A <b>capital market</b> (also referred to as <b>spot market</b> or <b>underlying market</b> in the context of derivatives) is a collection of assets <span class="math">\(\big(\boldsymbol{B},\boldsymbol{S}\big)\)</span>.</p><p>A collection of derivative securities 
+</p><div class="math">\[
+\boldsymbol{H} = \big(H^{(1)},H^{(2)},\ldots,H^{(n_h)}\big)
+\]</div><p>
+is a <b>derivatives market</b>.</p><p>A <b>market</b> is a collection of securities <span class="math">\((\boldsymbol{B}, \boldsymbol{S},\boldsymbol{H})\)</span>.</p><p><div class="example" id="sahana.market.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+</p><p>Mrs. Sahana has a surplus of ₹ 1,00,000, which she kept in her savings account at a bank, intending to invest the money in the stock market. She selected her five favorite stocks <span class="math">\(\boldsymbol{S}=(S^{(1)}, S^{(2)}, \ldots, S^{(5)})\)</span>. For instance, <span class="math">\(S^{(1)}\)</span> represents TCS, <span class="math">\(S^{(2)}\)</span> represents SBI bank, <span class="math">\(S^{(3)}\)</span> denotes Reliance, <span class="math">\(S^{(4)}\)</span> corresponds to Infosys, and <span class="math">\(S^{(5)}\)</span> corresponds to Bajaj Auto. Then, she considered her own model market <span class="math">\((B, \boldsymbol{S},\boldsymbol{H})\)</span>, where <span class="math">\(B\)</span> represents her savings account, which pays interest at the rate of 4% per annum compounded quarterly and <span class="math">\(\boldsymbol{H}\)</span> represents the corresponding derivatives.
+</div></p><p>Once a market is fixed, a portfolio can be defined as a mathematical representation of the quantities of different assets held in the market. </p><p><div class="definition" id="Portfolio.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Portfolio</b>]</p><p>A <b>portfolio</b> of a given market <span class="math">\((\boldsymbol{B},\boldsymbol{S},\boldsymbol{H})\)</span> is an ordered <span class="math">\((n_b+n_s+n_h)\)</span>-tuple of real numbers
+</p><div class="math">\[
+\Pi := (\boldsymbol{\phi},\boldsymbol{\theta}, \boldsymbol{h}),
+\]</div><p>
+where <span class="math">\(\boldsymbol{\phi}=(\phi^{(1)},\phi^{(2)},\ldots,\phi^{(n_b)})\)</span> with <span class="math">\(\phi^{(i)}\)</span> being the number of units of the asset <span class="math">\(B^{(i)}\)</span>, <span class="math">\(i=1,2,\ldots,{n_b}\)</span>, <span class="math">\(\boldsymbol{\theta}=(\theta^{(1)},\theta^{(2)},\ldots,\theta^{(n_s)})\)</span> with <span class="math">\(\theta^{(i)}\)</span> being the number of units of the asset <span class="math">\(S^{(i)}\)</span>, <span class="math">\(i=1,2,\ldots,n_s\)</span>, and <span class="math">\(\boldsymbol{h}=(h^{(1)},h^{(2)},\ldots,h^{(n_h)})\)</span> with <span class="math">\(h^{(i)}\)</span> being the number of units of the derivative <span class="math">\(H^{(i)}\)</span>, <span class="math">\(i=1,2,\ldots,n_h\)</span>.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+If a component of a portfolio is negative, it indicates that the portfolio holds a <b>short position</b> in the corresponding asset. Whereas, the portfolio is said to hold a <b>long position</b> in an asset if the corresponding component has a positive value.</p><p>In all our discussions, components of a portfolio are allowed to take fractional values.  This is not always feasible in practice, for instance, stocks are usually traded in whole units. However, fractional values can be interpreted as proportional holdings, and a fractional component may be scaled by a suitable integer to make it into an integer.
+</div></p><p><div class="remark" id="spot.pf.rem">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+</p><p>Often it is useful in our discussions to split the portfolio into two parts, namely, the spot (or capital) market part and the derivatives market part.  We use the following notations for these two parts of a portfolio
+
+<li>Spot portfolio: <span class="math">\({S} := (\boldsymbol{\phi},\boldsymbol{\theta})\)</span>; 
+</li><li>Hedge portfolio (consisting of derivatives securities): <span class="math">\(\boldsymbol{h}\)</span>
+
+Thus, a portfolio can also be represented using the notation
+<span class="math">\(\Pi = ({S},\boldsymbol{h})\)</span>.
+</div></p><p><div class="remark" id="portfolio.construction.rem">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Portfolio Construction and Notion of Time</b>]
+</p><p>Given a market, building a portfolio involves three steps:
+<ol class="latex-enumerate">
+</li><li>Select the assets to include in the portfolio and determine their quantities.
+</li><li>Plan the order in which the assets are to be traded (in some cases, the ordering may not matter).
+</li><li>Execute the trading plan by buying and selling the assets in the market. 
+</li></ol>
+The first time, say <span class="math">\(t_0\)</span>, a portfolio is completely constructed is referred to as the starting time of the portfolio. Any subsequent changes made to the portfolio marks the end time, say <span class="math">\(t_1\)</span>, of the current portfolio. Thus, the portfolio holding time is <span class="math">\([t_0, t_1)\)</span> and the portfolio is denoted by <span class="math">\(\Pi(t_1)\)</span> or simply <span class="math">\(\Pi_{t_1}\)</span> or <span class="math">\(\Pi_1\)</span>.  The modification time <span class="math">\(t_1\)</span> is marked as the starting time for a new portfolio <span class="math">\(\Pi_{t_2}\)</span>, incorporating the adjustments made at time <span class="math">\(t_1\)</span> and held unchanged till time <span class="math">\(t_2 > t_1\)</span>.  This process continues through a discrete time index <span class="math">\(\mathbb{T}=\{t_0, t_1, \ldots\}\)</span> and the corresponding portfolio process is denoted by <span class="math">\(\Pi = \{{k+1}~|~k=0,1,\ldots\}.\)</span>
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Write the trades explained in words below in the mathematical notations as explained above, where the market is  as given in <a href="Portfolio And Arbitrage.html#sahana.market.ex">Example &laquo;Click Here&raquo; </a>:</p><p>First Mrs. Sahana bought 10 shares of TCS, 50 shares of SBI, 7 shares of Bajaj Auto.  After few days, she exited Bajaj Auto position fully and bought 12 shares of Reliance.  Again, after few more days, she sold 5 shares of TCS and bought 8 shares of Infosys.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+By taking a short position in a portfolio, we mean to execute opposite trades on the assets' positions held in the portfolio.  For example, consider a portfolio 
+</p><div class="math">\[
+\Pi(0) = ((1),(2,-10),(1)),
+\]</div><p>
+where 1 unit of a bond <span class="math">\(B_1\)</span> is bought, 2 shares of <span class="math">\(S_1\)</span> are bought, <span class="math">\(10\)</span> shares of <span class="math">\(S_2\)</span> are sold, and a long position in 1 contract of a future (or forward or option) <span class="math">\(f_1\)</span> (say) is taken at the present time <span class="math">\(t=0\)</span>. A short position in <span class="math">\(\Pi\)</span>, denoted by <span class="math">\(-\Pi\)</span>, is
+</p><div class="math">\[
+-\Pi(0) = ((-1), (-2, 10), (-1)),
+\]</div><p>
+indicating  shorting 1 unit of <span class="math">\(B_1\)</span>, selling 2 shares of <span class="math">\(S_1\)</span>, buying 10 shares of <span class="math">\(S_2\)</span>, and taking a short position in 1 contract of <span class="math">\(f_1\)</span> at <span class="math">\(t=0\)</span>.
+</div></p><p><h3 id="value-and-gain-processes">Value and Gain Processes</h3></p><p>Once the portfolio is built, its value can be determined at every time instance.</p><p><div class="definition" id="portfolio.value.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Portfolio Value</b>]
+</p><p>Assume that a portfolio (denoted by <span class="math">\(\Pi_{t_1}\)</span> or simply <span class="math">\(\Pi_1\)</span>) is built at time <span class="math">\(t=t_0\)</span> and  is held until time <span class="math">\(t=t_1\)</span>.
+The <b>portfolio value</b> at any time <span class="math">\(t\in [t_0,t_1]\)</span> is defined as
+</p><div class="math">\[
+V(\Pi_{t_1})(t) =  \sum_{i=1}^{n_b} \phi^{(i)}_{t_1} B^{(i)}(t) + \sum_{i=1}^{n_s} \theta^{(i)}_{t_1} S^{(i)}(t) +  \sum_{i=1}^{n_h} h^{(i)}_{t_1} H^{(i)}(t),
+\]</div><p>
+where <span class="math">\(S^{(i)}(t)\)</span> denotes the per unit current market price for the asset <span class="math">\(S^{(i)}\)</span> at time <span class="math">\(t\)</span> and similarly for <span class="math">\(B^{(i)}\)</span>'s and <span class="math">\(H^{(i)}\)</span>'s. The above expression can also be written in the vector notation as
+</p><div class="math">\[
+V(\Pi_{t_1})(t) = \boldsymbol{\phi}_{t_1}\cdot \boldsymbol{B}(t) + \boldsymbol{\theta}_{t_1}\cdot \boldsymbol{S}(t) +\boldsymbol{h}_{t_1}\cdot\boldsymbol{H}(t).
+\]</div><p>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+We use the same notation <span class="math">\(S^{(i)}\)</span> to represent the value of the price asset as well as the asset itself.
+</div></p><p><div class="example">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+On 2<span class="math">\(^{\rm nd}\)</span> of January 2023, Mrs. Sahana had ₹ 1,00,000 in her saving account with a bank.  On the same day, denote it by <span class="math">\(t_0\)</span>, she made the following investments:
+
+<li>10 shares of TCS at ₹ 3285 per share;
+</li><li>5 shares of State Bank of India at ₹ 610 per share;
+</li><li>7 shares of Reliance at ₹ 2333 per share; and
+</li><li>8 shares of Bajaj Auto at ₹ 3588 per share.
+
+The remaining amount was kept in the savings account with an interest rate of 4% per annum, compounded quarterly.</p><p>The portfolio at <span class="math">\(t=t_0\)</span> out of the market considered in <a href="Portfolio And Arbitrage.html#sahana.market.ex">Example &laquo;Click Here&raquo; </a> is
+</p><div class="math">\[
+\Pi_1 = (\phi_1, \boldsymbol{\theta}_1,\boldsymbol{0}) 
+~~\left(\text{or } s{S}{1}= (\phi_1, \boldsymbol{\theta}_1)\right),
+\]</div><p>
+where we take <span class="math">\(\phi_1=1\)</span> and <span class="math">\(\boldsymbol{\theta}_1 = (10,5,7,0,8)\)</span>.</p><p>We now compute the value of the portfolio at <span class="math">\(t_0=0\)</span>, representing the <b>initial investment</b> of the portfolio.  We always neglect the cost associated with brokerage, taxes, and any other charges involved in maintaining the portfolio.  Such a valuation  is referred to as the <b>frictionless valuation</b>.</p><p>From the buy price of the stocks, let us take <span class="math">\(\boldsymbol{S}_0 = (3285, 610,2333, 0, 3588).\)</span>
+Therefore the total investment in stocks is given by
+</p><div class="math">\[
+\boldsymbol{\theta}_1 \cdot \boldsymbol{S}_0 = 80935.
+\]</div><p>
+For the risk-free investment we take <span class="math">\(B_0 = 19065\)</span> as the initial value.
+Therefore, the total investment in the risk-free assets is
+</p><div class="math">\[
+\phi_1\cdot B_0 = \phi_1\times B_0 =  19065.
+\]</div><p>
+The initial value of the portfolio is therefore given by 
+</p><div class="math">\[
+V_0(\Pi_1) = \phi_1\times B_0 + \boldsymbol{\theta}_1 \cdot \boldsymbol{S}_0 = 100000.
+\]</div><p>
+After the end of one year, denoted by <span class="math">\(T\)</span>,  it is found from the market that
+
+</li><li>the market prices of TCS is <span class="math">\(S^{(1)}_T = 3675\)</span>;
+</li><li>the market prices of SBI is <span class="math">\(S^{(2)}_T = 637\)</span>;
+</li><li>the market prices of Reliance is <span class="math">\(S^{(3)}_T = 2599\)</span>; and
+</li><li>the market prices of Bajaj Auto is <span class="math">\(S^{(4)}_T = 6961\)</span>.
+
+Therefore,
+</p><div class="math">\[
+\phi_1 \cdot B_T \approx 19839.12 ~\text{ and }~ \boldsymbol{\theta}_1 \cdot \boldsymbol{S}_T =113816.
+\]</div><p>
+The frictionless value of the portfolio (neglecting the dividend payments of the stocks) at time <span class="math">\(T\)</span> is given by
+</p><div class="math">\[
+V_T(\Pi_1) \approx 133655.12.
+\]</div><p>
+</div></p><p><div class="remark" id="value.process.rem">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Value Process</b>]
+</p><p>A price vector <span class="math">\(\boldsymbol{S} = (S^{(1)}, S^{(2)}, \ldots, S^{(n)})\)</span> at any time <span class="math">\(t \in [t_0, t_1]\)</span> is a random vector and therefore, <span class="math">\(\boldsymbol{S}=\{\boldsymbol{S}_t\}\)</span> is a stochastic process. Consequently, we have the value process <span class="math">\(V=\{V_t\}\)</span> defined as
+</p><div class="math">\[
+V_t (\Pi_1)= \boldsymbol{\phi}_{1}\cdot \boldsymbol{B}_t + \boldsymbol{\theta}_{1}\cdot \boldsymbol{S}_t +\boldsymbol{h}_{1}\cdot\boldsymbol{H}_t.
+\]</div><p>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+Throughout this course, we use the following notations:</p><p>For a given time partition <span class="math">\(0=t_0 < t_1 < t_2 < \ldots,\)</span>
+<ol class="latex-enumerate">
+</li><li>The value of the portfolio <span class="math">\(\Pi_1\)</span> (created initially at time <span class="math">\(t_0\)</span>) at the initial time <span class="math">\(t_0\)</span> is denoted by <span class="math">\(V_0\)</span>.  Thus,
+</p><div class="math">\[
+V_0 = V(\Pi_1)(t_0).
+\]</div><p>
+</li><li>The value of <span class="math">\(\Pi_1\)</span> at <span class="math">\(t_1\)</span> is denoted by <span class="math">\(V_1\)</span>.  That is,
+</p><div class="math">\[
+V_1 = V(\Pi_1)(t_1).
+\]</div><p>
+</li><li>In general, the value of <span class="math">\(\Pi_k\)</span> at <span class="math">\(t_k\)</span> is denoted by <span class="math">\(V_k\)</span>.
+</li></ol>
+</div></p><p><div class="definition" id="portfolio.gain.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Gain Process</b>]</p><p>Let <span class="math">\(\Pi_1\)</span> be a portfolio created at time <span class="math">\(t_0=0\)</span> and held until time <span class="math">\(t_1 > t_0\)</span>.  The <b>gain process</b> of the portfolio is defined as
+</p><div class="math">\[
+G_t(\Pi_1) = \boldsymbol{\phi}_1\cdot \Delta\boldsymbol{B}_t + \boldsymbol{\theta}_1\cdot \Delta\boldsymbol{S}_t +\boldsymbol{h}_1\cdot \Delta\boldsymbol{H}_t,  ~t \in [t_0,t_1]
+\]</div><p>
+where <span class="math">\(\Delta\boldsymbol{S}_t = \boldsymbol{S}_t -\boldsymbol{S}_0 \)</span> and similarly for other components.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+From now on, we always take <span class="math">\(n_b=1\)</span> and therefore <span class="math">\(\boldsymbol{B}\)</span> is a scalar, unless otherwise assumed explicitly.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Mr. Megh purchased 500 shares of Infosys and 200 shares of SBI on the 1<span class="math">\(^{\rm st}\)</span> January 2025, financed by borrowing money from a bank with an annual interest rate of 9%, compounded quarterly. Write down the portfolio created by Mr. Megh with respect to the market given in <a href="Portfolio And Arbitrage.html#sahana.market.ex">Example &laquo;Click Here&raquo; </a>. Assuming that Mr. Megh bought the shares at the day's high and sold them at the day's low, calculate the gain of his portfolio as of 31<span class="math">\(^{\rm st}\)</span> December 2025.
+<div style="text-align:right;"><b> Answer: </b> <span class="math">\(G(\Pi)(t_4) \approx -207873.89\)</span> </div>
+</div>
+<div class="hint">
+<div class="heading-container">
+<b class="heading">Hint:</b>
+</div>
+Obtain the corresponding share prices from the website </p><p><a href="https://www.nseindia.com/report-detail/eq_security" target="_blank">https://www.nseindia.com/report-detail/eq\_security</a></p><p>Follow the notation as given in <a href="Portfolio And Arbitrage.html#portfolio.value.def">Definition &laquo;Click Here&raquo; </a>.
+</div></p><p><h3 id="market-model">Market Model</h3></p><p>Let us start with a single step discrete capital market model which involves a probability space (<span class="math">\(\Omega, \mathcal{F}_*, \mathbb{P})\)</span> on which the prices of the risky securities <span class="math">\(\boldsymbol{S}_1\)</span> at time <span class="math">\(t_1\)</span> are defined as non-negative random variables. Here, <span class="math">\(\Omega\)</span> has a finite number of elements, <span class="math">\(\mathcal{F}_*\)</span> denotes the power set of <span class="math">\(\Omega\)</span> and <span class="math">\(\mathbb{P}\)</span> is a suitably defined probability such that <span class="math">\(\mathbb{P}(\{\omega\}) > 0\)</span>, for all <span class="math">\(\omega\in \Omega\)</span>.</p><p>Obviously, at <span class="math">\(t_0=0\)</span>, we know the asset prices <span class="math">\(\boldsymbol{S}_0\)</span>, whereas the prices <span class="math">\(\boldsymbol{S}_1\)</span> at <span class="math">\(t_1=T\)</span> are unknown. Consequently, at time <span class="math">\(t=t_0\)</span>, a trader does not know the exact values of the asset prices <span class="math">\(\boldsymbol{S}_1\)</span>, but relies on the chosen probability model to quantify the uncertainty and study their potential behavior.</p><p><div class="example" id="2StockModel.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+</p><p>Consider a capital market consisting of two stocks <span class="math">\((B, S^{(1)}, S^{(2)})\)</span>. Let <span class="math">\(S^{(1)}_0=100\)</span> and <span class="math">\(S^{(2)}_0=200.\)</span>  Further, assume that the price movement of one stock does not impact the price movement of the other stock. </p><p>A technical analyst gave trading recommendation at time <span class="math">\(t_0=0\)</span> on these two stocks as follows:
+<ol class="latex-enumerate">
+<li>Buy <span class="math">\(S^{(1)}\)</span> with a target of ₹ 105 per share.  However, exit the position if it touches ₹ 98 per share (generally referred to as <b>stop loss</b>).
+</li><li>Buy <span class="math">\(S^{(2)}\)</span> with a target of ₹ 208 per share with a stop loss of ₹ 197 per share.
+</li></ol>
+Let us make a probability model in this scenario.  Note that <span class="math">\(B\)</span> has deterministic cashflow and therefore, let us not involve it in the probability model. </p><p>Let us denote <span class="math">\(S^{(1)}_u= 105\)</span>, <span class="math">\(S^{(1)}_d=98\)</span>, <span class="math">\(S^{(2)}_u= 208\)</span>, and <span class="math">\(S^{(2)}_d=197\)</span>.</p><p>The sample space is
+</p><div class="math">\[
+\Omega= \{ (S^{(1)}_u, S^{(2)}_u), (S^{(1)}_u, S^{(2)}_d), 
+			(S^{(1)}_d, S^{(2)}_u), (S^{(1)}_d, S^{(2)}_d)\}.
+\]</div><p>
+Now we have to define a probability measure on the sample space <span class="math">\((\Omega, \mathcal{F}_*)\)</span>.  There is no unique way of defining a probability.  One way is the theoretical probability called the <b>risk-neutral probability</b>, which will be discussed later in this course.  Another is the <b>real-world probability</b>, which is unknown. However, we can adapt to an <b>observed probability</b>, which can be chosen in many ways. </p><p>One naive illustration is the following:
+Suppose we have a data base of recommendations given by the technical analyst for past five years.  Looking into this data base, let us assume that the analyst gave buy recommendations for <span class="math">\(S^{(k)}\)</span> for <span class="math">\(N_k\)</span> times out of which <span class="math">\(n_k\)</span> number of recommendations were successful, for <span class="math">\(k=1,2\)</span>. Since <span class="math">\(S^{(1)}\)</span> and <span class="math">\(S^{(2)}\)</span> are independent, we can consider the probability model as <span class="math">\((\Omega, \mathcal{F}_*, \mathbb{P})\)</span> with
+</p><div class="math">\[
+\mathbb{P}(\{\boldsymbol{\omega}\}) = \mathbb{P}_1(\{\omega_1\})  \mathbb{P}_2(\{\omega_2\}), ~~ \boldsymbol{\omega}\in \Omega,
+\]</div><p>
+where
+</p><div class="math">\[
+\mathbb{P}_k(\{S^{(k)}_u\}) =\frac{n_k}{N_k}, ~ k=1,2.
+\]</div><p>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The probability model illustrated in the above example is only to model uncertainty, not to price assets.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+In <a href="Portfolio And Arbitrage.html#2StockModel.ex">Example &laquo;Click Here&raquo; </a>, let <span class="math">\( \mathbb{P}_1(\{S^{(1)}_u\}) =0.44\)</span> and <span class="math">\( \mathbb{P}_2(\{S^{(2)}_u\}) =0.47\)</span>. Assume that the analyst's recommendations in both the stocks are achieved at the same time <span class="math">\(t_1\)</span>.  If <span class="math">\(s{S}{1} = (1,2,1)\)</span> with <span class="math">\(B=0\)</span>, then find <span class="math">\(\mathbb{P}\big(G_1(s{S}{1})>0\big)\)</span> under the probability measure illustrated in the example.
+<div style="text-align:right;"><b>Answer:</b> <span class="math">\(\approx 0.7032\)</span> </div>
+</div></p><p><h3 id="predictable-strategy">Predictable Strategy</h3></p><p>Since a portfolio at a time is constructed based on the observed asset prices at that time, a collection of portfolios <span class="math">\(\Pi:=\{\Pi_k~|~k=1,2,\ldots\}\)</span> can be viewed as a vector-valued stochastic process in <span class="math">\(\mathbb{R}^{n_b+n_s+n_h}\)</span>. For each <span class="math">\(k\)</span>, <span class="math">\(\Pi_k\)</span> denotes the portfolio created at time <span class="math">\(t_{k-1}\)</span> using the information available up to time <span class="math">\(t_{k-1},\)</span> and held unchanged on the interval <span class="math">\([t_{k-1}, t_k).\)</span> We refer to this portfolio process as a <b>portfolio strategy</b> or simply a <b>strategy</b>.</p><p>We are interested in <b>predictable strategy</b>.</p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Predictable Process</b>]</p><p>A stochastic process <span class="math">\(\{X_k~|~k=1,2,\ldots\}\)</span> defined on a probability space <span class="math">\((\Omega, \mathcal{F},\mathbb{P})\)</span> is said to be <b>predictable</b> with respect to a filtration <span class="math">\(\{\mathcal{F}_k~|~k=0,1,2,\ldots\}\)</span> if <span class="math">\(X_k\)</span> is <span class="math">\(\mathcal{F}_{k-1}\)</span>-measurable, for every <span class="math">\(k=1,2,\ldots\)</span>.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+Note that a random vector <span class="math">\(\boldsymbol{X}_k\)</span> is <span class="math">\(\mathcal{F}_k\)</span>-measurable if each of its component is so.
+</div></p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Trading Strategy</b>]</p><p>A predictable strategy is called a <b>trading strategy</b>.
+</div></p><p>Our next task is to specify a market filtration, which represents the information available to traders over time. In other words, we look for a filtration with respect to which the price process <span class="math">\(\boldsymbol{S}=\{\boldsymbol{S}_t\}\)</span> is adapted (see <a href="Portfolio And Arbitrage.html#adapted.process.def">Definition &laquo;Click Here&raquo; </a>).</p><p>For a given stochastic process <span class="math">\(\boldsymbol{S}\)</span>, we can always choose a filtration which makes the process adapted. Such a filtration, the natural filtration, is already illustrated in <a href="Portfolio And Arbitrage.html#discrete.time.filtration.binomial.ex">Example &laquo;Click Here&raquo; </a>.  We can also construct natural filtration through generated <span class="math">\(\sigma\)</span>-fields from random vectors.</p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Natural Filtration</b>]</p><p>For a given stochastic process <span class="math">\(\boldsymbol{S}\)</span>, the filtration defined by
+</p><div class="math">\[
+\mathcal{F}_k^{S} := \sigma\big(
+					\boldsymbol{S}_j~|~0\le j\le k
+				\big)
+\]</div><p>
+is called the <b>natural filtration</b> for <span class="math">\(\boldsymbol{S}\)</span>.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+Recall, the <span class="math">\(\sigma\)</span>-field generated by two random variables <span class="math">\(X\)</span> and <span class="math">\(Y\)</span> is defined as
+</p><div class="math">\[
+\sigma(X, Y) = \sigma \Big( \{X^{-1}(B) \mid B \in \mathcal{B}(\mathbb{R})\} \cup \{Y^{-1}(B) \mid B \in \mathcal{B}(\mathbb{R})\} \Big),
+\]</div><p>
+where <span class="math">\(\mathcal{B}(\mathbb{R})\)</span> denotes the collection of all Borel sets in <span class="math">\(\mathbb{R}\)</span>. Since <span class="math">\(S_0\)</span> is a constant, <span class="math">\(\mathcal{F}_0^S = \{\emptyset, \Omega\}\)</span>, the trivial <span class="math">\(\sigma\)</span>-field.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Show that the price process <span class="math">\(\mathbf S = \{\mathbf S_k\}\)</span> is adapted to its natural filtration <span class="math">\(\{\mathcal F_k^S\}\)</span>.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Let <span class="math">\(X\)</span> and <span class="math">\(Y\)</span> be two random variables.  Show that
+</p><div class="math">\[
+\sigma(X,Y) = \sigma\left(\{X^{-1}(B) \cap Y^{-1}(C) \mid B, C \in \mathcal{B}(\mathbb{R})\}\right),
+\]</div><p>
+where <span class="math">\(\mathcal{B}(\mathbb{R})\)</span> denotes the collection of all Borel sets in <span class="math">\(\mathbb{R}\)</span>.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+Henceforth, we will consider the natural filteration <span class="math">\(\{\mathcal{F}_t^S\})\)</span> in our market model.  In discrete time setup, we always consider finite filtered probability spaces <span class="math">\((\Omega,\mathcal{F}^*,\mathbb{P}, \{\mathcal{F}_k^S\})\)</span> for a given time partition <span class="math">\(\mathbb{T}_n\)</span> where <span class="math">\(\mathcal{F}_0^S\subset \mathcal{F}_1^S\subset \cdots \subset \mathcal{F}_{n-1}^S \subset \mathcal{F}_n^S\)</span>, with <span class="math">\(\mathcal{F}_0^S = \{\emptyset, \Omega\}\)</span> and  <span class="math">\(\mathcal{F}_n^S = \mathcal{F}^*.\)</span>
+That is, at the initial time no information is available and at the trading horizon <span class="math">\(T\)</span>, a complete information is available.
+</div></p><p>Our next question is the following:</p><p>
+<em>Is every portfolio process a predictable process with respect to the natural filtration?</em></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Give an example of a strategy <span class="math">\(\Pi = \{(\phi_k, \theta_k)\}\)</span> which is not a trading strategy with respect to the natural filtration <span class="math">\(\{\mathcal{F}^{S}_{k}\}\)</span> of the price process <span class="math">\(\{S_k\}\)</span>.
+</div></p><p><h3 id="self-financing-strategy">Self-financing Strategy</h3></p><p>Another important condition that we impose on a trading strategy is the <b>self-financing condition</b>, which rules out any infusion or withdrawal of external capital during the trading period.</p><p><div class="definition" id="self-financing.strategy.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Self-financing Strategy</b>]</p><p>A strategy <span class="math">\(\Pi:=\{\Pi_k~|~k=1,2,\ldots,n\}\)</span> is said to be a <b>self-financing strategy</b> if 
+</p><div class="math">\[
+V_k(\Pi_{k}) = V_{k}(\Pi_{k+1}),
+\]</div><p>
+for every <span class="math">\(k=1,2,\ldots, n-1\)</span>.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Value and Gain of a Strategy</b>]</p><p>The definitions of portfolio value and gain can be extended to strategy as follows:
+<ol class="latex-enumerate">
+<li>The value of a strategy at any time <span class="math">\(t\in [t_0, t_n]\)</span> is defined as
+</p><div class="math">\[
+V_t(\Pi) = V_t(\Pi_k), \text{ if } t\in [t_{k-1}, t_k],~\text{for some}~k=1,2,\ldots, n.
+\]</div><p>
+We also use the notation <span class="math">\(V_t\)</span> to denote the value of a given strategy at time <span class="math">\(t\)</span>.</p><p></li><li>The gain of a strategy at any time <span class="math">\(t\in [t_0, t_n]\)</span> is defined in a similar way.
+</li></ol>
+</div></p><p>Next, we recall a result from basic probability theory, which is used in <a href="Portfolio And Arbitrage.html#predictability.strategy.lem">Problem &laquo;Click Here&raquo; </a> to establish the measurability properties of trading strategies.</p><p><div class="proposition" id="measurability.function.prop">
+<div class="heading-container">
+<b class="heading">Proposition:</b>
+</div>
+</p><p>Let <span class="math">\((\Omega, \mathcal{F})\)</span> be a sample space. Suppose <span class="math">\(X_1, X_2, \dots, X_n: \Omega \to \mathbb{R}\)</span> are <span class="math">\(\mathcal{F}\)</span>-measurable random variables. If <span class="math">\(g: \mathbb{R}^n \to \mathbb{R}\)</span> is a Borel-measurable function, then the function 
+</p><div class="math" >\begin{eqnarray}
+Y = g(X_1, X_2, \dots, X_n)
+\end{eqnarray}<div style="text-align:right;">(3.1)</div></div><p>
+is also <span class="math">\(\mathcal{F}\)</span>-measurable.
+</div></p><p><div class="problem" id="predictability.strategy.lem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+
+Let \( \{S_k\} \) be a stochastic process representing the price of a risky asset in a discrete-time market, and let \( \{ \mathcal{F}_k^S \} \) be the natural filtration generated by the price process.  Suppose <span class="math">\(\{B_k\}\)</span> is a deterministic risk-free price process, <span class="math">\(S_k>0\)</span>, and  <span class="math">\(\{\phi_k\}\)</span> is predictable with respect to \( \{\mathcal{F}_k^S\} \). If  \( \{\Pi_k\}\), with \(\Pi_k = (\phi_k, \theta_k) \), is a self-financing strategy, then show that <span class="math">\(\{\theta_k\}\)</span> is a predictable process with respect to \( \{\mathcal{F}_k^S\} \).
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Show that every predictable process is adapted.  Is the converse true?
+</div></p><p><h2 id="arbitrage.opportunity.sec">Arbitrage Opportunity</h2></p><p>An <b>arbitrage opportunity</b> in a market refers to the existence of a portfolio that yields a non-negative payoff with no possibility of loss and a strictly positive payoff with positive probability.</p><p>Such opportunities often arise in a market due to the mispricing of similar securities traded in different segments of the market.  For theoretical flexibility, one may also include the condition that the initial value of the portfolio is zero.  The concept of arbitrage is fundamental to many financial pricing models and serves as a key principle in understanding market efficiency.  </p><p><h3 id="arbitrage-portfolio">Arbitrage Portfolio</h3></p><p>Let us now  formalize the concept of arbitrage with a rigorous mathematical definition. We begin by defining an arbitrage portfolio, which refers to a portfolio held from time <span class="math">\(0\)</span> to time <span class="math">\(T\)</span>. Later, we will extend this notion to arbitrage strategies in a dynamic trading framework.</p><p><div class="definition" id="arbitrage.portfolio.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Arbitrage Portfolio</b>]
+</p><p>A portfolio <span class="math">\(\Pi\)</span> of a market is said to be an <b>arbitrage portfolio</b> (or simply <b>arbitrage</b>) in a time period <span class="math">\([0,T]\)</span>, say, if it satisfies the following conditions:
+<ol class="latex-enumerate">
+<li><span class="math">\(V(\Pi)(0) = 0,\)</span>
+</li><li><span class="math">\(V(\Pi)(T)\ge 0\)</span>, <span class="math">\(\mathbb{P}\)</span>-a.s. and 
+</li><li><span class="math">\(\mathbb{P}\big(V(\Pi)(T)>0\big)>0\)</span>.
+</li></ol>
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Arbitrage-free market</b>]</p><p>If at least one arbitrage portfolio exists in a market, then we say that the market has <b>arbitrage opportunity</b>.  A market is said to be an <b>arbitrage-free market</b> or a <b>viable market</b> if it provides no arbitrage opportunities.</p><p>
+</div></p><p>The presence of arbitrage indicates inefficiencies in the market, as rational investors would take advantage of these opportunities until the discrepancies are eliminated. In our course, we always assume that the market is viable.</p><p><div class="example" id="arbitrage.bond.portfolio.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+</p><p>Consider a hypothetical situation with two bank offers, Bank-L and Bank-D. Bank-L offers a loan at the continuously compounded rate of 8% per annum, while Bank-D offers a deposit at the rate of 9% per annum, continuously compounded.</p><p>Build a portfolio by making the following investments:
+
+<li>Borrow ₹ 1,00,000 from Bank-L for one year.
+</li><li>Deposit ₹ 1,00,000 in Bank-D.
+
+In this case, we take <span class="math">\(\boldsymbol{B} = \text{(Bank-L, Bank-D)}\)</span> as our market and the portfolio as
+</p><div class="math">\[
+\Pi=(-1,1).
+\]</div><p>
+Then we can see that
+<span class="math">\(V(\Pi)(0) = 0\)</span>. 
+After one year, the deposit in Bank-D gives
+</p><div class="math">\[
+100000\times e^{0.09} \approx \text{₹} 1,09,417.43,
+\]</div><p>
+while the liability with Bank-L is
+</p><div class="math">\[
+100000\times e^{0.08} \approx \text{₹} 1,08,328.71.
+\]</div><p>
+Therefore,
+</p><div class="math">\[
+V(\Pi)(T) = -108328.71 + 109417.43 \approx 1088.72 >0.
+\]</div><p>
+Assuming no credit risk, this positive gain with probability 1 implies an arbitrage opportunity in the market.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+In the above example, the bank offers are often conceptualized as bonds. Therefore, the portfolio is considered to take a short position in the bond offered by Bank-L and a long position in the bond offered by Bank-D.
+</div></p><p>Observe that the arbitrage condition of a portfolio depends on the probability measure that we use.
+In the above example, we have not explicitly defined the probability measure to check the arbitrage condition because the situation is intuitively clear. However, in other scenarios, we may need to consider a suitable probability measure to verify arbitrage conditions.</p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Construct a suitable probability space <span class="math">\((\Omega, \mathcal{F}, \mathbb{P})\)</span> with respect to which the portfolio constructed in <a href="Portfolio And Arbitrage.html#arbitrage.bond.portfolio.ex">Example &laquo;Click Here&raquo; </a> becomes an arbitrage portfolio.
+</div></p><p><h3 id="application:-forward-pricing">Application: Forward Pricing</h3></p><p>In this subsection, we derive a deterministic model for forward price in the simplest scenario where there are no additional costs associated with holding the underlying asset until maturity. Recall that the forward price is the <b>delivery price</b> the buyer has to pay to the writer to own the underlying asset at the expiration time <span class="math">\(t=T\)</span>, whereas no money is exchanged at the time <span class="math">\(t=0\)</span> when the contract is initiated. We denote the delivery price of a contract with the expiration <span class="math">\(t=T\)</span> by <span class="math">\(F(0,T)\)</span>. The forward price evolves in time due to ongoing trades in the forward market and fluctuations in the underlying asset price.  The forward price in the market at any time <span class="math">\(t\in [0,T]\)</span> is denoted by <span class="math">\(F(t,T)\)</span>.  The <b>return</b> in a forward contract for the long position is defined as
+</p><div class="math" id="long.return.eq">\begin{eqnarray}
+R_F(t;0,T) := F(t,T) - F(0,T),~~t\in [0,T].
+\end{eqnarray}<div style="text-align:right;">(3.2)</div></div><p>We make two basic assumptions:
+<ol class="latex-enumerate">
+</li><li><b>Frictionless Trade:</b> We always neglect the cost associated with brokerage, taxes, and any other charges involved in maintaining the portfolio.  Such a valuation  is referred to as the <b>frictionless valuation</b>.
+</li><li><b>Ideal Bank:</b> The prevailing interest rate in a risk-free investment is the same for both lending and borrowing.  Such an instrument is referred to as an <b>ideal bank</b>. Further, we assume that this instrument can lend and borrow any amount of money.
+</li></ol></p><p><div class="theorem" id="Forward.Pricing.Model.NoCost.Thm">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>No-cost Forward Pricing</b>]</p><p>Suppose the underlying asset involves no extra cost throughout the forward contract period. Further, assume that the market is arbitrage-free and allows short trades. Then, under continuous compounding, the forward price at any time <span class="math">\(t\in [0,T]\)</span>  is given by
+</p><div class="math">\[
+F(t,T) = S(t)e^{r(T-t)},
+\]</div><p>
+where <span class="math">\(S(t)\)</span> is the per unit spot price of the underlying asset at time <span class="math">\(t\)</span> and <span class="math">\(r\)</span> is the prevailing risk-free annual interest rate both for lending and borrowing.
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+We prove the theorem for <span class="math">\(t=0\)</span>.  </p><p><b> Case 1</b>:</p><p>Assume the contrary that <span class="math">\(F(0,T)>S(0)e^{rT}\)</span>.  We construct a portfolio as follows:
+
+<li>[<span class="math">\(B\)</span>]: Borrow <span class="math">\(S(0)\)</span> at <span class="math">\(t=0\)</span>.
+</li><li>[<span class="math">\(S^{(1)}\)</span>]: Buy one unit of the underlying asset in the spot market (whose price is  <span class="math">\(S(0)\)</span>).
+</li><li>[<span class="math">\(H^{(1)}\)</span>]: Take a short forward position, <i> i.e.</i>, agree to sell one share of the underlying </p><p><span class="math">\(~~\)</span> asset for <span class="math">\(F(0,T)\)</span> at time <span class="math">\(T\)</span>.
+</p><p>The portfolio thus constructed is denoted by the 3-tuple
+</p><div class="math">\[
+\Pi := (\phi,\theta^{(1)},h^{(1)}),
+\]</div><p>
+where 
+<span class="math">\(\phi = -1, \theta^{(1)}=1, \text{ and } h^{(1)}=-1.\)</span></p><p>The value of the portfolio at <span class="math">\(t=0\)</span> is 
+</p><div class="math" >\begin{eqnarray}
+V(\Pi)(0) &amp;=&amp; \phi\times B(0) + \theta^{(1)}\times S^{(1)}(0) + h^{(1)} \times R_F(0;0,T)\\
+ &amp;=&amp; -S(0) + S(0) = 0.
+ \end{eqnarray}<div style="text-align:right;">(3.3)</div></div><p>
+The value of the portfolio <span class="math">\(\Pi\)</span> at <span class="math">\(t=T\)</span> is 
+</p><div class="math" >\begin{eqnarray}
+V(\Pi)(T) 
+&amp;=&amp; \phi\times B(T) + \theta^{(1)}\times S^{(1)}(T) + h^{(1)}\times R_F(T;0,T) \\
+&amp;=&amp;-S(0)e^{rT} + S(T) + \big(F(0,T)-F(T,T)\big)\\
+&amp;=&amp;F(0,T) - S(0)e^{rT},
+\end{eqnarray}<div style="text-align:right;">(3.4)</div></div><p>
+where we have used the property <span class="math">\(F(T,T) = S(T)\)</span>, which holds in an arbitrage-free market (prove it).</p><p>According to our assumption, it is evident that
+</p><div class="math">\[
+V(\Pi)(T)>0,
+\]</div><p>
+which happens with certainty, and therefore its probability (whichever may be the probability measure) is 1.  Hence, <span class="math">\(\Pi\)</span> is an arbitrage portfolio.  This contradicts our assumption that there is no arbitrage opportunity available in the market.</p><p><b> Case 2</b>:</p><p>On the other hand, assume that <span class="math">\(F(0,T) < S(0)e^{rT}\)</span>. We again can construct an arbitrage portfolio and contradict the viable market assumption.  The proof is left as an exercise.
+</div></p><p>The model suggested in <a href="Portfolio And Arbitrage.html#Forward.Pricing.Model.NoCost.Thm">Theorem &laquo;Click Here&raquo; </a> give a <b>fair value</b> for a forward price given a prevailing interest rate scheme.</p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The second part of the proof involves short-selling the underlying asset in the spot market. It's important to note that, as per market norms in India, short-selling is typically allowed only for intraday trading. Nevertheless, assuming the feasibility of such short sells is justified by the understanding that arbitrageurs, particularly large institutional investors, who already hold the asset in their portfolio, can leverage this opportunity to earn risk-free income from their holdings. In practice, these institutional investors often have a significant impact on the market, and their actions contribute to efficient market dynamics.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+We made two restrictive assumptions in the above pricing model:</p><p><ol class="latex-enumerate">
+</li><li>The interest rate is fixed and known at time <span class="math">\(t\)</span>.
+</li><li>The underlying asset price <span class="math">\(S(t)\)</span> is known at time <span class="math">\(t\)</span>.
+</li></ol></p><p>These assumptions completely neglect the randomness in the pricing process, and the model can only be used with <span class="math">\(t\)</span> as the present time. However, a more realistic model should consider <span class="math">\(r\)</span> as a random variable. If we want to use this model with <span class="math">\(t=0\)</span> as the present time and <span class="math">\(t\in (0,T]\)</span> as a future time, then we have to include stochastic models that simulate <span class="math">\(r_t\)</span> and <span class="math">\(S_t\)</span> as random variables. </p><p>
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+We wish to buy a forward contract on 8<span class="math">\(^{\rm th}\)</span> February 2021 on a stock.  Let the current market price of one share of the stock be ₹ 1272 and the prevailing interest rate be 6% per annum, continuously compounded.  Find the fair forward price for the expiration date on  30<span class="math">\(^{\rm th}\)</span> April of the same year, assuming the stock does not pay any dividend during this period.
+<span class="math">\(~\)</span><div style="text-align:right;"><b> Answer:</b> <span class="math">\(F \approx \)</span> ₹ 1289.47 </div>
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+A forward contract is initiated on 1<span class="math">\(^{\rm st}\)</span> January for a stock with an expiration date of 1<span class="math">\(^{\rm st}\)</span> January of the following year. Assuming a prevailing interest rate of 6% compounded quarterly, determine the percentage change in the forward price in the market on April 1, given that the stock is 10% lower than its price on January 1.</p><p><span class="math">\(~\)</span><div style="text-align:right;"><b> Answer:</b>  <span class="math">\(-11.33\)</span>% </div>
+</div></p><p><h3 id="law.of.one.price.subs">Law of One Price</h3></p><p>The derivative pricing models we derive in later chapters rely on assuming the market is viable.  There are at least two methods that we can use to derive these models:  
+<ol class="latex-enumerate">
+<li><b>Arbitrage Portfolio Approach:</b> First, propose a <b>fair price</b> for the contract and then justify it by showing that any deviation of the proposed fair price can lead to the construction of an arbitrage portfolio contradicting the viable market assumption; and</p><p></li><li><b>Replicating Portfolio Approach:</b> This method involves constructing a portfolio that generates the same payoff as the required instrument at a future time and then applying the <b>law of one price</b>.
+</li></ol></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The first approach is used to justify the forward pricing model and to prove bounds for option premiums.  Whereas, the second approach is used in the future price model and option premium models.
+</div></p><p>The law of one price is a fundamental principle in economics and finance, which states that identical assets should be priced consistently across different markets in an efficient market scenario. We extend this economic principle to a portfolio and give a mathematical framework to it.</p><p><div class="definition">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Law of one price</b>]</p><p>Two portfolios <span class="math">\(\Pi_1\)</span> and <span class="math">\(\Pi_2\)</span> defined on a time interval <span class="math">\([0,T]\)</span> are said to satisfy the <b>law of one price</b> (LOP) if
+</p><div class="math">\[
+V(\Pi_1)(T) = V(\Pi_2)(T),
+\]</div><p>
+then 
+</p><div class="math">\[
+V(\Pi_1)(t) = V(\Pi_2)(t),
+\]</div><p>
+for all <span class="math">\(t\in [0,T]\)</span>.
+</div></p><p>We now prove a sufficient condition for a pair of portfolios to satisfy the law of one price.</p><p><div class="lemma" id="LOP.lemma">
+<div class="heading-container">
+<b class="heading">Lemma:</b>
+</div>
+
+The law of one price holds in a no-arbitrage market.
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+Assume the contrary that there exists a <span class="math">\(t_0\in [0,T)\)</span> such that <span class="math">\(V(\Pi_1)(t_0)<V(\Pi_2)(t_0).\)</span> Then, we can construct an arbitrage portfolio by taking short positions in <span class="math">\(\Pi_2\)</span>, long positions in <span class="math">\(\Pi_1\)</span>, and invest the remaining <span class="math">\(V(\Pi_2)(t_0)-V(\Pi_1)(t_0)\)</span> in a risk-free investment that yields an interest rate of <span class="math">\(r\)</span>.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Show that, in a no-arbitrage market, if <span class="math">\(V(\Pi_1)(T) \le  V(\Pi_2)(T)\)</span> then <span class="math">\(V(\Pi_1)(t) \le  V(\Pi_2)(t)\)</span>, for all <span class="math">\(t\in [0,T).\)</span>
+</div></p><p><h3 id="arbitrage.strategy.ssec">Arbitrage Strategy</h3></p><p>Observe that
+<a href="Portfolio And Arbitrage.html#arbitrage.portfolio.def">Definition &laquo;Click Here&raquo; </a> introduced the concept of arbitrage for a static portfolio. This can be extended to a arbitrage strategy to incorporate dynamic arbitrage.  </p><p><div class="definition" id="arbitrage.strategy.def">
+<div class="heading-container">
+<b class="heading">Definition:</b>
+</div>
+[<b>Arbitrage Strategy</b>]
+</p><p>A strategy <span class="math">\(\Pi:=\{\Pi_k~|~k=1,2,\ldots,n-1\}\)</span> in a market is said to be an <b>arbitrage strategy</b> or (simply <b>arbitrage</b>) if its value process satisfies the following conditions:
+<ol class="latex-enumerate">
+<li><span class="math">\(V_0(\Pi) = 0,\)</span>
+</li><li><span class="math">\(V_k(\Pi_{k}) = V_{k}(\Pi_{k+1}),\)</span> for every <span class="math">\(k=1,2,\ldots, n-1\)</span>,
+</li><li><span class="math">\(V_n(\Pi)\ge 0\)</span>, <span class="math">\(\mathbb{P}\)</span>-a.s. and 
+</li><li><span class="math">\(\mathbb{P}\big(V_n(\Pi)>0\big)>0\)</span>.
+</li></ol>
+</div></p><p>Thus,  a market is said to have <b>arbitrage opportunity</b> if there exists a self-financing strategy <span class="math">\(\Pi\)</span> in the market such that all the conditions in <a href="Portfolio And Arbitrage.html#arbitrage.portfolio.def">Definition &laquo;Click Here&raquo; </a> hold now for the value process of the strategy <span class="math">\(\Pi\)</span>. </p><p>The concept of the law of one price, discussed in <a href="Portfolio And Arbitrage.html#law.of.one.price.subs" class="internal-link">Section  &laquo;Click Here&raquo;</a>, can also be extended to self-financing strategies.</p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+Often we use the notation <span class="math">\(V_k = V_k(\Pi_k) (=V(\Pi_k)(t_k)).\)</span>
+</div></p><p><h3 id="futures.sec">Application: Future Contracts</h3></p><p>A <b>future</b> contract is a derivative instrument that falls under the category of noncontingent claims in financial markets. These contracts represent agreements to buy or sell an underlying asset at a predetermined price on a specified future date, just like how forward contracts function.</p><p>Commonly traded underlying assets in futures contracts include:</p><p><ol class="latex-enumerate">
+<li>Commodities such as agricultural products (e.g., wheat, corn, soybeans), energy products (like crude oil, natural gas), and metals (like gold, silver);</p><p></li><li>Financial instruments such as stock indices, stocks and interest rates; and</p><p></li><li>Currencies.
+</li></ol></p><p>Let us take the period of a future contract as the interval <span class="math">\([0,T]\)</span>, where <span class="math">\(t=0\)</span> marks the moment at which the contract is traded (exchanged between the writer/seller and the holder/buyer) and <span class="math">\(t=T\)</span> is the expiration time (the future market closing time on the expiration date).</p><p>A futures market quotes a price for the underlying asset at every trading time <span class="math">\( t\in [0,T],\)</span> referred to as the <b>future price</b> or the <b>delivery price</b> or the <b>settle price</b>, denote by <span class="math">\(f(t,T)\)</span>. This price represents the value at which the underlying asset is delivered at the expiration time <span class="math">\(T\)</span>.  The price of the same asset at the spot market is often different from the future price, called the <b>spot price</b> and is denoted by <span class="math">\(S(t)\)</span>. Understanding the relationship between the future price and the spot price is important and is the primary focus of this section.</p><p>The basic working mechanism of futures contracts is similar to forward contracts. However,  there are a few key distinctions between them:</p><p><ol class="latex-enumerate">
+<li>Futures contracts are traded on organized exchanges, whereas forwards are typically traded over-the-counter (OTC). </p><p></li><li>Exchanges settle futures contracts on a daily basis through a process called <b>marking to market</b>, which means that the value of the contract is adjusted daily based on current market prices. In contrast, forwards only have physical settlements on the expiration date, where the underlying asset is delivered or exchanged.
+</li></ol></p><p><h4 id="marking-to-market">Marking to Market</h4></p><p>In a futures market, <b>marking to market</b> (MTM) refers to the process of adjusting the value of a futures contract based on the current future price of the underlying asset. This adjustment occurs daily, typically at the end of each trading day. MTM plays a crucial role in managing counterparty risk by ensuring that losses are immediately covered, thus reducing the risk of default.</p><p>First, let's explore how the MTM process operates in an exchange market. 
+Consider a partitioned <span class="math">\(\boldsymbol{t} = (t_0=0, t_1, \ldots, t_{n-1}, t_{n}=T)\)</span> of the interval <span class="math">\([0,T]\)</span>, where each <span class="math">\(t_k\)</span>, for <span class="math">\(k=1,2,\ldots, n\)</span>, is the closing time of the market on the <span class="math">\(k^{\rm th}\)</span> trading day of the future contract. </p><p>
+<li><b> Initiation of Future Contract:</b> 
+At the inception of a future contract (<span class="math">\(t=0\)</span>), both parties involved are required to deposit 5 to 10% of the total delivery price specified in the contract as collateral, known as the <b>margin</b>. This margin serves as a protective measure against potential losses and helps mitigate counterparty risk.</p><p></li><li><b> Daily Marking to Market Process:</b> 
+At the end of each (<span class="math">\(k^{\rm th}\)</span>) trading day, the exchange resets the present delivery price (<span class="math">\(f(t_k,T)\)</span>) of the asset in the futures market as the delivery price of the contract. This reset occurs by transferring the change in delivery price (<span class="math">\(f(t_k,T) - f(t_{k-1},T)\)</span> for long and <span class="math">\(f(t_{k-1},T)- f(t_k,T)\)</span> for short) between the margin accounts of the two parties involved. Thus, MTM process involves a cash flow streams <span class="math">\((\boldsymbol{C},\boldsymbol{t})\)</span>, where <span class="math">\(\boldsymbol{C}= (0, C_1, \ldots, C_n)\)</span> and <span class="math">\(\boldsymbol{t} = (t_0=0, t_1,\ldots, t_n)\)</span>.  The cash flow at time <span class="math">\(t=t_k\)</span>, for <span class="math">\(k=1,2,\ldots, n\)</span>, is defined (for per-unit future contract) as
+</p><div class="math">\[
+C_k = \left\{\begin{array}{ll}
+f(t_k,T) - f(t_{k-1},T),&amp;\text{for long position,}\\
+f(t_{k-1},T)-f(t_k,T),&amp;\text{for short position.}
+\end{array}\right.
+\]</div><p>This ensures that gains or losses are settled daily to maintain fair and transparent market conditions.</p><p>Note that, unlike coupon bonds where we get a deterministic cash flow stream, in futures, we get a random cash flow stream.
+</p><p></li><li><b> Maintenance of Margin:</b>
+If the margin in one of the parties' accounts falls below a certain threshold (typically 50% to 75% of the initial margin deposit), the exchange notifies the respective party to replenish the margin account. The additional funds deposited, known as <b>variation margin</b>, play a crucial role in ensuring that the margin account maintains the minimum level required, referred to as <b>maintenance margin</b>. The exchange actively monitors margin levels and enforces margin requirements to promote market stability and integrity.  Failure to meet the maintenance margin requirement results in the closure of the position by the next trading day.
+</p><p>Let us illustrate the marking to market process in the following example:</p><p><div class="figure">
+
+<img src="Figures/marking2market.png" class="standalone-figure">
+<div style="text-align: center; font-weight: bold;">An illustration of marking to market process. The underlying asset is 250 shares of Reliance and the expiration date is 28-th December 2023. The contract is initiated on 1-st December 2023 at the rate of ₹ 2400 per share.</div>
+
+</div></p><p><div class="example" id="marking.market.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+
+Consider two parties, Party-B (buyer) and Party-S (seller), who entered into a futures contract for the Reliance stock on the 1<span class="math">\(^{\rm st}\)</span> of December 2023 with a delivery price of <span class="math">\(f(0,T)=2400\)</span>. The contract expires on the 28<span class="math">\(^{\rm th}\)</span> of December 2023, and the number of shares in the contract is 250 (lot size). Party-B took a long position, while Party-S took a short position.</p><p>Assuming a margin requirement of 10% of the total trade value at expiry, the exchange requires an initial margin of ₹ 60000 from each party. The marking to market cash flows for Party-B and Party-S are shown in  \tabl{marking.market.tb}, representing the daily adjustments in their margin accounts based on changes in the future price. We refer the table as the <b>marking to market table</b>.</p><p>Assume that a party gets maintenance margin call when the margin account goes below 50% of the requirement.  Then, we see that the margin deposit of Party-S on 18<span class="math">\(^{\rm th}\)</span> December evening had gone below 50% of the total margin requirement.  
+Hence Party-S would have got a maintenance margin call from the exchange on this day to retain the position on the following day.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+A part of the Infosys stock's February future in the year 2021 is shown in the following table:
+<div class="figure">
+
+<img src="Figures/marking2marketExercise.png" class="standalone-figure">
+
+</div>
+Assume that the futures contract is for 600 shares traded at a futures price of ₹ 1262.2 on the 1<span class="math">\(^{\rm st}\)</span> of February.
+Construct the marking to market table and determine which of the two parties will face a maintenance margin requirement if 10% of the total delivery price is blocked as margin and 50% of the margin needs to be maintained.
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Closing a contract</b>]</p><p>The marking to market process continues in a contract until either the expiry date or one of the parties leaves the position by taking an equal and opposite position in the contract. For instance, if Party-B (long) wants to close the position in the contract before expiry, Party-B can enter into a contract of equal quantity (250 in the above example) where the position is a short position. This can be achieved by selling a contract of equal quantity of the same asset with an expiration date <span class="math">\(T\)</span> in the future market. Similarly, if Party-S (short) wants to close the position, Party-S has to buy the same contract (with the same expiration date and asset) of equal quantity. Closing a contract is referred to as <b>offset</b> (or <b>square off</b>) the position.
+</div></p><p><div class="example">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+Let us continue with the example from <a href="Portfolio And Arbitrage.html#marking.market.ex">Example &laquo;Click Here&raquo; </a>. If Party-B wants to off set the long position in the contract on December 8<span class="math">\(^{\rm th}\)</span> (<span class="math">\(=t_6\)</span>), then Party-B should sell a contract consisting of trading 250 shares of the same underlying asset with an expiration date of December 28, 2023. Whatever the delivery price of the contract at the time of selling will be considered as <span class="math">\(f(t_6,T)\)</span> for the new short position of Party-B, and the marking to market process will be applied for that trading day. The total amount accumulated in the margin deposit will be finally paid back to Party-B by the exchange soon after the position is closed. Party-S's process will continue either until Party-S off sets the short position in a similar way or until the expiry.
+</div></p><p><h4 id="pricing-model">Pricing Model</h4></p><p>We now establish the futures pricing model assuming a constant prevailing interest rate throughout the futures contract period.  We justify the model using <b>replicating portfolio</b> approach discussed in <a href="Portfolio And Arbitrage.html#law.of.one.price.subs" class="internal-link">Section  &laquo;Click Here&raquo;</a>.  Since the basic mechanism of a future contract is the same as a forward contract, we construct two strategies, one with a forward contract and the other with an equivalent future contract, so that both lead to the same future value and are deterministic.</p><p>Recall that the future price <span class="math">\(f(t,T)\)</span> (see <a href="Portfolio And Arbitrage.html#future.price.def">Definition &laquo;Click Here&raquo; </a>) of the underlying asset generally differs from the spot price <span class="math">\(S(t)\)</span>.  Similar to forward contracts, the future price <span class="math">\(f(t,T)\)</span> tends to converge to <span class="math">\(S(T)\)</span> as <span class="math">\(t \rightarrow T\)</span>, with <span class="math">\(f(T,T) = S(T)\)</span>.</p><p><div class="theorem" id="pricing.future.thm">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+
+Let the market allow long and short trades with fractional units and be a no-arbitrage market. If the prevailing interest rate remains constant throughout the entire period of the futures contract, then 
+</p><div class="math">\[
+f(0,T) = F(0,T),
+\]</div><p>
+where <span class="math">\(T\)</span> is the expiration time of the contract.
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+<b> Trades based on forward:</b></p><p>Construct a portfolio <span class="math">\(\Pi_F\)</span> with the following trades:
+<ol class="latex-enumerate">
+</li><li>Take a long forward position with forward price <span class="math">\(F(0,T)\)</span> (no cost involved).
+</li><li>Invest <span class="math">\(e^{-rT}F(0,T)\)</span> amount in a risk free asset.
+</li></ol>
+We have <span class="math">\(\Pi_F = (1,0,1)\)</span> and the initial value is
+</p><div class="math">\[
+V(\Pi_F)(0)  = 1\times e^{-rT}F(0,T) + 1\times 0 = e^{-rT}F(0,T) .
+\]</div><p>At time <span class="math">\(T\)</span>,  the value is
+</p><div class="math">\[
+V(\Pi_F)(T)  = 1\times F(0,T)  + 1\times (F(T,T) - F(0,T)) = S(T) .
+\]</div><p><b> Trades based on future:</b></p><p>For the sake of simplicity, we assume that marking to market is performed at just two intermediate time instances, <span class="math">\(0 < t_1 < t_2 < T\)</span>. Thus, we consider the partition <span class="math">\(\{t_0=0, t_1, t_2, t_3=T\}\)</span> for the interval <span class="math">\([0, T]\)</span>.  Note that in futures trading, each partition point <span class="math">\(t_k\)</span> corresponds to a trading day, and therefore, the number of partitions should be equal to the number of trading days until the future expiration time.  The argument below can readily be extended to cover more frequent marking to market.</p><p><b> At time <span class="math">\(t_0=0\)</span>:</b> Construct a portfolio <span class="math">\(\Pi_{{f}_1}\)</span> with the following trades:
+<ol class="latex-enumerate">
+<li>Open a fraction of <span class="math">\(e^{-r(T-t_1)}\)</span> units long in future (no cost involved).
+</li><li>Invest the amount <span class="math">\(e^{-rT}f(0,T)\)</span> in a risk free interest rate investment (this investment will grow to <span class="math">\(f(0,T)\)</span> at time <span class="math">\(T\)</span>).
+</li></ol>
+We have <span class="math">\(\Pi_{{f}_1} = (1,0,e^{-r(T-t_1)})\)</span> with initial value
+</p><div class="math">\[
+V(\Pi^1_f)(0) = 1\times e^{-rT}f(0,T) + e^{-r(T-t_1)}\times 0 = e^{-rT}f(0,T).
+\]</div><p><b> At time <span class="math">\(t_1\)</span>:</b> Make the following adjustments in <span class="math">\(\Pi_{{f}_1}\)</span> to make a new portfolio <span class="math">\(\Pi_{{f}_2}\)</span>:
+<ol class="latex-enumerate">
+<li>Receive (or pay) the amount <span class="math">\(e^{-r(T-t_1)}(f(t_1,T)-f(0,T))\)</span> as a result of marking to market.
+</li><li>Invest (or borrow, depending on the sign)  <span class="math">\(e^{-r(T-t_1)}(f(t_1,T)-f(0,T))\)</span> in a risk free interest rate  investment (this amount will be <span class="math">\(f(t_1,T)-f(0,T)\)</span> at time <span class="math">\(T\)</span>).
+</li><li>Increase the long futures position to <span class="math">\(e^{-r(T-t_2)}\)</span> (no cost involved).
+</li></ol>
+We have <span class="math">\(\Pi_{{f}_2}= \big((1,1), 0, e^{-r(T-t_2)}\big)\)</span>. </p><p><b> At time <span class="math">\(t_2\)</span>:</b> Make the following adjustments in <span class="math">\(\Pi_{{f}_2}\)</span> to make a new portfolio <span class="math">\(\Pi_{{f}_3}\)</span>:
+<ol class="latex-enumerate">
+<li>Receive (or pay) the amount <span class="math">\(e^{-r(T-t_2)}(f(t_2,T)-f(t_1,T))\)</span> as a result of marking to market.
+</li><li>Invest (or borrow, depending on the sign)  <span class="math">\(e^{-r(T-t_2)}(f(t_2,T)-f(t_1,T))\)</span> in a risk free  interest rate  investment (this amount will be <span class="math">\(f(t_2,T)-f(t_1,T)\)</span> at time <span class="math">\(T\)</span>).
+</li><li>Increase the long futures position to 1 unit (no cost involved).
+</li></ol>
+We have <span class="math">\(\Pi_{{f}_3} = \big((1,1,1), 0, 1\big)\)</span>. </p><p><b> At time <span class="math">\(T\)</span>:</b> The value of <span class="math">\(\Pi_{{f}_3}\)</span> at <span class="math">\(t_3=T\)</span> is</p><div class="math" >\begin{eqnarray}
+V(\Pi_{{f}_3})(T) &amp;=&amp; 1\times f(0,T) + 1\times (f(t_1,T)-f(0,T))+ 1\times (f(t_2,T)-f(t_1,T)) \\
+&amp;&amp;~~~~~~~~~~~~+ (f(T,T)-f(t_2,T))\\
+&amp;=&amp; S(T).
+\end{eqnarray}<div style="text-align:right;">(3.5)</div></div><p>Hence, the final wealth at maturity is <span class="math">\(S(T)\)</span>.</p><p>Observe that, the initial investment is <span class="math">\(e^{-rT}f(0,T)\)</span> and the closing value is <span class="math">\(S(T)\)</span>.
+Thus, both the forward portfolio <span class="math">\(\Pi_F\)</span> and the sequence of future portfolios <span class="math">\(\Pi_f:=\{\Pi_{{f}_k}: k = 1,2,3\}\)</span> generate the wealth worth <span class="math">\(S(T)\)</span> at time <span class="math">\(T\)</span>. Since, the market is assumed to be no-arbitrage, by <a href="Portfolio And Arbitrage.html#LOP.lemma">Lemma &laquo;Click Here&raquo; </a>, the law of one price holds for both <span class="math">\(\Pi_F\)</span> and <span class="math">\(\Pi_f\)</span>. Hence, we have
+</p><div class="math">\[
+e^{-rT}F(0,T) = e^{-rT}f(0,T).
+\]</div><p>
+This completes the proof.
+</div></p><p><div class="remark" id="future.pricing.model.rem">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+
+The above theorem suggests that if the interest rate is constant, then the fair future price can be obtained using the formula
+</p><div class="math">\[
+f(t,T) = S(t)e^{r(T-t)},
+\]</div><p>
+assuming that the underlying asset does not involve any extra costs or dividends.
+Deviation of futures prices from this model is typically attributed to anticipated changes in interest rates.
+</div></p><p><div class="example">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+Although the interest rate is not constant in reality, the model proposed in <a href="Portfolio And Arbitrage.html#pricing.future.thm">Theorem &laquo;Click Here&raquo; </a><span class="math">\(~\)</span> serves as an efficient predictor for routine analysis.</p><p>The figure below depicts the comparison of the market future price (settle price) with the model price obtained using the above formula with <span class="math">\(r=0.085\)</span> and the spot price <span class="math">\(S\)</span>. The Reliance stock is used as the underlying asset in the depicted comparison result, where the future is for December 2023, spanning from the 1<span class="math">\(^{\text{st}}\)</span> to the 28<span class="math">\(^{\text{th}}\)</span> of December 2023 (also refer to <a href="Portfolio And Arbitrage.html#marking.market.ex">Example &laquo;Click Here&raquo; </a>).
+</div></p><p><div class="figure">
+
+<img src="Figures/MTMRelianceDec2023.png" class="standalone-figure">
+<div style="text-align: center; font-weight: bold;">Reliance December 2023 future price comparison.</div></p><p>
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Consider a future with 3 months expiry from today. Let the underlying asset be trading in the spot market at ₹ 1270. If the future price is currently trading at ₹ 1287.25, then find the corresponding prevailing interest rate.
+<div style="text-align:right;"><b> Answer:</b> <span class="math">\( r\approx 0.054\)</span> </div>
+</div></p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+There are three possibilities in the asset price movement, namely,
+<ol class="latex-enumerate">
+<li>the asset price grows more than the prevailing interest rate;
+</li><li>the asset price grows, but less than the prevailing interest rate; and
+</li><li>the asset price decreases.
+</li></ol>
+An investor takes a long position if the first case is predicted and takes a short position if one of the other two cases is predicted.
+</div></p><p><div class="project">
+<div class="heading-container">
+<b class="heading">Project:</b>
+</div>
+Write a python code that reads a csv file consisting of a monthly future data and makes another csv file with the following format:</p><p>Date, Settle Price, Model Price, Spot Price</p><p>Here, model price is obtained using the formula given in <a href="Portfolio And Arbitrage.html#future.pricing.model.rem">Remark &laquo;Click Here&raquo; </a>, where <span class="math">\(r\)</span> is taken as an input, whereas <span class="math">\(T\)</span> is obtain by the code itself. Download the input csv file from the following link: 
+<a href="https://www.nseindia.com/report-detail/fo_eq_security" target="_blank">NSE India Contract-wise Price Archives</a>
+</div></p>
+    </div>
+    
+    <script>
+    document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+    document.addEventListener("keydown", function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "s")) {
+            e.preventDefault();
+        }
+    });
+    </script>
+   
+   <footer>
+  © S. Baskar, Department of Mathematics, IIT Bombay. 2026 (This material is licensed under CC BY-NC 4.0.) — Updated: 06-Feb-2026
+</footer>
+
+<style>
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #f8f8f8;
+  color: #888;
+  font-size: 0.75em;
+  text-align: center;
+  padding: 6px 0;
+  border-top: 1px solid #ddd;
+  z-index: 10;               /* low z-index */
+  pointer-events: none;      /* allows clicks to pass through */
+}
+
+/* Small screen adjustments */
+@media (max-width: 600px) {
+  footer {
+    font-size: 0.68em;
+    padding: 4px 0;
+  }
+}
+</style>  
+   
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocButton = document.getElementById('toc-button');
+            const tocPanel = document.getElementById('toc-panel');
+            const closeToc = document.getElementById('close-toc');
+
+            if (localStorage.getItem('tocOpen') === 'true') {
+                tocPanel.classList.add('open');
+                localStorage.removeItem('tocOpen');
+            }
+
+            tocButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                tocPanel.classList.toggle('open');
+            });
+
+            function closeTocPanel() {
+                tocPanel.classList.remove('open');
+            }
+
+            closeToc.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeTocPanel();
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!tocPanel.contains(e.target) && e.target !== tocButton) {
+                    closeTocPanel();
+                }
+            });
+
+            tocPanel.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            document.querySelectorAll('#toc-panel a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (!this.getAttribute('href').startsWith('#')) {
+                        localStorage.setItem('tocOpen', 'true');
+                    }
+                    if (this.hash) {
+                        e.preventDefault();
+                        const target = document.getElementById(this.hash.substring(1));
+                        if (target) {
+                            window.scrollTo({
+                                top: target.offsetTop - 70,
+                                behavior: 'smooth'
+                            });
+                            history.pushState(null, null, this.hash);
+                            if (window.innerWidth < 768) {
+                                closeTocPanel();
+                            }
+                        }
+                    }
+                });
+            });
+
+            if (window.location.hash) {
+                const target = document.getElementById(window.location.hash.substring(1));
+                if (target) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: target.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

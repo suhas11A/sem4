@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiscreteTimeModels</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML ">
+    </script>
+    <style>
+        body, p, li, div {
+        color: black !important;
+        line-height: 1.6;
+        }
+        ol.latex-enumerate, ol.latex-enumerate li {
+            line-height: 1.6 !important;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        /* Updated TOC styles */
+        #toc-panel {
+            font-size: 0.9em;
+        }
+        .toc-chapter, 
+        .toc-section, 
+        .toc-subsection {
+            color: black !important;
+        }
+        .toc-chapter a,
+        .toc-section a,
+        .toc-subsection a {
+            color: black !important;
+            text-decoration: none;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        #toc-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #1a73e8;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        #toc-panel {
+            position: fixed;
+            top: 0;
+            left: -350px;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            padding: 20px;
+            overflow-y: auto;
+            transition: left 0.3s ease-out;
+            will-change: transform;
+        }
+        #toc-panel.open {
+            left: 0;
+        }
+        #close-toc {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #content {
+            padding: 20px;
+            padding-top: 60px;
+            max-width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
+        }
+        .toc-chapter {
+            margin-bottom: 10px;
+            border-left: 3px solid #1a73e8;
+            padding-left: 10px;
+        }
+        .toc-chapter.current {
+            background-color: rgba(26, 115, 232, 0.05);
+        }
+        .chapter-link {
+            font-weight: bold;
+            color: #1a73e8;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+        }
+        .toc-sections {
+            margin-left: 15px;
+            display: none;
+        }
+        .toc-sections.expanded {
+            display: block;
+        }
+        .toc-section {
+            padding: 3px 0;
+            margin-left: 10px;
+        }
+        .toc-subsection {
+            padding: 3px 0;
+            margin-left: 25px;
+            font-size: 0.95em;
+        }
+        .toc-subsubsection {
+            padding: 3px 0;
+            margin-left: 40px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        :target {
+            scroll-margin-top: 80px;
+            animation: highlight 1.5s ease;
+        }
+        @keyframes highlight {
+            0% { background-color: rgba(26, 115, 232, 0.1); }
+            100% { background-color: transparent; }
+        }
+        @media (max-width: 768px) {
+            #toc-panel {
+                width: 85%;
+                left: -90%;
+            }
+            #toc-panel.open {
+                left: 0;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            }
+            #content {
+                transition: transform 0.3s ease-out;
+            }
+            #toc-panel.open ~ #content {
+                transform: translateX(85%);
+            }
+        }
+        .note {
+  background-color: color-mix(in srgb, var(--primary) 7%, white);
+border: 5px solid var(--primary);
+  padding: 5px;
+  margin: 10px;
+}
+.problem {
+  background-color: color-mix(in srgb, var(--primary) 18%, white);
+border: 1px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.example {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 10px;
+  margin: 10px;
+}
+.remark {
+  background-color: var(--environmentBackground);
+border-top: 7px solid var(--primary);
+border-bottom: 7px solid var(--primary);
+border-left: none;
+border-right: none;
+  padding: 20px;
+  margin: 10px;
+}
+.definition {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px double var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.lemma {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.theorem {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+.proofs {
+  background-color: var(--environmentBackground);
+border: 5px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.project {
+  background-color: var(--environmentBackground);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.hint {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.code {
+  background-color: color-mix(in srgb, var(--primary) 13%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+.algorithm {
+  background-color: color-mix(in srgb, var(--primary) 5%, white);
+border: 3px solid var(--primary);
+  padding: 10px;
+  margin: 10px;
+}
+    </style>
+</head>
+<body>
+    <button id="toc-button">☰ Table of Contents</button>
+    <div id="toc-panel">
+        <button id="close-toc">×</button>
+        <h2>Complete Contents</h2>
+        <div class="full-toc">
+
+        <div class="toc-chapter ">
+            <a href="Overview of Financial Systems.html" class="chapter-link">
+                Chapter 1: Overview of Financial Systems
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Overview of Financial Systems.html#FinancialSystem.ch">
+                        Financial System: An Overview
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#financialmarketframework.sec">
+                        Financial Market Framework
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#financial.instrument.ssec">
+                        Financial Instruments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#securities">
+                        Securities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-levels">
+                        Market Levels
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#market-segments">
+                        Market Segments
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#trading-mechanism">
+                        Trading Mechanism
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#marketparticipants.sec">
+                        Market Participants
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#market-makers">
+                        Market Makers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#investors">
+                        Investors
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#speculators">
+                        Speculators
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#hedgers">
+                        Hedgers
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#arbitrageurs">
+                        Arbitrageurs
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Overview of Financial Systems.html#overviewderivatives.sec">
+                        Overview of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#essential-market-terms">
+                        Essential Market Terms
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#purpose-of-derivatives">
+                        Purpose of Derivatives
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#need-for-pricing-models-and-analysis">
+                        Need for Pricing Models and Analysis
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#noncontingentclaims.sec">
+                        Non-Contingent Claims: Forwards, Futures, and Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#forwards-and-futures">
+                        Forwards and Futures
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Overview of Financial Systems.html#swaps">
+                        Swaps
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Overview of Financial Systems.html#options.sec">
+                        Contingent Claims: Options
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="PriceDynamics.html" class="chapter-link">
+                Chapter 2: PriceDynamics
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="PriceDynamics.html#price.dynamics.ch">
+                        Price Dynamics
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="PriceDynamics.html#deterministic-interest-rate-models">
+                        Deterministic Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#discrete-time-models">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#continuous-time-model">
+                        Continuous Time Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#nonconstant.interest.rate.subs">
+                        Non-constant Interest Rate
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#present.value.subs">
+                        Present Value
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#cash-flow-stream">
+                        Cash Flow Stream
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="PriceDynamics.html#stochastic-models">
+                        Stochastic Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#stochastic-processes">
+                        Stochastic Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#stock-price-model">
+                        Stock Price Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#wiener-process">
+                        Wiener Process
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#ito">
+                        It\^{o
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#GBMParameterCalibration.sec">
+                        Parameter Calibration
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="PriceDynamics.html#interest-rate-models">
+                        Interest-rate Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#wiener-integral">
+                        Wiener Integral
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#numerical-simulation">
+                        Numerical Simulation
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#distribution-of-the-stochastic-increment">
+                        Distribution of the stochastic increment
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="PriceDynamics.html#exact-simulation-scheme">
+                        Exact simulation scheme
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Portfolio And Arbitrage.html" class="chapter-link">
+                Chapter 3: Portfolio And Arbitrage
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Portfolio And Arbitrage.html#PortfolioNArbitrage.ch">
+                        Portfolio and Arbitrage
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#portfolioconcepts.ssec">
+                        Portfolio Concepts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#value-and-gain-processes">
+                        Value and Gain Processes
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#market-model">
+                        Market Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#predictable-strategy">
+                        Predictable Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#self-financing-strategy">
+                        Self-financing Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.opportunity.sec">
+                        Arbitrage Opportunity
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage-portfolio">
+                        Arbitrage Portfolio
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#application-forward-pricing">
+                        Application: Forward Pricing
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#law.of.one.price.subs">
+                        Law of One Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#arbitrage.strategy.ssec">
+                        Arbitrage Strategy
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Portfolio And Arbitrage.html#futures.sec">
+                        Application: Future Contracts
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#marking-to-market">
+                        Marking to Market
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsubsection">
+                    <a href="Portfolio And Arbitrage.html#pricing-model">
+                        Pricing Model
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter ">
+            <a href="Basic Concepts of Options.html" class="chapter-link">
+                Chapter 4: Basic Concepts of Options
+            </a>
+            <div class="toc-sections ">
+
+                <div class="toc-item ">
+                    <a href="Basic Concepts of Options.html#BasicConceptsOptions.ch">
+                        Basic Concepts of Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#call.put.sec">
+                        Basic Terminology
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#defining-parameters">
+                        Defining Parameters
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#payoff-and-gain">
+                        Payoff and Gain
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#time-value-in-an-option-price">
+                        Time Value in an Option Price
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="Basic Concepts of Options.html#Bounds.EuropeanOption.sec">
+                        Premium Bounds and Arbitrage Opportunities
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#european-options">
+                        European Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#american-options">
+                        American Options
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#put-call-parity-estimates">
+                        Put-Call Parity Estimates
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="Basic Concepts of Options.html#premium-valuation">
+                        Premium Valuation
+                    </a>
+                </div>
+</div></div>
+
+        <div class="toc-chapter current">
+            <a href="DiscreteTimeModels.html" class="chapter-link">
+                Chapter 5: DiscreteTimeModels
+            </a>
+            <div class="toc-sections expanded">
+
+                <div class="toc-item ">
+                    <a href="DiscreteTimeModels.html#DiscreteTimeModels.ch">
+                        Discrete Time Models
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="DiscreteTimeModels.html#1step.BM.sec">
+                        Single-Step Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="DiscreteTimeModels.html#underlying-model">
+                        Underlying Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="DiscreteTimeModels.html#risk-neutral.probability.1sBM.ssec">
+                        Risk-neutral Probability
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="DiscreteTimeModels.html#Eur.OPM.1S.ssec">
+                        European Option Pricing Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-section">
+                    <a href="DiscreteTimeModels.html#MultiStep.BM.sec">
+                        Multi-step Binomial Model
+                    </a>
+                </div>
+
+                <div class="toc-item toc-subsection">
+                    <a href="DiscreteTimeModels.html#Stock.Price.Model.ssec">
+                        Stock Price Model
+                    </a>
+                </div>
+</div></div>
+</div>
+    </div>
+    <div id="content">
+        <p>
+<h1 id="DiscreteTimeModels.ch">Discrete Time Models</h1></p><p>In 
+<a href="Portfolio And Arbitrage.html" class="internal-link">Chapter: &amp;laquo;Portfolio and Arbitrage&amp;raquo;</a>
+, we derived pricing models for forwards and futures under the assumption that the market does not allow arbitrage opportunity. We now turn our focus to options pricing models, where our aim is to derive models that give the fair price of an option at the present time. Our models rely on certain criteria, namely the fair price criterion, the efficient market hypothesis, and the assumption that the market is arbitrage-free. Since option premiums depend crucially on the dynamics of the underlying asset, it is essential to understand stock price models before getting into option valuation.</p><p>Stock and option pricing models can be classified into two levels based on the time parameter, namely, discrete-time models and continuous-time models. Discrete-time models assume that time evolves in discrete steps (e.g., daily, weekly, or fixed time intervals). They are used to approximate the continuous behavior of stock prices and serve as a foundation for continuous time models.</p><p>In this chapter, we discuss discrete-time models for pricing underlying assets, with a particular focus on stocks, and options. Our primary aim is to understand the binomial pricing model and establish a theoretical framework essential for the analysis of financial models. </p><p>In <a href="DiscreteTimeModels.html#1step.BM.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a>, we introduce the binomial model in its simplest form, involving only the present time and one future time. We keep the discussions simple to understand the basic idea behind the derivation of the model and also to explain why the model provides a fair price for an asset. First, we establish a general mathematical framework for the one-step binomial model for stocks. Then, using a replicating portfolio argument, we derive the option pricing model,  leading to a formula for the option premium at the present time. Using our usual arbitrage portfolio argument, we then prove that the obtained fair price holds in an arbitrage-free market.  In <a href="DiscreteTimeModels.html#MultiStep.BM.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a>, we extend the binomial model to multiple steps, where the stock movement across time levels is assumed to be independent. Again, we prove a mathematical framework for the multi-step binomial model for stocks and then extend our discussion to derive precise pricing models for option premiums with minimum mathematical technicalities. Once the methodology of the binomial model is established, we further refine the concepts in <a href="DiscreteTimeModels.html#martingale.theory.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a> by developing a rigorous mathematical framework based on the theory of martingales.</p><p><h2 id="1step.BM.sec">Single-Step Binomial Model</h2></p><p>Let <span class="math">\(t=0\)</span> denote the present time at which the risky asset is purchased, and let <span class="math">\(t=T\)</span> represent the end time of the investment period. In the case of options, <span class="math">\(T\)</span> corresponds to the expiration time. In a one-step model, we consider only two time steps, <span class="math">\(t_0=0\)</span> and <span class="math">\(t_1=T.\)</span> </p><p>In this section, we derive the single step <b>binomial model</b> for option pricing when the underlying asset is a stock. The same approach can be adapted to other risky assets such as currencies and commodities. We begin by specifying the binomial model for the evolution of the underlying stock price.</p><p><h3 id="underlying-model">Underlying Model</h3></p><p>Since market information in future time is unknown at present, the asset price at a future time remains unpredictable. Consequently, the price movement from its current market value to the next time step is modeled as either an upward or a downward move.  In this sense, stock price evolution is analogous to the outcome of tossing a possibly biased coin.  At each time step, the model specifies the probability of an upward movement and, consequently, the probability of a downward movement.</p><p>The <b>one-step binomial model</b> assumes that the current stock price <span class="math">\(S_0\)</span> is known at the present time <span class="math">\(t_0\)</span> and models the stock price at a future time <span class="math">\(t_1\)</span> as taking only two possible discrete values, denoted by <span class="math">\(S_u\)</span> and <span class="math">\(S_d,\)</span> where <span class="math">\(S_d < S_u.\)</span> </p><p>Let us give a general mathematical framework for the model.</p><p><div class="remark" id="Math.Frame.1step.rem">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>One-step Binomial Model</b>]</p><p>Let <span class="math">\(S_0\)</span> be the given stock price at the present time <span class="math">\(t_0\)</span>.</p><p>A pair of <b>multiplicative factors</b>, denoted by <span class="math">\(d\)</span> and <span class="math">\(u\)</span>, affecting the future stock price are obtained such that <span class="math">\(0 < d < 1 < u\)</span>.  The stock price <span class="math">\(S_{1}\)</span> at some future time <span class="math">\(t=t_1\)</span> is given by
+<ol class="latex-enumerate">
+<li>either  <span class="math">\(S_{1} = S_0 u\)</span> (upward movement) 
+</li><li>or <span class="math">\(S_{1} = S_0 d\)</span> (downward movement).
+</li></ol>
+The model is formalized in a probabilistic framework as follows:</p><p>Consider the probability space <span class="math">\((\Omega, \mathcal{F}_*, \mathbb{P})\)</span>, where 
+
+<li><span class="math">\(\Omega = \{u, d\}\)</span>;
+</li><li><span class="math">\(\mathcal{F}_*\)</span> is the power set of <span class="math">\(\Omega\)</span>; and 
+</li><li><span class="math">\(\mathbb{P}\)</span> is a discrete probability measure given by
+</p><div class="math">\[
+\mathbb{P}(\{\omega\}) = \begin{cases}
+					p,&amp;\text{if}~ \omega=u,\\
+					1-p,&amp;\text{if}~ \omega=d,
+				\end{cases}
+\]</div><p>
+for some <span class="math">\(0< p<1\)</span>.
+
+Define <span class="math">\(S_1\)</span> as the random variable given by
+</p><div class="math">\[
+S_{1}(\omega) = S_0\omega,~~\omega\in \Omega.
+\]</div><p>
+The one-step binomial model involves the parameters <span class="math">\(\{u, d, p\}\)</span>.
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Find <span class="math">\(\mathbb{E}(S_1)\)</span>, where <span class="math">\(S_1\)</span> is the stock price governed by the 1-step binomial model.
+</div></p><p>The multiplication factors <span class="math">\(u\)</span> and <span class="math">\(d\)</span> can be obtained in various ways. One approach is through technical observations of the historical price movement of the stock, as illustrated in <a href="DiscreteTimeModels.html#2StockModel.ex">Example &laquo;Click Here&raquo; </a>. These parameters can also be determined using the logarithmic return model discussed in <a href="DiscreteTimeModels.html#log.return.model.sec" class="internal-link">Section  &laquo;Click Here&raquo;</a>. Similarly, the probability <span class="math">\(p\)</span> can be obtained as an observed probability (see <a href="DiscreteTimeModels.html#2StockModel.ex">Example &laquo;Click Here&raquo; </a> for an ad hoc method of estimating <span class="math">\(p\)</span>) or from the risk-neutral probability derived in the following subsection.</p><p><h3 id="risk-neutral.probability.1sBM.ssec">Risk-neutral Probability</h3></p><p>For a theoretical foundation, we use the <b>risk-neutral probability</b> measure in the <b>binomial model</b>, which we will discuss in this subsection.</p><p>The risk-neutral probability is derived under the assumption that the market does not allow any arbitrage opportunities, <i>i.e.</i>, the market is viable.  We now state an important no-arbitrage condition, whose proof is left as an exercise.</p><p><div class="lemma" id="no-arbitrage.condition.lem">
+<div class="heading-container">
+<b class="heading">Lemma:</b>
+</div>
+</p><p>Let <span class="math">\(t=t_0\)</span> be the present time and <span class="math">\(t_1>t_0\)</span> be a future time.
+Let <span class="math">\(B\)</span> be a risk-free instrument offering a per-period  interest rate of <span class="math">\(\tilde{r}>0\)</span> for the period <span class="math">\([0, T]\)</span>, and <span class="math">\(S\)</span> be a stock following an one-step binomial model <span class="math">\(\{u, d, p\}\)</span>. Then a market consisting of <span class="math">\((B,S)\)</span> is arbitrage-free if and only if
+</p><div class="math" >\begin{eqnarray}
+0 < d < I(\tilde{r}) < u,
+\end{eqnarray}<div style="text-align:right;">(5.1)</div></div><p>
+where
+</p><div class="math" >\begin{eqnarray}
+I(\tilde{r}) = \left\{\begin{array}{ll}
+			e^{\tilde{r}},&amp;\text{for continuously compounded interest} \\
+			(1+\tilde{r}),&amp;\text{for discretely compounded interest}
+		\end{array}\right.
+\end{eqnarray}<div style="text-align:right;">(5.2)</div></div><p>
+</div></p><p><img src="Figures/BLM1Step.png" class="standalone-figure">
+<div class="figure">
+
+<div style="text-align: center; font-weight: bold;">An illustration of 1-step binomial tree discrete compounding.</div>
+
+
+</div></p><p>The above figure illustrates one-step binomial model, where a  discretely compounded risk-free interest scheme is considered.</p><p>The risk-neutral probability for a pair of multiplicative factors can be obtained by adopting the <b>fair game</b> criterion.</p><p><div class="remark" id="fair.game.criterion.rem">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Fair Game Criterion</b>]
+</p><p>The <b>fair game</b> criterion may be stated as</p><p><i>The expected present value of a future claim should be equal to the current value of the claim.</i>
+</div></p><p>The following example motivates the fair game criterion, which leads to the <b>risk-neutral price</b> for the game.</p><p><div class="example" id="risk-neutral.price.prob.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+[<b>Risk-neutral price</b>]</p><p>Consider a game in which a player rolls a six-faced die once. If the outcome belongs to the event <span class="math">\(E_1=\{3,4,5,6\}\)</span>, the player wins ₹ <span class="math">\(S_u=100\)</span>. On the other hand, if the outcome is in <span class="math">\(E_2=\{1,2\}\)</span>, the player receives only ₹ <span class="math">\(S_d = 20\)</span>. The gambling house charges an entry fee of ₹ <span class="math">\(S_0\)</span> to play the game. The question is: What is the fair value of <span class="math">\(S_0\)</span>?</p><p>Assume that the player has to pay the entry fee today and play the game after one year (<span class="math">\(T=1\)</span>). Let <span class="math">\(S_T\)</span> denote the payout at time <span class="math">\(T\)</span>. Given an appropriate risk-free interest scheme, one may take <span class="math">\(S_0\)</span> as the present discounted value of <span class="math">\(S_T\)</span>. However, since <span class="math">\(S_T\)</span> is unknown at the present time <span class="math">\(t_0\)</span>, we need a fair estimate of <span class="math">\(S_0\)</span> that accounts for all possible values of <span class="math">\(S_T\)</span>. </p><p>To this end, we apply the binomial model with the multiplicative factors as
+</p><div class="math">\[
+u = \frac{S_u}{S_0},~~d = \frac{S_d}{S_0}.
+\]</div><p>
+Further, it is necessary to decide upon the probability of winning the game. In this context, the probability of winning is clearly <span class="math">\(\mathbb{P}(E_1) = 2/3\)</span>. Thus, the expected value of the bet is <span class="math">\(\mathbb{E}(S_T)   \approx 73.33.\)</span></p><p>By taking the present discounted value of <span class="math">\(\mathbb{E}(S_T) \)</span> as the fair entry fee, we obtain <span class="math">\(S_0\)</span>, in accordance with the fair game criterion stated in <a href="DiscreteTimeModels.html#fair.game.criterion.rem">Remark &laquo;Click Here&raquo; </a> and is given by
+</p><div class="math">\[
+S_0 = \frac{1}{I(\tilde{r})} \mathbb{E}(S_T).
+\]</div><p>
+This price is referred to as the <b>risk-neutral price</b> for the game, given the specific risk-free instrument.</p><p>In particular, if we consider a continuous compounding scheme with an annual rate of <span class="math">\(\tilde{r}=0.07\)</span>, then <span class="math">\(S_0 \approx 68.37\)</span>.
+</div></p><p>In the above example, the probability of success is explicitly determined by the rules of the game. However, this is not always the case. For instance, consider a scenario where a trader must decide whether to buy or sell a stock with given up and down prices <span class="math">\(S_u\)</span> and <span class="math">\(S_d\)</span> (similar to the setting in <a href="DiscreteTimeModels.html#2StockModel.ex">Example &laquo;Click Here&raquo; </a>), respectively. Then the probability of success is not apparent. Nevertheless, we know the current price <span class="math">\(S_0\)</span> of the stock from the market. This leads to the following inverse question:</p><p>Given <span class="math">\(S_0\)</span> (not necessarily the risk-neutral price), what is the <b>implied probability</b> that is consistent with <span class="math">\(S_0\)</span> under a risk-free scheme with a given prevailing interest rate?</p><p>The following example illustrates the concept of implied probability in this context.</p><p><div class="example" id="fair.game.prob.ex">
+<div class="heading-container">
+<b class="heading">Example:</b>
+</div>
+</p><p>Let the prevailing annual interest rate be 6% with continuously compounded interest scheme and the stock at time <span class="math">\(t_0=0\)</span> be <span class="math">\(S_0=\)</span>₹ 750. Assume that the stock price in one year will be one of the two values ₹1260 or ₹ 675. Then the aim is to find the probability that it takes the value 1260.</p><p>The present values of the two possible values are given by
+</p><div class="math">\[
+PV(1260) = 1260 e^{-0.06}  \approx 1186.62
+		~~ \text{and}~~
+PV(675) = 675 e^{-0.06}  \approx 635.69.
+\]</div><p>
+Using the <b>fair game</b> criterion, we have
+</p><div class="math">\[
+1186.62 p + 635.69 (1-p) = 750.
+\]</div><p>
+This gives
+<span class="math">\(p\approx 0.2075.\)</span>
+</div></p><p><div class="remark" id="fair.game.prob.rem">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Risk-neutral Probability</b>]</p><p>The probability obtained in the above example is called the <b>risk-neutral probability</b>. Let us now derive the general formula for the risk-neutral probability.</p><p>Let the per-period interest rate be <span class="math">\(\tilde{r}\)</span> and let <span class="math">\(u\)</span> and <span class="math">\(d\)</span> be such that <span class="math">\(0<d<I(\tilde{r})<u\)</span> (no-arbitrage condition as in <a href="DiscreteTimeModels.html#no-arbitrage.condition.lem">Lemma &laquo;Click Here&raquo; </a>). Let <span class="math">\(S_T\)</span> be the price of the stock at time <span class="math">\(t=T\)</span>, and its two possible values are specified in the one-step binomial model. Then, the expectation of <span class="math">\(S_T\)</span> is given by
+</p><div class="math">\[
+\mathbb{E}(S_T) = S_0 u\, p + S_0 d\, (1-p).
+\]</div><p>
+By imposing the fair game criterion (<a href="DiscreteTimeModels.html#fair.game.criterion.rem">Remark &laquo;Click Here&raquo; </a>), we obtain an expression for <span class="math">\(p\)</span>, which we denote by <span class="math">\(p^*\)</span> given by
+</p><div class="math">\[
+p^* = \frac{I(\tilde{r})-d}{u-d}.
+\]</div><p>
+Using the no-arbitrage condition in <a href="DiscreteTimeModels.html#no-arbitrage.condition.lem">Lemma &laquo;Click Here&raquo; </a>, we see that <span class="math">\(p^*\in (0,1)\)</span> and hence we can regard this as probability of the stock moving upward and is called the <b>risk-neutral probability</b>.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+We use the notation
+</p><div class="math">\[
+\mathbb{E}^*(S_T) 
+= S_0u p^* + S_0d (1-p^*).
+\]</div><p>
+</div></p><p><div class="problem" id="risk-neutral.price.prob.problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+
+Let the prevailing continuously compounding interest rate be 7% per annum.  On  the 2<span class="math">\(^{\rm nd}\)</span> of January 2023, Mrs. Sahana conducted her own analysis of the TCS stock price and predicted that the per-share price will either touch <span class="math">\(S_u=3650\)</span> on the 2<span class="math">\(^{\rm nd}\)</span> of January 2024 or it will touch <span class="math">\(S_d = 3175\)</span> on the same day.  Answer the following:
+<ol class="latex-enumerate">
+</li><li>If Mrs. Sahana is confident about her prediction that the share price will touch  <span class="math">\(S_u\)</span> with her observed probability 0.7, then find the risk-neutral price of the stock on  the 2<span class="math">\(^{\rm nd}\)</span> of January 2023. <div style="text-align:right;"><b> Answer:</b> <span class="math">\(\approx\)</span> 3270.37 </div>
+</li><li>If the traded price of the stock on the 2<span class="math">\(^{\rm nd}\)</span> of January 2023 is ₹ 3285 per share, then find the risk-neutral probability that the stock will touch <span class="math">\(S_u\)</span> on the 2<span class="math">\(^{\rm nd}\)</span> of January 2024. <div style="text-align:right;"><b> Answer:</b> <span class="math">\(\approx\)</span> 0.73303 </div>
+</li></ol>
+</div></p><p><h3 id="Eur.OPM.1S.ssec">European Option Pricing Model</h3></p><p>The aim of options theory is to develop models that determine a fair price for a given option. In this section, we derive the one-step binomial pricing model based on the corresponding stock model formulated in the previous subsection.  </p><p>We develop the one-step binomial pricing model for European options. The time partition of the option period <span class="math">\([0, T]\)</span> is taken as <span class="math">\(\mathbb{T}_1 = \{t_0=0, t_1=T\}\)</span>, where the underlying stock price at time <span class="math">\(t_0\)</span> is <span class="math">\(S_0\)</span>, and at expiration time <span class="math">\(T\)</span>, it is <span class="math">\(S_T\)</span>. </p><p>To motivate the derivation, we build the intuitive framework from the writer's perspective.  </p><p>The key question is:</p><p><i>How much should the writer have in hand at time <span class="math">\(t_0\)</span> to fulfill the obligation of settling the option contract at expiration <span class="math">\(T\)</span>?</i>  </p><p>This leads to the fundamental problem of <b>hedging</b> the option position.</p><p>The writer's obligation at time <span class="math">\(T\)</span> is the payoff <span class="math">\(H_T\)</span> of the option, where
+</p><div class="math">\[
+H_T := \begin{cases}
+		\max(0, S_T - K), &amp; \text{for call option}\\
+		\max(0,K - S_T), &amp; \text{for put option}.
+  	   \end{cases}
+\]</div><p>
+Since the premium must be determined at time <span class="math">\(t_0\)</span>, <span class="math">\(S_T\)</span> is unknown and must be treated as a random variable.  In the one-step binomial model, <span class="math">\(S_T\)</span> is assumed to take two possible values, scaled by the multiplication factors <span class="math">\(u\)</span> and <span class="math">\(d\)</span>, which satisfy the no-arbitrage condition <a href="DiscreteTimeModels.html#no-arbitrage.condition.lem">Lemma &laquo;Click Here&raquo; </a> for a given risk-free instrument with a given prevailing interest rate.</p><p>Let us define
+</p><div class="math" id="HT.Values.1SBM.eq">\begin{eqnarray}
+H_T^\omega = \begin{cases}
+		\max(0,S_0\omega - K), &amp; \text{for call option}\\
+		\max(0,K - S_0\omega), &amp; \text{for put option},
+  	   \end{cases};~~\omega= u, d.
+\end{eqnarray}<div style="text-align:right;">(5.3)</div></div><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+<b>Caution on Notation:</b>
+The discussion in this section does not restricted to call or put options; it applies to both cases. Hence, we use the notation <span class="math">\(H\)</span> to represent the option premium.   Also, for notational convenience, we omit the superscripts <span class="math">\(e\)</span> and <span class="math">\(a\)</span>, which indicate European and American options, respectively,  whenever the distinction is clear, as they are mostly discussed separately in their respective subsections.
+</div></p><p>Recall from <a href="DiscreteTimeModels.html#spot.pf.rem">Remark &laquo;Click Here&raquo; </a> that a spot portfolio consists of two vector components representing the spot market positions in risk-free and risky assets. We consider a spot portfolio with single position in each asset, denoted by <span class="math">\(\Pi = (\phi, \theta)\)</span>, where <span class="math">\(\phi\)</span> denotes the number of units held in the risk-free asset, and <span class="math">\(\theta\)</span> denotes the number of units held in the risky asset.  Recall, a negative value of a component indicates a short position in the asset, whereas a positive value indicates a long position.</p><p>To meet the payoff obligation, the writer must construct a spot portfolio <span class="math">\(\Pi_1 = (\phi_1, \theta_1)\)</span> at time <span class="math">\(t_0=0\)</span> such that the value of the portfolio at <span class="math">\(t_1=T\)</span> equals the payoff <span class="math">\(H_1 (=H_T)\)</span>.  In other words, the writer must set up the spot portfolio <span class="math">\(\Pi_1\)</span> such that
+</p><div class="math" id="RS1S.condition">\begin{eqnarray}
+V_1(\Pi_1) = H_1.
+\end{eqnarray}<div style="text-align:right;">(5.4)</div></div><p>
+Such a portfolio is called the <b>replicating portfolio</b> or the <b>hedge portfolio</b> for the option <span class="math">\(H\)</span>.  It completely eliminates the writer's risk in selling the option, irrespective of whether the stock takes the upward or downward value at time <span class="math">\(t_1=T\)</span> considered in the one-step binomial model. </p><p>Although the hedge portfolio meets the payoff obligation, the writer has to spend an initial cost to set up the portfolio at time <span class="math">\(t_0\)</span>. Naturally, the writer would charge at least the initial cost of this portfolio as the option premium. Observe that any amount more than this initial value would be a risk-less profit for the seller. Consequently, a rational buyer would be willing to pay, at most, the initial value of the hedge portfolio.</p><p>Let us now derive the formula for the option premium in the one-step binomial model, building on the intuitive ideas discussed above.</p><p><b> Step 1:</b> [<i> Constructing a replicating portfolio</i>]</p><p>The portfolio <span class="math">\(\Pi_1 = (\phi_1,\theta_1)\)</span> needs to be constructed at <span class="math">\(t_0\)</span>.  Assume that the corresponding prices are <span class="math">\((B_0,S_0)\)</span> and the per-period prevailing interest rate is <span class="math">\(\tilde{r}\)</span>. </p><p>Since there are two possibilities for <span class="math">\(S_1\)</span> at the time level <span class="math">\(t_0\)</span>, the replicating condition <a href="#RS1S.condition">(5.4)</a> leads to the linear system 
+</p><div class="math" id="RS1S.linearsystem">\begin{eqnarray}
+\left.\begin{array}{l}
+\phi_1 B_0 I(\tilde{r}) + \theta_1 S_0d = H_{T}^d,\\
+\phi_1 B_0 I(\tilde{r}) + \theta_1 S_0u = H_{T}^u,
+\end{array}\right\}
+\end{eqnarray}<div style="text-align:right;">(5.5)</div></div><p>
+where <span class="math">\(I(\tilde{r})\)</span> is given by <a href="DiscreteTimeModels.html#no-arbitrage.condition.lem">Lemma &laquo;Click Here&raquo; </a> and <span class="math">\(H_{T}\)</span> values are given by <a href="#HT.Values.1SBM.eq">(5.3)</a>. We can obtain <span class="math">\(\Pi_1\)</span> by solving the linear system <a href="#RS1S.linearsystem">(5.5)</a>.  Since <span class="math">\(u>d\)</span>, the system  <a href="#RS1S.linearsystem">(5.5)</a> has a unique solution.  Hence, for a given <span class="math">\(\tilde{r}>0\)</span>, every option with the underlying asset following the one-step binomial model possesses a unique replicating portfolio at any time <span class="math">\(t < T\)</span>.</p><p>Solving the system <a href="#RS1S.linearsystem">(5.5)</a> yields
+</p><div class="math" id="RS1S.solution">\begin{eqnarray}
+\phi_1 = \frac{uH_{T}^d - dH_{T}^u}{B_0 I(\tilde{r})(u-d)}~~\text{and}~~
+\theta_1 = \frac{H_{T}^u - H_{T}^d}{S_0(u-d)}.
+\end{eqnarray}<div style="text-align:right;">(5.6)</div></div><p>
+For a given set of parameters <span class="math">\(\{\tilde{r}, u, d, B_0, S_0\}\)</span>, the portfolio <span class="math">\(\Pi_1\)</span> constructed using the formulae <a href="#RS1S.solution">(5.6)</a> at the present time <span class="math">\(t_0\)</span> is  the {replicating portfolio} or the hedge portfolio for the option position to be hedged.</p><p><b> Step 2:</b> [<i> Matching the initial investment</i>]</p><p>The initial investment is given by</p><div class="math">\[
+V_0 = \phi_1 B_0 + \theta_1 S_0.
+\]</div><p>
+Using <a href="#RS1S.solution">(5.6)</a>, we get
+</p><div class="math">\[
+V_0 = \frac{H_{T}^u}{I(\tilde{r})}p^* +  \frac{H_{T}^d}{I(\tilde{r})} (1-p^*),
+\]</div><p>
+where
+</p><div class="math" id="RNP.eq">\begin{eqnarray}
+p^* =  \frac{I(\tilde{r})-d}{(u-d)}
+\end{eqnarray}<div style="text-align:right;">(5.7)</div></div><p>
+is the risk-neutral probability. By the definition of expectation, we have
+</p><div class="math">\[
+\mathbb{E}^*(H_{T}^*) =  \frac{H_{T}^u}{I(\tilde{r})}p^* +  \frac{H_{T}^d}{I(\tilde{r})} (1-p^*),
+\]</div><p>
+where <span class="math">\(H_{T}^* = \frac{H_T}{I(\tilde{r})}\)</span> is the discounted payoff of the option.</p><p>In the following theorem, we prove that the option price derived using the replicating portfolio argument also holds in an arbitrage-free market.</p><p><div class="theorem" id="1-step.pricing.thm">
+<div class="heading-container">
+<b class="heading">Theorem:</b>
+</div>
+[<b>One-Step Binomial Model</b>]</p><p>Consider a set of parameters <span class="math">\(\{\tilde{r}, u, d, B_0, S_0\}\)</span>.   For a given option, if <span class="math">\(\Pi_1\)</span> is a replicating portfolio in a no-arbitrage market for a given European option, then the price <span class="math">\(H_0\)</span> of the option at the present time <span class="math">\(t_0=0\)</span> is given by </p><div class="math">\[
+H_0 = \mathbb{E}^*(H_{T}^*).
+\]</div><p>
+</div></p><p><div class="proofs">
+<div class="heading-container">
+<b class="heading">Proof:</b>
+</div>
+</p><p>Suppose that <span class="math">\(H_0>\phi_1 B_0 + \theta_1 S_0\)</span> (why are we assuming this?).</p><p>In this case, we construct a portfolio <span class="math">\(\Pi_1\)</span> at <span class="math">\(t=0\)</span> with the following trades:
+
+<li>write one option with premium <span class="math">\(H_0\)</span>;
+</li><li>take a long position in the portfolio <span class="math">\(\Pi_1=(\phi_1, \theta_1)\)</span>; and
+</li><li>invest remaining money in a risk-free instrument.
+
+Then the initial investment is
+</p><div class="math">\[
+V(\Pi_1)(0) = 1\times (H_0 - (\phi_1 B_0 + \theta_1 S_0) ) +  1\times (\phi_1 B_0 + \theta_1 S_0) + -1\times H_0 = 0.
+\]</div><p>
+At time <span class="math">\(t=T\)</span>,  the value of the portfolio <span class="math">\(\Pi_1\)</span> is
+</p><div class="math">\[
+V(\Pi_1)(T) = \big(H_0 - (\phi_1 B_0 + \theta_1 S_0)\big)\,I(\tilde{r})
+				+ \phi_1 B_0\,I(\tilde{r}) + \theta_1 S_T
+					- H_T.
+\]</div><p>
+Using replicating strategy, we see that </p><div class="math">\[
+V(\Pi_1)(T)  =  \big(H_0 - (\phi_1 B_0 + \theta_1 S_0)\big)\,I(\tilde{r}) >0
+\]</div><p>
+irrespective to whether the stock goes up or down.  Thus, <span class="math">\(\Pi_1\)</span> is an arbitrage portfolio.</p><p>Similarly, we can construct an arbitrage portfolio for the case when  <span class="math">\(H_0<\phi_1 B_0 + \theta_1 S_0.\)</span>
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+For a fixed real number <span class="math">\(d\in (0,1)\)</span> and <span class="math">\(\tilde{r}>0\)</span>, consider <span class="math">\(C^{e}_0=C^{e}_0(u)\)</span>, for <span class="math">\(u\in (1+\tilde{r},\infty)\)</span>. If the option price <span class="math">\(C^{e}_0\)</span> is governed by 1-step binomial model, then show that <span class="math">\(C^{e}_0\)</span> is a non-decreasing function (of <span class="math">\(u\)</span>).
+</div></p><p><div class="problem" id="1-step.ex.problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+
+On 1<span class="math">\(^{\rm st}\)</span> March 2021, Infosys was trading at ₹ 1267 per share. Mr. Megh predicted that the stock's closing price would either be at ₹ 1340 or ₹ 1160 per share on 25<span class="math">\(^{\rm th}\)</span> March 2021. Mr. Megh also has an opportunity to invest or borrow in a risk-free instrument offering <span class="math">\(r=0.0039\)</span> with discrete compounding during the period of 1<span class="math">\(^{\rm st}\)</span> to 25<span class="math">\(^{\rm th}\)</span> March 2021. If Mr. Megh wants to buy a 1260-strike European call option with expiration 25<span class="math">\(^{\rm th}\)</span> March 2021, then find the fair price of the option with respect to the predicted spot market prices. </p><p><div style="text-align:right;"><b>Answer:</b> 49.58 </div>
+</div></p><p><h2 id="MultiStep.BM.sec">Multi-step Binomial Model</h2></p><p>We now extend the binomial model to multiple steps (also called <b>binomial lattice model</b> or <b>binomial tree model</b>).  As in the one-step case, we first establish the mathematical framework for the underlying stock and then derive the model for option premiums in arbitrage-free markets.</p><p><h3 id="Stock.Price.Model.ssec">Stock Price Model</h3></p><p>One can understand the multi-step binomial model by drawing an analogy to repeatedly tossing multiple coins or tossing a single coin multiple times.</p><p>Starting from <span class="math">\(t_0=0\)</span>, one can apply the one-step binomial model sequentially to progress to any time <span class="math">\(t_{n}\)</span>, where <span class="math">\(n=1,2,\ldots\)</span>. This process forms the <b>multi-step binomial model</b>, more precisely referred to as the <span class="math">\(n\)</span>-step binomial  model.  </p><p>Assume that a stock is purchased at the present time <span class="math">\(t_0=0\)</span> for an amount of <span class="math">\(S_0\)</span> per share.  Also, assume that the stockholder has to sell the stock at some future time <span class="math">\(t_n=T>0\)</span>.</p><p>To construct an <span class="math">\(n\)</span>-step binomial model, first consider the uniform partition 
+</p><div class="math">\[
+\mathbb{T}_n := \left\{t_0=0, t_1=\frac{T}{n}, t_2=\frac{2T}{n}, \ldots, t_{n-1} = \frac{(n-1)T}{n}, t_n=T\right\}
+\]</div><p>
+of the holding period <span class="math">\([0,T]\)</span>.  Discrete time models assume that the transactions occur only at times <span class="math">\(t\in \mathbb{T}_n\)</span> and hence are developed to work on a given time partition instead of the whole interval <span class="math">\([0,T]\)</span>.</p><p>The stock price at each time <span class="math">\(t=t_k\)</span>, for <span class="math">\(k=0,1,\ldots,n\)</span>, is denoted by <span class="math">\(S(t_k)\)</span> or  <span class="math">\(S_k\)</span> (for notational convenience). In the <span class="math">\(n\)</span>-step binomial model, the stock price process <span class="math">\(\{S_k~|~k=1,2,\ldots, n\}\)</span> is formulated as follows:</p><p>Given <span class="math">\(S_{k-1}\)</span> at time <span class="math">\(t=t_{k-1}\)</span>, for <span class="math">\(k=1,\ldots, n\)</span>, the binomial model assumes only two possibilities for <span class="math">\(S_{k}\)</span>, namely,
+<ol class="latex-enumerate">
+</li><li><span class="math">\(S_{k} = S_{k-1} u_k\)</span>, for some upward factor <span class="math">\(u_{k}>1\)</span>, which is referred to as an upward movement; and
+</li><li><span class="math">\(S_{k} = S_{k-1} d_k\)</span>, for some downward factor <span class="math">\(d_{k}<1\)</span>, which is referred to as downward movement.
+</li></ol>
+The process of <b>flow of information</b> starts at the initial time <span class="math">\(t_0\)</span> (<span class="math">\(=0\)</span>), where <span class="math">\(S_0\)</span> is known and it continues till the expiry time <span class="math">\(t=t_n\)</span> (<span class="math">\(=T\)</span>). Consequently, we have a set of paths
+</p><div class="math">\[
+\Omega=\Omega_1\times \Omega_2\times\ldots\times \Omega_{n}
+\]</div><p>
+where <span class="math">\(\Omega_k = \{u_k, d_k\}\)</span>, for each <span class="math">\(k=1,2,\ldots, n\)</span>. Elements of <span class="math">\(\Omega\)</span> are denoted by the <span class="math">\(n\)</span>-tuple <span class="math">\(\boldsymbol{\omega}=(\omega_1,\omega_2,\ldots, \omega_{n})\)</span>, where each <span class="math">\(\omega_k\)</span> takes a value of either <span class="math">\(u_k\)</span> or <span class="math">\(d_k\)</span> with <span class="math">\(0 < d_k < 1 < u_k,\)</span> for <span class="math">\(k=1,\ldots,n\)</span>. </p><p>For any given <span class="math">\(k\in \{1,2,\ldots,n\}\)</span> we use the notation 
+</p><div class="math">\[
+\Omega_k' = \Omega_1\times\ldots\times \Omega_k ~\text{and}~
+	\Omega_k'' = \Omega_{k+1}\times\ldots\times \Omega_n.
+\]</div><p>
+With these notations, we can write <span class="math">\(\Omega = \Omega_k'\times\Omega_k''\)</span>, for each <span class="math">\(k=1,2,\ldots,n\)</span>, and  therefore any <span class="math">\(\boldsymbol{\omega}\in \Omega\)</span> can be written as <span class="math">\(\boldsymbol{\omega} = (\boldsymbol{\omega}_k',\boldsymbol{\omega}_k'')\)</span> with <span class="math">\(\boldsymbol{\omega}_k'\in \Omega_k'\)</span> and <span class="math">\(\boldsymbol{\omega}_k''\in \Omega_k''\)</span>. </p><p>For any given <span class="math">\(\boldsymbol{\omega}_k'\in \Omega_k'\)</span>, define
+</p><div class="math">\[
+B_{\boldsymbol{\omega}_k'} := \big\{(\boldsymbol{\omega}_k',\boldsymbol{\omega}_k'')\in \Omega~|~ \boldsymbol{\omega}_k''\in \Omega_k''\big\}.
+\]</div><p>
+We can see that, for any given <span class="math">\(k\in \{1,2,\ldots,n\}\)</span>, 
+</p><div class="math" id="Partition.nStepBM.eq">\begin{eqnarray}
+\texttt{P}_k = \{B_{\boldsymbol{\omega}_k'}~|~\boldsymbol{\omega}_k'\in \Omega_k' \}
+\end{eqnarray}<div style="text-align:right;">(5.8)</div></div><p>
+forms a partition of <span class="math">\(\Omega\)</span>.  Also, we can see that <span class="math">\(\texttt{P}_{k+1}\)</span> is finer than <span class="math">\(\texttt{P}_k\)</span>, for <span class="math">\(k=1,2,\ldots,n-1\)</span>.</p><p>We use the convention that <span class="math">\(\texttt{P}_0 = \{\Omega\}\)</span>.</p><p>For theoretical reasons, we need to assume that the outcome at any time step <span class="math">\(t=t_k\)</span> is independent of the outcomes at all the previous time steps.  Although this assumption is intuitive in the case of repeated coin tosses, its validity in stock price processes is less obvious. </p><p>In financial markets, the well-known <b>efficient market hypothesis</b> may be used as a motivation for modeling successive price changes as independent in simple discrete-time models.</p><p><div class="remark">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+[<b>Efficient market hypothesis</b>]</p><p>The <b>efficient market hypothesis</b> may be stated as follows:</p><p><i>The current price of a risky asset fully reflects all available information, and changes only in response to new information.</i>
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The efficient market hypothesis suggests that stock price changes are unpredictable based on past information. A simple mathematical representation of this idea is the random walk model, in which successive returns are
+modeled as independent and identically distributed random variables.
+Although this assumption is stronger than what market efficiency strictly
+requires, it provides a convenient starting point for discrete-time
+models such as the binomial model.
+</div></p><p>In the derivation of the model, we assume that the successive returns (or equivalently the up/down movements of the stock price) are independent and identically distributed. Consequently,  the probability space <span class="math">\((\Omega, \mathcal{F}_*, \mathbb{P})\)</span> is given by the product space 
+</p><div class="math" id="product.space.eq">\begin{eqnarray}
+\Omega=\Omega_1\times \Omega_2\times\ldots\times \Omega_{n},~~
+\mathbb{P}(\{\boldsymbol{\omega}\}) =\prod_{k=1}^{n} \mathbb{P}_k(\{\omega_k\}),
+\end{eqnarray}<div style="text-align:right;">(5.9)</div></div><p>
+for <span class="math">\(\boldsymbol{\omega}=(\omega_1,\omega_2,\ldots, \omega_{n})\in \Omega\)</span>.</p><p>An <span class="math">\(n\)</span>-step <b>binomial model</b> defines the stock price <span class="math">\(S_n\)</span> at <span class="math">\(t=T\)</span> as
+a random variable given by
+</p><div class="math">\[
+S_n(\boldsymbol{\omega}) = S_0\prod_{j=1}^{n} \omega_j,~~\boldsymbol{\omega}=(\omega_1,\omega_2,\ldots,\omega_{n})\in \Omega,
+\]</div><p>
+where each <span class="math">\(\omega_k\in \{u_k, d_k\}\)</span> with <span class="math">\(0 < d_k < 1 < u_k,\)</span> for <span class="math">\(k=1,\ldots,n\)</span>. </p><p>The parameters involved in an <span class="math">\(n\)</span>-step binomial model are given by the set <span class="math">\(\{\boldsymbol{u}, \boldsymbol{d}, \boldsymbol{p}\}\)</span> where <span class="math">\(\boldsymbol{u}=(u_1, u_2,\ldots, u_{n}),\)</span> <span class="math">\(\boldsymbol{d}=(d_1, d_2,\ldots, d_{n}),\)</span> and <span class="math">\(\boldsymbol{p}=(p_1, p_2,\ldots, p_{n}),\)</span> are <span class="math">\(n\)</span>-dimensional vectors representing the upward factors, downward factors, and associated probabilities.</p><p>It is customary to assume  
+</p><div class="math">\[
+u_1=u_2=\ldots=u_{n}=u,~ d_1=d_2=\ldots=d_{n}=d, ~\text{and}~ p_1=p_2=\ldots=p_{n}=p.
+\]</div><p> 
+Then for each <span class="math">\(\boldsymbol{\omega}\in \Omega\)</span>, there exists an integer <span class="math">\(j\)</span> with <span class="math">\(0\le j\le n\)</span> such that
+</p><div class="math">\[
+S_n(\boldsymbol{\omega}) = S_0 u^j d^{n-j}.
+\]</div><p>
+Furthermore, assuming an equal probability <span class="math">\(p\)</span> of obtaining <span class="math">\(u\)</span> at every time step, we get
+</p><div class="math">\[
+\mathbb{P}(\{S_n=S_0 u^j d^{n-j}\}) 
+= \binom{n}{j} p^j (1-p)^{n-j}.
+\]</div><p>
+The above discussion shows that in the binomial model, with a specific choice of parameters <span class="math">\(u_k=u\)</span>, <span class="math">\(d_k=d\)</span>, and <span class="math">\(p_k=p\)</span> for <span class="math">\(k=1,2,\ldots, n\)</span>, the number of up moves follows a binomial distribution. In this case, we denote the set of parameters of the <span class="math">\(n\)</span>-step binomial model for the underlying asset as <span class="math">\(\{u, d, p\}\)</span> with <span class="math">\(n\ge 1\)</span>.</p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+In the context of an option pricing model, the set of parameters for the <span class="math">\(n\)</span>-step binomial model also includes the per-period interest rate.
+</div></p><p>Each element <span class="math">\(\boldsymbol{\omega}\in \Omega\)</span> can be interpreted as a path in the binomial lattice, referred to as a <b>sample price path</b>, leading to a terminal stock price <span class="math">\(S_n(\boldsymbol{\omega})\)</span>. The lattice (or tree) diagram of a <span class="math">\(4\)</span>-step binomial model is illustrated in <a href="DiscreteTimeModels.html#Lat.Diag.ILL.Fig">Figure &laquo;Click Here&raquo; </a> in a specific case where <span class="math">\(d=1/u\)</span>.</p><p>Similarly, the probability of an upward movement <span class="math">\(p\)</span> can be chosen in various ways.  In <a href="DiscreteTimeModels.html#risk-neutral.probability.1sBM.ssec" class="internal-link">Section  &laquo;Click Here&raquo;</a>, we obtained the risk-neutral probability in one-step binomial model using the fair game criterion stated in <a href="DiscreteTimeModels.html#fair.game.criterion.rem">Remark &laquo;Click Here&raquo; </a>. This concept can also be extended to the <span class="math">\(n\)</span>-step binomial model.</p><p><div class="remark" id="risk-neutral.probability.nsBM.ssec">
+<div class="heading-container">
+<b class="heading">Remark:</b>
+</div>
+
+By applying the fair game criterion to an <span class="math">\(n\)</span>-step binomial model, we can derive a specific probability, called the <b>risk-neutral probability</b>, denoted by <span class="math">\(p^*\)</span>, that takes the form
+</p><div class="math" >\begin{eqnarray}
+p^* = \frac{I(\tilde{r})^{1/n} - d}{u-d},
+\end{eqnarray}<div style="text-align:right;">(5.10)</div></div><p>
+where <span class="math">\(I\)</span> is given in <a href="DiscreteTimeModels.html#no-arbitrage.condition.lem">Lemma &laquo;Click Here&raquo; </a> with <span class="math">\(\tilde{r}\)</span> being the per-period interest rate for the period <span class="math">\([0, T]\)</span>, <span class="math">\(u\)</span> is the identical upward factor, and <span class="math">\(d\)</span> is the identical downward factor in the <span class="math">\(n\)</span>-step binomial model with <span class="math">\(n\ge 1\)</span>.
+</div> </p><p><img src="Figures/BLMnstepILLU.png" class="standalone-figure">
+<div class="figure">
+
+<div style="text-align: center; font-weight: bold;">Lattice diagram for uniform time partition with <span class="math">\(n=4\)</span> and <span class="math">\(d=1/u\)</span>.</div>
+
+
+</div></p><p><div class="problem">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Derive the risk-neutral probability <span class="math">\(p^*\)</span> given in <a href="DiscreteTimeModels.html#risk-neutral.probability.nsBM.ssec">Remark &laquo;Click Here&raquo; </a>.
+</div></p><p><div class="note">
+<div class="heading-container">
+<b class="heading">Note:</b>
+</div>
+The expression for <span class="math">\(p^*\)</span>  in <a href="DiscreteTimeModels.html#risk-neutral.probability.nsBM.ssec">Remark &laquo;Click Here&raquo; </a> is obtained by taking <span class="math">\(\tilde{r}\)</span> as the per-period interest rate for the period <span class="math">\([0,T]\)</span>.  However, if <span class="math">\(\tilde{r}\)</span> is taken as the per-period interest rate for the period <span class="math">\([t_{k-1}, t_k]\)</span> for any <span class="math">\(k=1,2,\ldots, n\)</span>, then we have
+</p><div class="math">\[
+p^* = \frac{I(\tilde{r}) - d}{u-d}.
+\]</div><p>
+</div></p><p><div class="problem" id="BM30S1">
+<div class="heading-container">
+<b class="heading">Problem:</b>
+</div>
+Consider a stock with a 6-month holding period, 
+currently priced at ₹ 100. Using a 30-step binomial lattice model (also referred simply as binomial model) with parameters
+</p><div class="math">\[
+u=1.12,~~ d=0.975,~~ p = 0.5156,
+\]</div><p>
+determine the following: 
+<ol class="latex-enumerate">
+<li> Find the stock price if the sample price path
+involves 7 upward movements.
+</li></li><li> Find <span class="math">\(\mathbb{P}(\{S_{30}\le S_0 u^7d^{23}\})\)</span>.
+</li></li><li> Find <span class="math">\(\mathbb{P}^*(\{S_{30}\le S_0 u^7d^{23}\})\)</span>, where <span class="math">\(\mathbb{P}^*\)</span> denotes the risk-neutral probability measure with the probability of upward movement being <span class="math">\(p^*\)</span> given in <a href="DiscreteTimeModels.html#risk-neutral.probability.nsBM.ssec">Remark &laquo;Click Here&raquo; </a> with <span class="math">\(\tilde{r}=0.03\)</span> continuously compounded.
+</li></ol></p><p><div style="text-align:right;"><b>Answer:</b> (1) 123.49; (2) 0.0015294354; (3) 0.84427673 </div>
+</div></p>
+
+ <span style="color: red; font-weight: bold; font-size: 24px;">
+  Chapter to be continued ...
+</span>
+    </div>
+    
+    <script>
+    document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+    document.addEventListener("keydown", function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "s")) {
+            e.preventDefault();
+        }
+    });
+    </script>
+     <footer>
+  © S. Baskar, Department of Mathematics, IIT Bombay. 2026 (This material is licensed under CC BY-NC 4.0.) — Updated: 07-Mar-2026
+</footer>
+
+<style>
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #f8f8f8;
+  color: #888;
+  font-size: 0.75em;
+  text-align: center;
+  padding: 6px 0;
+  border-top: 1px solid #ddd;
+  z-index: 10;               /* low z-index */
+  pointer-events: none;      /* allows clicks to pass through */
+}
+
+/* Small screen adjustments */
+@media (max-width: 600px) {
+  footer {
+    font-size: 0.68em;
+    padding: 4px 0;
+  }
+}
+</style>  
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocButton = document.getElementById('toc-button');
+            const tocPanel = document.getElementById('toc-panel');
+            const closeToc = document.getElementById('close-toc');
+
+            if (localStorage.getItem('tocOpen') === 'true') {
+                tocPanel.classList.add('open');
+                localStorage.removeItem('tocOpen');
+            }
+
+            tocButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                tocPanel.classList.toggle('open');
+            });
+
+            function closeTocPanel() {
+                tocPanel.classList.remove('open');
+            }
+
+            closeToc.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeTocPanel();
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!tocPanel.contains(e.target) && e.target !== tocButton) {
+                    closeTocPanel();
+                }
+            });
+
+            tocPanel.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            document.querySelectorAll('#toc-panel a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (!this.getAttribute('href').startsWith('#')) {
+                        localStorage.setItem('tocOpen', 'true');
+                    }
+                    if (this.hash) {
+                        e.preventDefault();
+                        const target = document.getElementById(this.hash.substring(1));
+                        if (target) {
+                            window.scrollTo({
+                                top: target.offsetTop - 70,
+                                behavior: 'smooth'
+                            });
+                            history.pushState(null, null, this.hash);
+                            if (window.innerWidth < 768) {
+                                closeTocPanel();
+                            }
+                        }
+                    }
+                });
+            });
+
+            if (window.location.hash) {
+                const target = document.getElementById(window.location.hash.substring(1));
+                if (target) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: target.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
